@@ -9,7 +9,7 @@ all: $(BIN)
 bin/main.o: src/main.c
 	$(CC) $(FLAGS) src/main.c -o bin/main.o
 
-bin/cpu.o: src/cpu.o
+bin/cpu.o: src/cpu.c
 	$(CC) $(FLAGS) src/cpu.c -o bin/cpu.o
 
 clean:

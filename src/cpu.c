@@ -97,7 +97,7 @@ int get_flag(int flag) {
 }
 
 void post(uint16_t address, uint8_t value) {
-    if (address == 0xff02 && value & 128) serial_interrupt = cycles+8;
+    if (address == 0xff02 && (value & 0x80)) serial_interrupt = 8;
     if (address == 0xff04) data[address] = 0;
     data[address] = value;
 }
@@ -1692,7 +1692,7 @@ void interrupt(uint8_t type) {
         // This is needed for the correcoooooooot timings
         is_interrupting = true;
         if (type == SERIAL) {
-            //printf("%c\n", data[0xff01]);
+            printf("%c\n", data[0xff01]);
         }
 
         //bus->debug_msg = 0x69;
@@ -1813,7 +1813,7 @@ int POP_RR(uint8_t *reg1, uint8_t *reg2){
 
 int LD_NN_SP(uint8_t value1, uint8_t value2) {
     post(x8_x16(value2,value1), (uint8_t) SP);
-    post(x8_x16(value1,value2) + 1, (uint8_t) SP >> 8);
+    post(x8_x16(value2,value1) + 1, (uint8_t) (SP >> 8));
     return 20;
 }
         
@@ -2080,8 +2080,8 @@ int ADD_HL_RR(uint8_t* reg1, uint8_t* reg2){
 } // HL = HL + rr
 
 int ADD_HL_SP() {
-    set_flag(hy, (get_hl() & 0xff) + (SP & 0xff) > 0xff);
-    set_flag(cy, get_hl() + SP > 0xffff);
+    set_flag(hy, (get_hl() & 0xfff) + (SP & 0xfff) > 0xfff);
+    set_flag(cy, (int)get_hl() + (int)SP > 0xffff);
     set_hl(get_hl() + SP);
     set_flag(n, 0);
     return 8;
@@ -2110,8 +2110,8 @@ int DEC_SP() {
 int ADD_SP_DD(int8_t value){
     set_flag(z, 0);
     set_flag(n, 0);
-    set_flag(hy, value + (SP & 0xff) > 0xff);
-    set_flag(cy, value + SP > 0xffff);
+    set_flag(hy, (value&0xf) + (SP & 0xf) > 0xf);
+    set_flag(cy, (uint8_t)value + (int)(SP & 0xff) > 0xff);
     SP += value;
     return 16;
 } // SP += DD
@@ -2119,7 +2119,7 @@ int ADD_SP_DD(int8_t value){
 int LD_HL_SP_DD(int8_t value){
     set_flag(z, 0);
     set_flag(n, 0);
-    set_flag(hy, (uint8_t)value + (SP & 0xf) > 0xf);
+    set_flag(hy, ((uint8_t)value & 0xf) + (SP & 0xf) > 0xf);
     set_flag(cy, (uint8_t)value + (SP & 0xff) > 0xff);
     set_hl(SP + value);
     return 12;
