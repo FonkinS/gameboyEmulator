@@ -2147,7 +2147,7 @@ int RLA(){
     return 4;
 }                              // rotates accumulator left, bit 0 = cy bit 7 -> cy
 int RRCA(){
-    set_flag(cy, a << 7);
+    set_flag(cy, a & 1);
     a = (a >> 1) | (a << 7); 
     set_flag(z, 0);
     set_flag(n, 0);
@@ -2281,7 +2281,7 @@ int SWAP_HL(){
 }                          // Swaps 0-4 bits and 5-8 bits of HL pointer's value
 int SRA_R(uint8_t* reg){
     set_flag(cy, *reg & 1);
-    *reg = *reg >> 1 | 128;
+    *reg = *reg >> 1 | (*reg & 128);
     set_flag(n, 0);
     set_flag(hy, 0);
     set_flag(z, *reg==0);
