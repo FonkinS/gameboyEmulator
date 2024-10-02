@@ -10,7 +10,7 @@ int main() {
     is_interrupting = false;
     IME = false;
 
-    FILE *file = fopen("demoFiles/blarggsTest/07-jr,jp,call,ret,rst.gb", "rb");
+    FILE *file = fopen("demoFiles/blarggsTest/08-misc instrs.gb", "rb");
     if (file == NULL) {
         printf("File Not Found!\n");
         return -1;
@@ -114,7 +114,7 @@ int main() {
             cycles += cycle_length;
             f &= 0xf0;
             
-            if (PC == 0xCC55) {
+            if (PC == 0xCB91) {
                 break;
             }
         } else if (interrupt_next_op) {
