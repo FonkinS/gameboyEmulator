@@ -2447,7 +2447,7 @@ int RETI(){
 }                                 // PC=(SP), SP+=2, enable interrupts
 int RST(uint8_t value){
     int v[8] = {0,0x8,0x10,0x18,0x20,0x28,0x30,0x38};
-    post(SP-1, (uint8_t) PC>>8);
+    post(SP-1, (uint8_t) (PC>>8));
     post(SP-2,(uint8_t) PC);
     SP -= 2;
     PC = v[value];

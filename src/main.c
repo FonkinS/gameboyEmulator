@@ -10,7 +10,7 @@ int main() {
     is_interrupting = false;
     IME = false;
 
-    FILE *file = fopen("demoFiles/blarggsTest/06-ld r,r.gb", "rb");
+    FILE *file = fopen("demoFiles/blarggsTest/07-jr,jp,call,ret,rst.gb", "rb");
     if (file == NULL) {
         printf("File Not Found!\n");
         return -1;
