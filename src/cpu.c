@@ -2024,7 +2024,7 @@ int INC_HL(){
     post(get_hl(), fetch(get_hl())+1);
     set_flag(z, fetch(get_hl()) == 0);
     set_flag(n, 0);
-    set_flag(hy, fetch((get_hl())>>8) % 2 != ((fetch(get_hl())-1)>>8) % 2);
+    set_flag(hy, (fetch(get_hl()) & 0xf) == 0);
     return 12;
 }                             // Adds on to (HL) pointer's value
 int DEC_R(uint8_t* reg){
@@ -2289,7 +2289,8 @@ int SRA_R(uint8_t* reg){
 }                // Shifts register right arithmetacilly (7=7)
 int SRA_HL(){
     set_flag(cy, fetch(get_hl()) & 1);
-    post(get_hl(), fetch(get_hl()) >> 1 | 128);
+    uint8_t t = fetch(get_hl());
+    post(get_hl(), t >> 1 | (t & 128));
     set_flag(n, 0);
     set_flag(hy, 0);
     set_flag(z, fetch(get_hl())==0);

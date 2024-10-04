@@ -10,7 +10,7 @@ int main() {
     is_interrupting = false;
     IME = false;
 
-    FILE *file = fopen("demoFiles/blarggsTest/10-bit ops.gb", "rb");
+    FILE *file = fopen("demoFiles/blarggsTest/11-op a,(hl).gb", "rb");
     if (file == NULL) {
         printf("File Not Found!\n");
         return -1;
@@ -98,7 +98,7 @@ int main() {
             //printf("%i\n", data[0xdd02]);
             count += 1;
             if (!just_interrupted) {
-                printf("A:%.2X F:%.2X B:%.2X C:%.2X D:%.2X E:%.2X H:%.2X L:%.2X SP:%.4X PC:%.4X PCMEM:%.2X,%.2X,%.2X,%.2X\n", a, f, b, c, d, e, h, l, SP, PC, fetch(PC), fetch(PC+1), fetch(PC+2), fetch(PC+3));
+                printf("A:%.2X F:%.2X B:%.2X C:%.2X D:%.2X E:%.2X H:%.2X L:%.2X SP:%.4X PC:%.4X PCMEM:%.2X,%.2X,%.2X,%.2X\n",a, f, b, c, d, e, h, l, SP, PC, fetch(PC), fetch(PC+1), fetch(PC+2), fetch(PC+3));
 
                 //check for interrupt
                 if (interrupt_next_op) {
@@ -108,10 +108,10 @@ int main() {
                 }
 
                 cycle_length = execute_op();
+                cycles += cycle_length;
             } else {
                 just_interrupted = false;
             }
-            cycles += cycle_length;
             f &= 0xf0;
             
             /*if (PC == 0xCB91) {
