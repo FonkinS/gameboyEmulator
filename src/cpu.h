@@ -8,6 +8,7 @@
 int execute_op();
 
 uint8_t data[65536];
+uint8_t boot_data[256];
                 
 uint16_t PC; // program counter
 uint16_t SP; // stack pointer

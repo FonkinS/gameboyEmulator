@@ -1,3 +1,4 @@
 demoFiles/*
 gameboy-doctor
 bin/*
+.DS_Store
