@@ -6,8 +6,8 @@
 
 int init_ppu();
 void kill_ppu();
-int update_frame();
-void draw_bg();
+int render_frame();
+void draw_scanline(int scanline);
 
 
 

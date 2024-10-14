@@ -109,6 +109,9 @@ void *cpuFunc() {
             data[0xff44]++;
             if (data[0xff44] >= 144) { // VBlank Time!
                 ppu_mode = 1;
+            } else if (data[0xff44] >= 154) {
+                data[0xff44] = 0;
+                ppu_mode = 2;
             } else {                // Back to Start
                 ppu_mode = 2;   
             }
@@ -253,7 +256,20 @@ int main() {
     h = 0x01;
     l = 0x4d;*/
 
-    while (update_frame());
+    int previous_mode = 2;
+    while (true) {
+        if (!(data[0xff40] & 128)) continue;
+        if (previous_mode != (data[0xff41] & 3)) {
+            previous_mode = data[0xff41] & 3;
+            if (previous_mode == 0) {
+                draw_scanline(data[0xff44]);
+            } else if (previous_mode == 1) {
+                if (!render_frame()) break;
+            }
+        }
+    }
+    
+
     kill_ppu();
     pthread_cancel(cpu_thread);
 
