@@ -1,4 +1,6 @@
 #include "lcd.h"
+#include "cpu.h"
+#include "interrupts.h"
 
 
 void LCDTick(int cycle_length) {
@@ -28,19 +30,19 @@ void LCDTick(int cycle_length) {
         }
         if (ppu_mode != prev_ppu_mode) { // If change in Mode over this cycle
             if (ppu_mode == 2) {
-                if (data[0xff41] & 32) data[0xff0f] |= 2; // OAM Scan
+                if (data[0xff41] & 32) request_interrupt(LCDSTAT); // OAM Scan
             } else if (ppu_mode == 0) {
-                if (data[0xff41] & 8) data[0xff0f] |= 2; // Horizontal Blank
+                if (data[0xff41] & 8) request_interrupt(LCDSTAT); // Horizontal Blank
             } else if (ppu_mode == 1) {
-                if (data[0xff41] & 16) data[0xff0f] |= 2; // VBlank
-                data[0xff0f] |= 1;                      // Actual VBlank Interrupt
+                if (data[0xff41] & 16) request_interrupt(LCDSTAT); // VBlank
+                request_interrupt(VBLANK);                      // Actual VBlank Interrupt
             }
         }
         // Set LY==LYC
         data[0xff41] = (data[0xff41] & ~4) | ((data[0xff44] == data[0xff45]) << 2);
         if (data[0xff41] & 4) {
             if (data[0xff44] == data[0xff45] && (data[0xff41] & 64)) {
-                data[0xff0f] |= 2; // Call LYC Interrupt if allowed
+                request_interrupt(LCDSTAT); // Call LYC Interrupt if allowed
             }
         }
         // Set PPU mode in LCDSTAT

@@ -1,5 +1,5 @@
 CC = gcc
-BIN = bin/main.o bin/cpu.o bin/ppu.o bin/lcd.o bin/gameboy.o
+BIN = bin/main.o bin/cpu.o bin/ppu.o bin/lcd.o bin/gameboy.o bin/interrupts.o
 OUT = bin/main
 FLAGS = -c -Wall 
 
@@ -20,6 +20,9 @@ bin/lcd.o: src/lcd.c
 
 bin/gameboy.o: src/gameboy.c
 	$(CC) $(FLAGS) -w src/gameboy.c -o bin/gameboy.o
+
+bin/interrupts.o: src/interrupts.c
+	$(CC) $(FLAGS) -w src/interrupts.c -o bin/interrupts.o 
 
 clean:
 	rm -rf $(BIN)

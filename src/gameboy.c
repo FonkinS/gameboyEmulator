@@ -1,4 +1,6 @@
 #include "gameboy.h"
+#include "cpu.h"
+#include "interrupts.h"
 #include "ppu.h"
 
 
@@ -49,10 +51,6 @@ void *GameboyThreadLoop() {
     PC = 0x00;
     serial_interrupt = 0;
 
-    cycles = 0;
-    count = 0;
-
-
     double speed = 1.0f / 4194304.0f;
     
     int last_div = 0;
@@ -60,44 +58,24 @@ void *GameboyThreadLoop() {
     int last_timer = 0;
     int timer_speeds[4] = {256, 4, 16, 64};
 
-    int interrupt_next_op = 0;
-    just_interrupted = false;
 
+    int interrupt_called = 0;
     uint8_t previous_tima = 0;
     
     while (true) {
         clock_t begin = clock();
         int cycle_length = 4;
-        if (halt == NOHALT) {
-            count += 1;
-            if (!just_interrupted) {
-                                //check for interrupt
-                if (interrupt_next_op) {
-                    just_interrupted = true;
-                    interrupt(interrupt_next_op);
-                    interrupt_next_op = 0;
-                }
 
-                cycle_length = execute_op();
-                cycles += cycle_length;
-            } else {
-                just_interrupted = false;
-            }
-            f &= 0xf0;
+        if (halt == NOHALT) {
+            if (interrupt_called) interrupt(&interrupt_called);
+            cycle_length = execute_op();
             
-            /*if (PC == 0xC8B0) {
-                break;
-            }*/
-        } else if (interrupt_next_op) {
-            if (IME) {
-                just_interrupted = true;
-                interrupt(interrupt_next_op);
-                interrupt_next_op = 0;
-            } else if (halt == HALTNOIMENOINT) {
-                halt = NOHALT;
-            } else {
-                printf("Halt Bug isn't bugging?\n");
-            }
+            f &= 0xf0;
+        
+        } else if (interrupt_called) {
+            if (IME) interrupt(&interrupt_called);
+            else if (halt == HALTNOIMENOINT) halt = NOHALT;
+            else printf("Halt Bug isn't bugging?\n");
         }
 
 
@@ -116,7 +94,7 @@ void *GameboyThreadLoop() {
                 if (data[0xff05] < previous_tima) { // OVERFLOW
                     data[0xff05] = data[0xff06];
                     data[0xff0f] = data[0xff0f] | 4;
-                    interrupt_next_op = TIMER;
+                    request_interrupt(TIMER);
                 }
                 previous_tima = data[0xff05];
             }
@@ -124,10 +102,9 @@ void *GameboyThreadLoop() {
 
 
         // Serial Interrupt
-        if (serial_interrupt != 0 && serial_interrupt <= cycles) {
-            //printf("%c", data[0xff01]);
+        if (serial_interrupt != 0) {
             serial_interrupt = 0;
-            interrupt(SERIAL);
+            request_interrupt(SERIAL);
         }
 
         /*                  LCD                  */
@@ -136,17 +113,8 @@ void *GameboyThreadLoop() {
 
 
         // Unofficial Interrupt
-        if (data[0xff0f] & 31 && IME) {
-            if (data[0xff0f] & 1 && data[0xffff] & 1) interrupt_next_op = VBLANK;
-            if (data[0xff0f] & 2 && data[0xffff] & 2) interrupt_next_op = LCDSTAT;
-            if (data[0xff0f] & 4 && data[0xffff] & 4) interrupt_next_op = TIMER;
-            if (data[0xff0f] & 8 && data[0xffff] & 8) interrupt_next_op = SERIAL;
-            if (data[0xff0f] & 16 && data[0xffff] & 16) interrupt_next_op = JOYPAD;
-        }
-
-        /*if (PC == 0x100) {
-            break;
-        }*/
+        check_interrupts(&interrupt_called);
+        
 
         if (PC > 0x0) {
             //printf("A:%.2X F:%.2X B:%.2X C:%.2X D:%.2X E:%.2X H:%.2X L:%.2X SP:%.4X PC:%.4X PCMEM:%.2X,%.2X,%.2X,%.2X LY:%.2X\n",a, f, b, c, d, e, h, l, SP, PC, fetch(PC), fetch(PC+1), fetch(PC+2), fetch(PC+3), fetch(0xff44));
@@ -156,9 +124,7 @@ void *GameboyThreadLoop() {
 
         // Cycle Timing
         double time = 0;
-        do {
-            time = ((double)(clock() - begin) / CLOCKS_PER_SEC);
-        }
+        do time = ((double)(clock() - begin) / CLOCKS_PER_SEC);
         while (time < speed * cycle_length);
         
     }

@@ -1676,13 +1676,14 @@ void set_hl(uint16_t value){
 
 }
 
-void interrupt(uint8_t type) {
+void interrupt(int *type) {
     //printf("TYPE: %i - IME: %s && IE: %i && IF: %i \t AT:%i\n", type, IME?"true":"false", (fetch(0xffff)), (fetch(0xff0f)), PC);
-    if (IME && (fetch(0xffff) >> type) % 2 && (fetch(0xff0f) >> type) % 2) {
+    *type = 0;
+    if (IME && (fetch(0xffff) >> *type) % 2 && (fetch(0xff0f) >> *type) % 2) {
         
         // Disable IME and IF Flag
         IME = false;
-        post(0xff0f, (uint8_t) fetch(0xff0f) & ~(1 << type));
+        post(0xff0f, (uint8_t) fetch(0xff0f) & ~(1 << *type));
         
         // PUSH PC to stack
         post(SP-1, (uint8_t) (PC>>8));
@@ -1690,12 +1691,12 @@ void interrupt(uint8_t type) {
         SP-=2;
 
         // Call register
-        PC = 0x40 + type * 8;
+        PC = 0x40 + *type * 8;
 
         // Tell the CPU loop that it is interrupting
         // This is needed for the correcoooooooot timings
         is_interrupting = true;
-        if (type == SERIAL) {
+        if (*type == SERIAL) {
             printf("%c\n", data[0xff01]);
         }
 
