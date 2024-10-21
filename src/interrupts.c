@@ -5,12 +5,46 @@ void request_interrupt(int type) {
 }
 
 
-void check_interrupts(int *interrupt_called) {
-    if (data[0xff0f] & 31 && IME) {
-        if (data[0xff0f] & 1 && data[0xffff] & 1) *interrupt_called = VBLANK;
-        if (data[0xff0f] & 2 && data[0xffff] & 2) *interrupt_called = LCDSTAT;
-        if (data[0xff0f] & 4 && data[0xffff] & 4) *interrupt_called = TIMER;
-        if (data[0xff0f] & 8 && data[0xffff] & 8) *interrupt_called = SERIAL;
-        if (data[0xff0f] & 16 && data[0xffff] & 16) *interrupt_called = JOYPAD;
+void check_interrupts() {
+    for (int i = VBLANK; i <= JOYPAD; i <<= 1) { // loops through all types
+        if (!(data[0xff0f] & i && data[0xffff] & i)) continue;
+        interrupt_called = i;
+        break;
     }
+}
+
+
+uint8_t interruptTypeToLocation(uint8_t type) {
+    switch (type) {
+        case 1:
+            return 0x40;
+        case 2:
+            return 0x48;
+        case 4:
+            return 0x50;
+        case 8:
+            return 0x58;
+        case 16:
+            return 0x60;
+        default:
+            return 0;
+    }
+}
+
+
+void interrupt() {
+    if (IME) {
+        // Disable IME and IF Flag
+        IME = false;
+        post(0xff0f, (uint8_t) fetch(0xff0f) & ~interrupt_called);
+        
+        // PUSH PC to stack
+        post(SP-1, (uint8_t) (PC>>8));
+        post(SP-2, (uint8_t) PC);
+        SP-=2;
+
+        // Call register
+        PC = interruptTypeToLocation(interrupt_called);
+    }
+    interrupt_called = 0;
 }

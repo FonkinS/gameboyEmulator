@@ -30,13 +30,8 @@ uint16_t get_bc();
 uint16_t get_de();
 uint16_t get_hl();
 
-// Interrupts
-enum INTERRUPT_TYPES {VBLANK=1, LCDSTAT=2, TIMER=4, SERIAL=8, JOYPAD=16};
-bool IME; // interrupt master enable flag
-bool is_interrupting;
-void interrupt(int *type);
-uint8_t interruptTypeToLocation(uint8_t type);
 
+bool IME; // interrupt master enable flag
 
 int serial_interrupt;
 unsigned long long cycles;
