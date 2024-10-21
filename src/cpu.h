@@ -35,11 +35,11 @@ enum INTERRUPT_TYPES {VBLANK=1, LCDSTAT=2, TIMER=4, SERIAL=8, JOYPAD=16};
 bool IME; // interrupt master enable flag
 bool is_interrupting;
 void interrupt(int *type);
+uint8_t interruptTypeToLocation(uint8_t type);
 
 
 int serial_interrupt;
 unsigned long long cycles;
-int count;
 
 enum {NOHALT, HALTIME, HALTNOIMENOINT, HALTBUG, HALTBUGEI, HALTBUGRST};
 int halt;

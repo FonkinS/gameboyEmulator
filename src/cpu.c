@@ -77,6 +77,7 @@ uint8_t fetch(uint16_t index){
         if (data[0xff50]) return data[index];
         else return boot_data[index];
     }
+    if (index == 0xff44 && data[0xff50]) return 0x90;
     return data[index];
 }
 
@@ -1676,14 +1677,30 @@ void set_hl(uint16_t value){
 
 }
 
+uint8_t interruptTypeToLocation(uint8_t type) {
+    switch (type) {
+        case 1:
+            return 0x40;
+        case 2:
+            return 0x48;
+        case 4:
+            return 0x50;
+        case 8:
+            return 0x58;
+        case 16:
+            return 0x60;
+    }
+    printf("Invalid Interrupt Type!!!!!!\n");
+    return 0;
+}
+
 void interrupt(int *type) {
-    //printf("TYPE: %i - IME: %s && IE: %i && IF: %i \t AT:%i\n", type, IME?"true":"false", (fetch(0xffff)), (fetch(0xff0f)), PC);
-    *type = 0;
-    if (IME && (fetch(0xffff) >> *type) % 2 && (fetch(0xff0f) >> *type) % 2) {
+    //printf("TYPE: %X - IME: %s && IE: %X && IF: %X \t AT:%X\n", *type, IME?"true":"false", (fetch(0xffff)), (fetch(0xff0f)), PC);
+    if (IME && (fetch(0xffff) & *type) && (fetch(0xff0f) & *type)) {
         
         // Disable IME and IF Flag
         IME = false;
-        post(0xff0f, (uint8_t) fetch(0xff0f) & ~(1 << *type));
+        post(0xff0f, (uint8_t) fetch(0xff0f) & ~*type);
         
         // PUSH PC to stack
         post(SP-1, (uint8_t) (PC>>8));
@@ -1691,7 +1708,7 @@ void interrupt(int *type) {
         SP-=2;
 
         // Call register
-        PC = 0x40 + *type * 8;
+        PC = interruptTypeToLocation(*type);
 
         // Tell the CPU loop that it is interrupting
         // This is needed for the correcoooooooot timings
@@ -1702,6 +1719,7 @@ void interrupt(int *type) {
 
         //bus->debug_msg = 0x69;
     }
+    *type = 0;
 }
 
 
