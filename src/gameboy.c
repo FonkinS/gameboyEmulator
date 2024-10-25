@@ -1,8 +1,4 @@
 #include "gameboy.h"
-#include "cpu.h"
-#include "interrupts.h"
-#include "ppu.h"
-
 
 void GameboyInit() {
     z = 7;
@@ -15,34 +11,8 @@ void GameboyInit() {
 }
 
 int GameboyCartridgeLoad() {
-    for (int i = 0; i < 65536;i++) {
-        data[i] = 0;
-    }
-
-
-    FILE *boot = fopen("demoFiles/dmg_boot.bin", "rb");
-    if (boot == NULL) {
-        printf("Boot File Not Found!\n");
-        return 0;
-    }
-    int i = 0;
-    while (i < 0x100) {
-        boot_data[i++] = fgetc(boot);
-    }
-    fclose(boot);
-    
-
-    FILE *file = fopen("demoFiles/Tetris.gb", "rb");
-    if (file == NULL) {
-        printf("Game File Not Found!\n");
-        return 0;
-    }
-    i = 0;
-    while (!feof(file)) {
-        data[i++] = fgetc(file);
-    }
-    fclose(file);
-
+    open_bootrom_file("demoFiles/dmg_boot.bin");
+    open_cartridge_file("demoFiles/Tetris.gb");
     return 1;
 }
 
@@ -79,21 +49,20 @@ void *GameboyThreadLoop() {
         // Timer and Divider Registers
         last_div += cycle_length;
         if (last_div >= 256) {
-            data[0xff04]++;
+            io_write(rDIV, io_read(rDIV)+1);
             last_div %= 256;
         }
-        if (data[0xff07] & 4) { // Timer
+        if (io_read(rTAC) & 4) { // Timer
             last_timer+=(int)(cycle_length/4); // erm wat da sigma
             //printf("%i\n", last_timer);
-            if (last_timer >= timer_speeds[data[0xff07] % 4]) {
-                data[0xff05] += (int)(last_timer / timer_speeds[data[0xff07]%4]);
-                last_timer %= timer_speeds[data[0xff07] % 4];
-                if (data[0xff05] < previous_tima) { // OVERFLOW
-                    data[0xff05] = data[0xff06];
-                    data[0xff0f] = data[0xff0f] | 4;
+            if (last_timer >= timer_speeds[io_read(rTAC) % 4]) {
+                io_write(rTIMA,io_read(rTIMA)+(int)(last_timer / timer_speeds[io_read(rTAC)%4]));
+                last_timer %= timer_speeds[io_read(rTAC) % 4];
+                if (io_read(rTIMA) < previous_tima) { // OVERFLOW
+                    io_write(rTIMA, io_read(rTMA));
                     request_interrupt(TIMER);
                 }
-                previous_tima = data[0xff05];
+                previous_tima = io_read(rTIMA);
             }
         }
 
@@ -101,6 +70,10 @@ void *GameboyThreadLoop() {
 
         check_interrupts();
 
+
+        //if (data[0x89b0] != 0x1b) printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa\n");
+        printf("A:%.2X F:%.2X B:%.2X C:%.2X D:%.2X E:%.2X H:%.2X L:%.2X SP:%.4X PC:%.4X PCMEM:%.2X,%.2X,%.2X,%.2X - h%.2X j%.2X\n",a,f,b,c,d,e,h,l,SP,PC,read(PC),read(PC+1),read(PC+2),read(PC+3),read(0xff80),io_read(rJOY));
+        
         // Cycle Timing
         double time = 0;
         do time = ((double)(clock() - begin) / CLOCKS_PER_SEC);
@@ -113,11 +86,11 @@ void *GameboyThreadLoop() {
 void GraphicsThreadLoop() {
     int previous_mode = 2;
     while (true) {
-        if (!(data[0xff40] & 128)) continue;
-        if (previous_mode != (data[0xff41] & 3)) {
-            previous_mode = data[0xff41] & 3;
+        if (!(io_read(rLCDC) & 128)) continue;
+        if (previous_mode != (io_read(rSTAT) & 3)) {
+            previous_mode = io_read(rSTAT) & 3;
             if (previous_mode == 0) {
-                draw_scanline(data[0xff44]);
+                draw_scanline(io_read(rLY));
             } else if (previous_mode == 1) {
                 if (!render_frame()) break;
             }

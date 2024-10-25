@@ -73,19 +73,13 @@ uint8_t get_reg(char r) {
 
 // Fetching
 uint8_t fetch(uint16_t index){
-    if (index < 0x100) {
-        if (data[0xff50]) return data[index];
-        else return boot_data[index];
-    }
-    if (index == 0xff44 && data[0xff50]) return 0x90;
-    return data[index];
+    //if (index == 0xff44 && data[0xff50]) return 0x90; ONLY FOR BlarggsTESTS
+    return read(index);
 }
 
 
 uint8_t fetchOP(){
-    PC++;
-    //printf("%x ", data[PC-1]);
-    return fetch(PC-1);
+    return fetch(PC++);
 }
 
 void set_flag(int flag, int value) {
@@ -101,10 +95,7 @@ int get_flag(int flag) {
 }
 
 void post(uint16_t address, uint8_t value) {
-    if (address == 0xff02 && (value & 0x80)) serial_interrupt = 8;
-    if (address == 0xff04) data[address] = 0;
-    
-    data[address] = value;
+    write(address, value);
 }
 
 uint8_t execute_cb_op(uint8_t next_op) {

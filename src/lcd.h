@@ -1,6 +1,6 @@
 #ifndef LCD_H
 #define LCD_H
-#include "cpu.h"
+#include "interrupts.h"
 
 int dot;
 int ppu_mode;

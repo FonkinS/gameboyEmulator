@@ -2,10 +2,12 @@
 #include <stdio.h>
 #include <time.h>
 #include <pthread.h>
-#include "cpu.h"
-#include "ppu.h"
-#include "lcd.h"
 #include "gameboy.h"
+
+
+// Note for future Aaron
+// - Fragment Memory?
+// - IO Regs should return 1 in unused bits
 
 int main() {
     GameboyInit();

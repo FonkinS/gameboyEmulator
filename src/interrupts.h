@@ -1,6 +1,7 @@
 #ifndef INTERRUPTS_H
 #define INTERRUPTS_H
 #include "cpu.h"
+#include "bus.h"
 
 enum INTERRUPT_TYPES {VBLANK=1, LCDSTAT=2, TIMER=4, SERIAL=8, JOYPAD=16};
 

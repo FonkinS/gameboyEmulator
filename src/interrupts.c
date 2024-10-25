@@ -1,13 +1,13 @@
 #include "interrupts.h"
 
 void request_interrupt(int type) {
-    data[0xff0f] |= type;
+    io_write(rIF, io_read(rIF) | type);
 }
 
 
 void check_interrupts() {
     for (int i = VBLANK; i <= JOYPAD; i <<= 1) { // loops through all types
-        if (!(data[0xff0f] & i && data[0xffff] & i)) continue;
+        if (!(io_read(rIF) & i && IE & i)) continue;
         interrupt_called = i;
         break;
     }
@@ -36,7 +36,7 @@ void interrupt() {
     if (IME) {
         // Disable IME and IF Flag
         IME = false;
-        post(0xff0f, (uint8_t) fetch(0xff0f) & ~interrupt_called);
+        io_write(rIF, io_read(rIF) & ~interrupt_called);
         
         // PUSH PC to stack
         post(SP-1, (uint8_t) (PC>>8));

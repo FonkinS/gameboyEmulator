@@ -6,15 +6,15 @@
 #include "cpu.h"
 #include "ppu.h"
 #include "lcd.h"
+#include "interrupts.h"
+#include "ppu.h"
+#include "bus.h"
+
 
 void GameboyInit();
 int GameboyCartridgeLoad();
 void *GameboyThreadLoop();
 void GraphicsThreadLoop();
-
-
-
-
 
 
 
