@@ -7,12 +7,14 @@ void GameboyInit() {
     cy = 4;
     IME = false;
 
-    init_ppu();
+    char *title = (char*) calloc(0x10, sizeof(char)); 
+    for (int c = 0x134;c<0x143;c++) title[c-0x134] = read(c);
+    init_ppu(title);
 }
 
-int GameboyCartridgeLoad() {
+int GameboyCartridgeLoad(char* p) {
     open_bootrom_file("demoFiles/dmg_boot.bin");
-    open_cartridge_file("demoFiles/Tetris.gb");
+    open_cartridge_file(p);
     return 1;
 }
 
@@ -72,7 +74,7 @@ void *GameboyThreadLoop() {
 
 
         //if (data[0x89b0] != 0x1b) printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa\n");
-        printf("A:%.2X F:%.2X B:%.2X C:%.2X D:%.2X E:%.2X H:%.2X L:%.2X SP:%.4X PC:%.4X PCMEM:%.2X,%.2X,%.2X,%.2X - h%.2X j%.2X\n",a,f,b,c,d,e,h,l,SP,PC,read(PC),read(PC+1),read(PC+2),read(PC+3),read(0xff80),io_read(rJOY));
+        //printf("A:%.2X F:%.2X B:%.2X C:%.2X D:%.2X E:%.2X H:%.2X L:%.2X SP:%.4X PC:%.4X PCMEM:%.2X,%.2X,%.2X,%.2X - h%.2X j%.2X\n",a,f,b,c,d,e,h,l,SP,PC,read(PC),read(PC+1),read(PC+2),read(PC+3),read(0xff80),io_read(rJOY));
         
         // Cycle Timing
         double time = 0;

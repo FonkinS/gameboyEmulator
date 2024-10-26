@@ -12,7 +12,7 @@
 
 
 void GameboyInit();
-int GameboyCartridgeLoad();
+int GameboyCartridgeLoad(char *p);
 void *GameboyThreadLoop();
 void GraphicsThreadLoop();
 

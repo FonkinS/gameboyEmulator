@@ -10,8 +10,8 @@ SGFsprite bg;
 uint8_t colors[4][4] = {{155, 188, 15}, {139, 172, 15}, {48, 98, 48}, {15, 56, 15}};
 
 
-int init_ppu() {
-    window = SGFCreateWindow(320,288, "Gameboy", 0);
+int init_ppu(char* title) {
+    window = SGFCreateWindow(320,288, title, 0);
     bg = SGFCreateBitmapSprite(window, 0, 0, 320, 288, 160, 144, background_texture, 0);
     return 1;
 }

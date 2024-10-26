@@ -10,10 +10,9 @@
 // - IO Regs should return 1 in unused bits
 
 int main() {
-    GameboyInit();
-
-    if (!GameboyCartridgeLoad()) return -1;
+    if (!GameboyCartridgeLoad("demoFiles/Tetris.gb")) return -1;
     
+    GameboyInit();
     
     pthread_t cpu_thread;
     pthread_create(&cpu_thread, NULL, GameboyThreadLoop, NULL);

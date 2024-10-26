@@ -2,6 +2,10 @@
 #define BUS_H
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "joypad.h"
 
 // serial interruot
 // div and timer reigsters
@@ -22,7 +26,7 @@ uint8_t wram_bank_1[0x1000];// 0xD000-0xDFFF
 //      ECHO RAM               0xE000-0xFDFF
 uint8_t OAM[0xA0];          // 0xFE00-0xFE9F
 //      NOT USABLE             0xFEA0-0xFEFF                            
-//      IO REGISTERS           0xFF00-0xFF7F
+uint8_t io_regs[0x80];      // 0xFF00-0xFF7F
 uint8_t HRAM[0x7F];         // 0xFF80-0xFFFE
 
 uint8_t IE;
@@ -59,9 +63,7 @@ uint8_t io_read(enum IO io);
 void io_write(enum IO io, uint8_t value);
 
 // File IO
-int open_bootrom_file(char* p);
-int open_cartridge_file(char* p);
-
-
+void open_bootrom_file(char* p);
+void open_cartridge_file(char* p);
 
 #endif
