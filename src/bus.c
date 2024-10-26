@@ -39,13 +39,21 @@ void write(uint16_t index, uint8_t value) {
 
 
 uint8_t io_read(enum IO io) {
+    uint8_t i = io_regs[io-0xff00];
     if (io == rJOY) return joypad_read();
-    return io_regs[io-0xff00];
+    if (io == rIF) return i | 0xe0;
+    if (io == rSTAT) return i | 0x80;
+    return i;
 }
 
 
 void io_write(enum IO io, uint8_t value) {
     if (io == rJOY) joypad_write(value);
+    if (io == rDMA) { // Pretend 640 Clock Cycles passes
+        for (int i = 0; i < 0xa0; i++) {
+            write(0xfe00+i, read((value<<8)+i));
+        }
+    }
     io_regs[io-0xff00] = value;
 }
 
