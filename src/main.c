@@ -5,12 +5,11 @@
 #include "gameboy.h"
 
 
-// Note for future Aaron
-// - Fragment Memory?
-// - IO Regs should return 1 in unused bits
-
+// TODO Other MBs
+// TODO Fix bad timing (Tetris?)
+// TODO Fix Dr. Mario menu
 int main() {
-    if (!GameboyCartridgeLoad("demoFiles/Tetris.gb")) return -1;
+    if (!GameboyCartridgeLoad("demoFiles/Dr. Mario.gb")) return -1;
     
     GameboyInit();
     

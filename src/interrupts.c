@@ -34,6 +34,7 @@ uint8_t interruptTypeToLocation(uint8_t type) {
 
 void interrupt() {
     if (IME) {
+        halt = NOHALT;
         // Disable IME and IF Flag
         IME = false;
         io_write(rIF, io_read(rIF) & ~interrupt_called);
