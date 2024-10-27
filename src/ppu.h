@@ -2,6 +2,8 @@
 #define PPU_H
 #include <stdint.h>
 #include "cpu.h"
+#include "bus.h"
+#include "joypad.h"
 
 
 int init_ppu(char* title);

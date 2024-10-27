@@ -622,6 +622,7 @@ const char* colorFSS = "#version 330 core\n" \
 typedef GLFWwindow* SGFwindow;
 typedef unsigned int SGFshader;
 typedef unsigned int SGFtexture;
+typedef GLFWkeyfun SGFkeycallback;
 typedef struct {
     SGFshader shader;
     unsigned int vao;
@@ -870,6 +871,11 @@ void SGFLoopEnd(SGFwindow window) {
 
 void SGFTerminate() {
     glfwTerminate();
+}
+
+// Callback must be a function containing (Window, int key, int scancode, int action, int mods)
+void SGFSetKeyCallback(SGFwindow window, SGFkeycallback callback) {
+    glfwSetKeyCallback(window, callback);
 }
 
 #endif

@@ -2,6 +2,7 @@
 #define JOYPAD_H
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 uint8_t joypad_read();
 void joypad_write(uint8_t value);
