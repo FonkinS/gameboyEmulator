@@ -31,6 +31,8 @@ void *GameboyThreadLoop() {
 
     uint8_t previous_tima = 0;
 
+    halt = NOHALT;
+
     while (true) {
         clock_t begin = clock();
         int cycle_length = 4;
@@ -74,7 +76,7 @@ void *GameboyThreadLoop() {
 
 
         //if (data[0x89b0] != 0x1b) printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa\n");
-        //printf("A:%.2X F:%.2X B:%.2X C:%.2X D:%.2X E:%.2X H:%.2X L:%.2X SP:%.4X PC:%.4X PCMEM:%.2X,%.2X,%.2X,%.2X - IME: %s\n",a,f,b,c,d,e,h,l,SP,PC,read(PC),read(PC+1),read(PC+2),read(PC+3), IME ? "True" : "False");
+        //printf("A:%.2X F:%.2X B:%.2X C:%.2X D:%.2X E:%.2X H:%.2X L:%.2X SP:%.4X PC:%.4X PCMEM:%.2X,%.2X,%.2X,%.2X - STAT:%X\n",a,f,b,c,d,e,h,l,SP,PC,read(PC),read(PC+1),read(PC+2),read(PC+3), io_read(rSTAT));
         for (int i = 0; i < 40; i++) {
             //printf("Y: %X X:%X Tile:%X Flag:%X\n", read(0))
         }

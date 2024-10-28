@@ -45,5 +45,8 @@ void LCDTick(int cycle_length) {
         }
         // Set PPU mode in LCDSTAT
         io_write(rSTAT, (io_read(rSTAT) & ~3) | ppu_mode);
+        //printf("LY:%i, LYC:%i\n", io_read(rLY), io_read(rLYC));
+    } else {
+        //printf("LCD Turned off\n");
     }
 }

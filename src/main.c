@@ -5,11 +5,15 @@
 #include "gameboy.h"
 
 
-// TODO Other MBs
+// TODO Other MBCs
 // TODO Fix bad timing (Tetris?)
-// TODO Fix Dr. Mario menu
-int main() {
-    if (!GameboyCartridgeLoad("demoFiles/Dr. Mario.gb")) return -1;
+// TODO Fix Dr. Mario freezing
+int main(int argc, char** argv) {
+    if (argc <= 1) {
+        printf("File Needed!\n");
+        return -1;
+    }
+    if (!GameboyCartridgeLoad(argv[1])) return -1;
     
     GameboyInit();
     

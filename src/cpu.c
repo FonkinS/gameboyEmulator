@@ -870,7 +870,6 @@ uint8_t execute_cb_op(uint8_t next_op) {
 }
 
 int execute_op() {
-    //printf("\n%x", PC);
     uint8_t op = fetchOP();
     uint8_t next_op;        // for cb
     switch (op) {

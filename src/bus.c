@@ -2,7 +2,7 @@
 #include "joypad.h"
 
 uint8_t read(uint16_t index) {
-    if (index < 0x0100 && io_read(rBOOT)) return boot_rom[index];
+    if (index < 0x0100 && !io_read(rBOOT)) return boot_rom[index];
     else if (index < 0x4000) return rom_bank_0  [index-0x0000];
     else if (index < 0x8000) return rom_bank_1  [index-0x4000];
     else if (index < 0xA000) return vram        [index-0x8000];

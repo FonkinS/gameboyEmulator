@@ -42,11 +42,12 @@ void draw_scanline(int scanline) {
             uint8_t tilex = tx / 8;
             uint8_t tiley = ty / 8;
 
-            int8_t tm = read(bg_tm_start + tilex + tiley*32);
-            if (bg_td_start == 0x9000) tm = -((int)((int)tm ^ (int)255) + 1); 
-
-            uint8_t first = read(bg_td_start + (tm * 16) + (ty%8)*2);
-            uint8_t second = read(bg_td_start + (tm * 16) + (ty%8)*2+1);
+            int tile;
+            if (bg_td_start == 0x8000) tile = bg_td_start + ((uint8_t)read(bg_tm_start + tilex + tiley*32) * 16);
+            if (bg_td_start == 0x9000) tile = bg_td_start + ((int8_t)read(bg_tm_start + tilex + tiley*32) * 16);
+            // make tmu
+            uint8_t first = read(tile + (ty%8)*2);
+            uint8_t second = read(tile + (ty%8)*2+1);
 
             uint8_t color = (((first >> (7-(tx%8))) & 1)) + (((second >> (7-(tx%8))) & 1) << 1);
             texture[(scanline * 160 + x)*3] = colors[bg_palette[color]][0];
