@@ -2,6 +2,25 @@
 #include <stdint.h>
 #include <stdio.h>
 
+
+void interrupt() {
+    if (IME) {
+        halt = NOHALT;
+        // Disable IME and IF Flag
+        IME = false;
+        io_write(rIF, io_read(rIF) & ~interrupt_called);
+        
+        // PUSH PC to stack
+        post(SP-1, (uint8_t) (PC>>8));
+        post(SP-2, (uint8_t) PC);
+        SP-=2;
+
+        // Call register
+        PC = interruptTypeToLocation(interrupt_called);
+    }
+    interrupt_called = 0;
+}
+
 /*int set_reg(char r, uint8_t val) {
     switch (r) {
         case 'a':

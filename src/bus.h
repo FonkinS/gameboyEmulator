@@ -6,9 +6,13 @@
 #include <stdlib.h>
 
 #include "joypad.h"
+#include "timer.h"
+#include "interrupts.h"
 
 // serial interruot
 // div and timer reigsters
+
+void interrupt();
 
 uint8_t read(uint16_t index);
 void write(uint16_t index, uint8_t value);
@@ -28,9 +32,6 @@ uint8_t OAM[0xA0];          // 0xFE00-0xFE9F
 //      NOT USABLE             0xFEA0-0xFEFF                            
 uint8_t io_regs[0x80];      // 0xFF00-0xFF7F
 uint8_t HRAM[0x7F];         // 0xFF80-0xFFFE
-
-uint8_t IE;
-
 
 // IO Section
 enum IO {

@@ -9,6 +9,7 @@
 #include "interrupts.h"
 #include "ppu.h"
 #include "bus.h"
+#include "timer.h"
 
 
 void GameboyInit();

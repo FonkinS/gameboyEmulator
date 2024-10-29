@@ -1,13 +1,13 @@
 #include "interrupts.h"
 
 void request_interrupt(int type) {
-    io_write(rIF, io_read(rIF) | type);
+    IF |= type;
 }
 
 
 void check_interrupts() {
     for (int i = VBLANK; i <= JOYPAD; i <<= 1) { // loops through all types
-        if (!(io_read(rIF) & i && IE & i)) continue;
+        if (!(IF & i && IE & i)) continue;
         interrupt_called = i;
         break;
     }
@@ -32,20 +32,15 @@ uint8_t interruptTypeToLocation(uint8_t type) {
 }
 
 
-void interrupt() {
-    if (IME) {
-        halt = NOHALT;
-        // Disable IME and IF Flag
-        IME = false;
-        io_write(rIF, io_read(rIF) & ~interrupt_called);
-        
-        // PUSH PC to stack
-        post(SP-1, (uint8_t) (PC>>8));
-        post(SP-2, (uint8_t) PC);
-        SP-=2;
 
-        // Call register
-        PC = interruptTypeToLocation(interrupt_called);
-    }
-    interrupt_called = 0;
+
+
+uint8_t IFRead() {
+    return 0xe0 | IF;
 }
+
+
+void IFWrite(uint8_t value) {
+    IF = value;
+}
+

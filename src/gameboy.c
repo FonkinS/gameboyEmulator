@@ -10,6 +10,7 @@ void GameboyInit() {
     char *title = (char*) calloc(0x10, sizeof(char)); 
     for (int c = 0x134;c<0x143;c++) title[c-0x134] = read(c);
     init_ppu(title);
+    timerInit();
 }
 
 int GameboyCartridgeLoad(char* p) {
@@ -50,33 +51,17 @@ void *GameboyThreadLoop() {
         }
 
 
-        // Timer and Divider Registers
-        last_div += cycle_length;
-        if (last_div >= 256) {
-            io_write(rDIV, io_read(rDIV)+1);
-            last_div %= 256;
-        }
-        if (io_read(rTAC) & 4) { // Timer
-            last_timer+=(int)(cycle_length/4); // erm wat da sigma
-            //printf("%i\n", last_timer);
-            if (last_timer >= timer_speeds[io_read(rTAC) % 4]) {
-                io_write(rTIMA,io_read(rTIMA)+(int)(last_timer / timer_speeds[io_read(rTAC)%4]));
-                last_timer %= timer_speeds[io_read(rTAC) % 4];
-                if (io_read(rTIMA) < previous_tima) { // OVERFLOW
-                    io_write(rTIMA, io_read(rTMA));
-                    request_interrupt(TIMER);
-                }
-                previous_tima = io_read(rTIMA);
-            }
-        }
+
+
+        timerTick(cycle_length);
 
         LCDTick(cycle_length);
 
         check_interrupts();
 
 
+        //printf("A:%.2X F:%.2X B:%.2X C:%.2X D:%.2X E:%.2X H:%.2X L:%.2X SP:%.4X PC:%.4X PCMEM:%.2X,%.2X,%.2X,%.2X – DIV:%X TIMA:%X TMA:%X TAC:%X\n",a,f,b,c,d,e,h,l,SP,PC,read(PC),read(PC+1),read(PC+2),read(PC+3),io_read(rDIV),io_read(rTIMA),io_read(rTMA),io_read(rTAC));
         //if (data[0x89b0] != 0x1b) printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa\n");
-        //printf("A:%.2X F:%.2X B:%.2X C:%.2X D:%.2X E:%.2X H:%.2X L:%.2X SP:%.4X PC:%.4X PCMEM:%.2X,%.2X,%.2X,%.2X - STAT:%X\n",a,f,b,c,d,e,h,l,SP,PC,read(PC),read(PC+1),read(PC+2),read(PC+3), io_read(rSTAT));
         for (int i = 0; i < 40; i++) {
             //printf("Y: %X X:%X Tile:%X Flag:%X\n", read(0))
         }
