@@ -1,15 +1,13 @@
 #include <stdint.h>
 #include <stdio.h>
-#include <time.h>
 #include <pthread.h>
 #include "gameboy.h"
 
 
 // TODO Other MBCs
-// TODO Fix bad timing (Tetris?)
 // TODO Fix Dr. Mario freezing
-// TODO Make waits frame based not cpu instruction based
-//     speeds up
+// TODO Make Subfiles be standardised in convention
+// TODO Proper Mem timing (Read/Write happens within instruction, not at the end of it)
 int main(int argc, char** argv) {
     if (argc <= 1) {
         printf("File Needed!\n");
@@ -19,13 +17,7 @@ int main(int argc, char** argv) {
     
     GameboyInit();
     
-    pthread_t cpu_thread;
-    pthread_create(&cpu_thread, NULL, GameboyThreadLoop, NULL);
-    GraphicsThreadLoop();
-
-
-    kill_ppu();
-    pthread_cancel(cpu_thread);
+    while (GameboyProcessFrame()) {}
 
     return 0;
 }

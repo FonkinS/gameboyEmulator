@@ -29,7 +29,7 @@ uint16_t get_de();
 uint16_t get_hl();
 
 
-bool IME; // interrupt master enable flag
+//bool IME; // interrupt master enable flag
 
 int serial_interrupt;
 unsigned long long cycles;
