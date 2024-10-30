@@ -2166,7 +2166,7 @@ int RLC_HL(){
     set_flag(z, fetch(get_hl())==0);
     set_flag(n, 0);
     set_flag(hy, 0);
-    return 12;
+    return 16;
 }                           // rotate HL pointer's value left bit 7 -> cy flag
 int RL_R(uint8_t* reg){
     bool p = get_flag(cy);
@@ -2189,7 +2189,7 @@ int RL_HL(){
     set_flag(z, fetch(get_hl()) == 0);
     set_flag(n, 0);
     set_flag(hy, 0);
-    return 12;
+    return 16;
 
 }                            // rotate HL pointer's value left, 0 = cy flag
 int RRC_R(uint8_t* reg){
@@ -2208,7 +2208,7 @@ int RRC_HL(){
     set_flag(z, fetch(get_hl())==0);
     set_flag(n, 0);
     set_flag(hy, 0);
-    return 12;
+    return 16;
 }                           // rotate HL pointer's value right bit 0 -> cy flag
 int RR_R(uint8_t* reg){
     bool p = (*reg) & 1;
@@ -2230,7 +2230,7 @@ int RR_HL(){
     set_flag(z, fetch(get_hl()) == 0);
     set_flag(n, 0);
     set_flag(hy, 0);
-    return 12;
+    return 16;
 }                            // rotate HL pointer's value right, 7 = cy flag
 int SLA_R(uint8_t* reg){
     bool p = *reg & 128;

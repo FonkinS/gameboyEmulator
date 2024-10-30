@@ -8,6 +8,8 @@
 // TODO Other MBCs
 // TODO Fix bad timing (Tetris?)
 // TODO Fix Dr. Mario freezing
+// TODO Make waits frame based not cpu instruction based
+//     speeds up
 int main(int argc, char** argv) {
     if (argc <= 1) {
         printf("File Needed!\n");
