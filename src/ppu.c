@@ -16,8 +16,8 @@ uint8_t colors[4][4] = {{202, 221, 149}, {139, 162, 106}, {66, 96, 61}, {12, 24,
 void key_callback(SGFwindow window, int key, int scancode, int action, int mods);
 
 int PPUInit(char* title) {
-    window = SGFCreateWindow(320,288, title, 0);
-    bg = SGFCreateBitmapSprite(window, 0, 0, 320, 288, 160, 144, texture, 0);
+    window = SGFCreateWindow(640,576, title, 0);
+    bg = SGFCreateBitmapSprite(window, 0, 0, 640, 576, 160, 144, texture, 0);
     SGFSetKeyCallback(window, key_callback);
     return 1;
 }

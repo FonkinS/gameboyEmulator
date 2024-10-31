@@ -19,6 +19,10 @@ uint8_t LCDRead(uint16_t index) {
 void LCDWrite(uint16_t index, uint8_t value) {
     if (index == rLCDC) {
         LCDEnable = value & 0x80;
+        if (!LCDEnable) {
+            LY = 0;
+            PPUMode = 0;
+        }
         WinTileMap = (value & 0x40) ? 0x9c00 : 0x9800;
         WinEnable = value & 0x20;
         BGWinTileData = (value & 0x10) ? 0x8000 : 0x9000;
