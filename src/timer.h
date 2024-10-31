@@ -3,6 +3,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+enum TimerIO {
+    rDIV = 0xff04,
+    rTIMA = 0xff05,
+    rTMA = 0xff06,
+    rTAC = 0xff07
+};
+
 void timerInit();
 void timerTick(int cycles);
 uint8_t timerRead(uint16_t index);

@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include "interrupts.h"
 #include <stdint.h>
 #include <stdio.h>
 
@@ -8,7 +9,7 @@ void interrupt() {
         halt = NOHALT;
         // Disable IME and IF Flag
         IME = false;
-        io_write(rIF, io_read(rIF) & ~interrupt_called);
+        IF &= ~interrupt_called;
         
         // PUSH PC to stack
         post(SP-1, (uint8_t) (PC>>8));

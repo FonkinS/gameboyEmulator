@@ -1,4 +1,5 @@
 #include "bus.h"
+#include "lcd.h"
 
 uint8_t read(uint16_t index) {
     if (index < 0x0100 && !io_read(rBOOT)) return boot_rom[index];
@@ -37,7 +38,7 @@ void write(uint16_t index, uint8_t value) {
 }
 
 
-uint8_t io_read(enum IO io) {
+uint8_t io_read(int io) {
     uint8_t i = io_regs[io-0xff00];
     if (io == rJOY) return joypad_read();
     if (io == rDIV) return timerRead(io);
@@ -45,24 +46,44 @@ uint8_t io_read(enum IO io) {
     if (io == rTMA) return timerRead(io);
     if (io == rTAC) return timerRead(io);
     if (io == rIF) return IFRead();
-    if (io == rSTAT) return i | 0x80;
+    if (io == rLCDC) return LCDRead(io);
+    if (io == rSTAT) return LCDRead(io);
+    if (io == rSCY) return LCDRead(io);
+    if (io == rSCX) return LCDRead(io);
+    if (io == rLY) return LCDRead(io);
+    if (io == rLYC) return LCDRead(io);
+    if (io == rBGP) return LCDRead(io);
+    if (io == rOBP0) return LCDRead(io);
+    if (io == rOBP1) return LCDRead(io);
+    if (io == rWY) return LCDRead(io);
+    if (io == rWX) return LCDRead(io);
     return i;
 }
 
-
-void io_write(enum IO io, uint8_t value) {
+// TODO Move IO Enum into each subfile
+void io_write(int io, uint8_t value) {
     if (io == rJOY) joypad_write(value);
-    if (io == rDIV) timerWrite(io, value);
-    if (io == rTIMA) timerWrite(io, value);
-    if (io == rTMA) timerWrite(io, value);
-    if (io == rTAC) timerWrite(io, value);
-    if (io == rIF) IFWrite(value);
-    if (io == rDMA) { // Pretend 640 Clock Cycles passes
+    else if (io == rDIV) timerWrite(io, value);
+    else if (io == rTIMA) timerWrite(io, value);
+    else if (io == rTMA) timerWrite(io, value);
+    else if (io == rTAC) timerWrite(io, value);
+    else if (io == rIF) IFWrite(value);
+    else if (io == rLCDC) LCDWrite(io, value);
+    else if (io == rSTAT) LCDWrite(io, value);
+    else if (io == rSCY) LCDWrite(io, value);
+    else if (io == rSCX) LCDWrite(io, value);
+    else if (io == rLY) LCDWrite(io, value);
+    else if (io == rLYC) LCDWrite(io, value);
+    else if (io == rDMA) { // Pretend 640 Clock Cycles passes
         for (int i = 0; i < 0xa0; i++) {
             write(0xfe00+i, read((value<<8)+i));
         }
-    }
-    io_regs[io-0xff00] = value;
+    }else if(io == rBGP) LCDWrite(io, value);
+    else if (io == rOBP0) LCDWrite(io, value);
+    else if (io == rOBP1) LCDWrite(io, value);
+    else if (io == rWY) LCDWrite(io, value);
+    else if (io == rWX) LCDWrite(io, value);
+    else io_regs[io-0xff00] = value;
 }
 
 

@@ -19,6 +19,10 @@ bool dpad_left;
 bool button_a;
 bool dpad_right;
 
+enum JoypadIO {
+    rJOY = 0xff00
+};
+
 
 
 

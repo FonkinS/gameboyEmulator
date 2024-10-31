@@ -4,12 +4,12 @@
 #include <stdio.h>
 #include <time.h>
 #include "cpu.h"
-#include "ppu.h"
 #include "lcd.h"
-#include "interrupts.h"
 #include "ppu.h"
 #include "bus.h"
 #include "timer.h"
+#include "interrupts.h"
+
 
 #define FRAME_DURATION 0.0167427062988f
 

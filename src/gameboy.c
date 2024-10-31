@@ -1,9 +1,4 @@
 #include "gameboy.h"
-#include "interrupts.h"
-#include "lcd.h"
-#include "ppu.h"
-#include "timer.h"
-#include <time.h>
 
 int GameboyCartridgeLoad(char* p) {
     open_bootrom_file("demoFiles/dmg_boot.bin");
@@ -21,7 +16,7 @@ void GameboyInit() {
     char *title = (char*) calloc(0x10, sizeof(char)); 
     for (int c = 0x134;c<0x143;c++) title[c-0x134] = read(c);
     printf("Memory Bank Controller Type: $%X\n", read(0x147));
-    init_ppu(title);
+    PPUInit(title);
     timerInit();
 }
 
@@ -42,6 +37,8 @@ int GameboyProcessInstruction() {
     timerTick(cycle_length);
     LCDTick(cycle_length);
     check_interrupts();
+
+    //printf("A:%.2X F:%.2X B:%.2X C:%.2X D:%.2X E:%.2X H:%.2X L:%.2X SP:%.4X PC:%.4X PCMEM:%.2X,%.2X,%.2X,%.2X - IF:%.2X IE:%.2X IME:%s\n",a,f,b,c,d,e,h,l,SP,PC,read(PC),read(PC+1),read(PC+2),read(PC+3),IF, IE, IME ? "True" : "False");
     return cycle_length;
 
 }
@@ -53,7 +50,7 @@ bool GameboyProcessFrame() {
     for (int ly = 0; ly < 144; ly++) {
         int cycles = 0;
         while (cycles < 456) cycles += GameboyProcessInstruction();
-        if ((io_read(rLCDC) & 0x80)) draw_scanline(ly);
+        if (LCDEnable) drawScanline(ly);
     }
     
     // VBLANK
@@ -63,5 +60,5 @@ bool GameboyProcessFrame() {
     // Wait
     while ((double)(clock() - begin) / CLOCKS_PER_SEC < FRAME_DURATION) {}
 
-    return render_frame();
+    return renderFrame();
 }

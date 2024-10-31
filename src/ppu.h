@@ -4,12 +4,13 @@
 #include "cpu.h"
 #include "bus.h"
 #include "joypad.h"
+#include "lcd.h"
 
 
-int init_ppu(char* title);
-void kill_ppu();
-int render_frame();
-void draw_scanline(int scanline);
+int PPUInit(char* title);
+void PPUKill();
+int renderFrame();
+void drawScanline(int scanline);
 
 
 

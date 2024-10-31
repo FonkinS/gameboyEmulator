@@ -4,6 +4,9 @@
 #include <stdbool.h>
 
 enum INTERRUPT_TYPES {VBLANK=1, LCDSTAT=2, TIMER=4, SERIAL=8, JOYPAD=16};
+enum InterruptIO {
+    rIF = 0xff0f
+};
 
 uint8_t IF;
 uint8_t IE;

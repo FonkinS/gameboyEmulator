@@ -35,33 +35,16 @@ uint8_t HRAM[0x7F];         // 0xFF80-0xFFFE
 
 // IO Section
 enum IO {
-    rJOY    = 0xff00,
     rSB     = 0xff01,
     rSC     = 0xff02,
-    rDIV    = 0xff04,
-    rTIMA   = 0xff05,
-    rTMA    = 0xff06,
-    rTAC    = 0xff07,
-    rIF     = 0xff0f,
-    // TODO: Audio And Wave stuff
-    rLCDC   = 0xff40,
-    rSTAT   = 0xff41,
-    rSCY    = 0xff42,
-    rSCX    = 0xff43,
-    rLY     = 0xff44,
-    rLYC    = 0xff45,
     rDMA    = 0xff46,
-    rBGP    = 0xff47,
-    rOBP0   = 0xff48,
-    rOBP1   = 0xff49,
-    rWY     = 0xff4a,
-    rWX     = 0xff4b,
+    // TODO: Audio And Wave stuff
     rBOOT   = 0xff50
 };
 
 
-uint8_t io_read(enum IO io);
-void io_write(enum IO io, uint8_t value);
+uint8_t io_read(int io);
+void io_write(int io, uint8_t value);
 
 // File IO
 void open_bootrom_file(char* p);
