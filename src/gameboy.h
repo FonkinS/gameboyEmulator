@@ -14,11 +14,12 @@
 #define FRAME_DURATION 0.0167427062988f
 
 
-void GameboyInit();
-int GameboyCartridgeLoad(char *p);
+int GameboyInit(char *boot, char *cart);
 
 int GameboyProcessInstruction();
 bool GameboyProcessFrame();
+
+void GameboyKill();
 
 
 

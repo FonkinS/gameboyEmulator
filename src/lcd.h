@@ -20,8 +20,6 @@ enum LCDIO {
 
 int dot;
 
-// TODO Rewrite PPU to reference these
-// TODO Actually fix the Dr Mario bug with Setting variables to nill when ppu turned off
 // LCD Control
 bool LCDEnable;
 uint16_t WinTileMap;

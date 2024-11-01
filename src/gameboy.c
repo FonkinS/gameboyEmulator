@@ -1,23 +1,18 @@
 #include "gameboy.h"
+#include "mbc.h"
+#include "ppu.h"
 
-int GameboyCartridgeLoad(char* p) {
-    open_bootrom_file("demoFiles/dmg_boot.bin");
-    open_cartridge_file(p);
-    return 1;
-}
-
-void GameboyInit() {
-    z = 7;
-    n = 6;
-    hy = 5;
-    cy = 4;
-    IME = false;
+int GameboyInit(char *boot, char *cart) {
+    if (open_bootrom_file(boot)) return -1;
+    if (open_cartridge_file(cart)) return -1;
 
     char *title = (char*) calloc(0x10, sizeof(char)); 
     for (int c = 0x134;c<0x143;c++) title[c-0x134] = read(c);
-    printf("Memory Bank Controller Type: $%X\n", read(0x147));
+    CPUInit();
     PPUInit(title);
     timerInit();
+    
+    return 0;
 }
 
 
@@ -61,4 +56,10 @@ bool GameboyProcessFrame() {
     while ((double)(clock() - begin) / CLOCKS_PER_SEC < FRAME_DURATION) {}
 
     return renderFrame();
+}
+
+
+void GameboyKill() {
+    PPUKill();
+    MBCKill();
 }

@@ -4,6 +4,16 @@
 #include <stdio.h>
 
 
+int CPUInit() {
+    z = 7;
+    n = 6;
+    hy = 5;
+    cy = 4;
+    IME = false;
+    return 0;
+}
+
+
 void interrupt() {
     if (IME) {
         halt = NOHALT;

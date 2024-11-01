@@ -5,6 +5,7 @@
 #include "bus.h"
 #include "interrupts.h"
 
+int CPUInit();
 
 //void connect_bus(Bus *b);
 int execute_op();

@@ -1,12 +1,12 @@
 #include "bus.h"
 #include "lcd.h"
+#include "mbc.h"
 
 uint8_t read(uint16_t index) {
     if (index < 0x0100 && !io_read(rBOOT)) return boot_rom[index];
-    else if (index < 0x4000) return rom_bank_0  [index-0x0000];
-    else if (index < 0x8000) return rom_bank_1  [index-0x4000];
+    else if (index < 0x8000) return MBCRead(index);
     else if (index < 0xA000) return vram        [index-0x8000];
-    else if (index < 0xC000) return ext_ram     [index-0xA000];
+    else if (index < 0xC000) return MBCRead(index);
     else if (index < 0xD000) return wram_bank_0 [index-0xC000];
     else if (index < 0xE000) return wram_bank_1 [index-0xD000];
     else if (index < 0xE000) return wram_bank_1 [index-0xD000];
@@ -21,12 +21,10 @@ uint8_t read(uint16_t index) {
 
 void write(uint16_t index, uint8_t value) {
     if (index < 0x0100 && io_read(rBOOT)) boot_rom[index] = value;
-    else if (index < 0x4000) {}
-    else if (index < 0x8000) {}
+    else if (index < 0x8000) MBCWrite(index, value);
     else if (index < 0xA000) vram        [index-0x8000] = value;
-    else if (index < 0xC000) ext_ram     [index-0xA000] = value;
+    else if (index < 0xC000) MBCWrite(index, value);
     else if (index < 0xD000) wram_bank_0 [index-0xC000] = value;
-    else if (index < 0xE000) wram_bank_1 [index-0xD000] = value;
     else if (index < 0xE000) wram_bank_1 [index-0xD000] = value;
     else if (index < 0xFE00) {}
     else if (index < 0xFEA0) OAM         [index-0xFE00] = value;
@@ -60,7 +58,6 @@ uint8_t io_read(int io) {
     return i;
 }
 
-// TODO Move IO Enum into each subfile
 void io_write(int io, uint8_t value) {
     if (io == rJOY) joypad_write(value);
     else if (io == rDIV) timerWrite(io, value);
@@ -87,24 +84,40 @@ void io_write(int io, uint8_t value) {
 }
 
 
-void open_bootrom_file(char* p) {
+int open_bootrom_file(char* p) {
     FILE *f = fopen(p, "rb");
     if (f == NULL) {
         printf("Boot Rom (%s) Not found!\n", p);
-        exit(-1);
+        return -1;
     }
     for (int i = 0; i < 0x100; i++) boot_rom[i] = fgetc(f);
+    return 0;
 }
 
 
-void open_cartridge_file(char* p) {
+int open_cartridge_file(char* p) {
     FILE *f = fopen(p, "rb");
     if (f == NULL) {
         printf("Cartridge Rom (%s) Not found!\n", p);
-        exit(-1);
+        return -1;
     }
-    for (int i = 0; i < 0x4000; i++) rom_bank_0[i] = fgetc(f);
-    for (int i = 0; i < 0x8000; i++) rom_bank_1[i] = fgetc(f);
+
+    // Read Info
+    uint8_t *data = (uint8_t*) malloc(0x8000 * sizeof(uint8_t));
+    long long c = 0;
+    int max = 0x8000;
+    while (!feof(f)) {
+        data[c++] = fgetc(f);
+        if (c >= max) {
+            max += 0x8000;
+            data = (uint8_t*) realloc(data, max * sizeof(uint8_t));
+        }
+    }
+
+    if (MBCInit(data, c)) return -1;
+
+    free(data);
+    return 0;
 }
 
 
