@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "mbc/mbc0.h"
+#include "mbc/mbc1.h"
 
 int MBCInit(uint8_t *data, long long length);
 uint8_t MBCRead(uint16_t index);
