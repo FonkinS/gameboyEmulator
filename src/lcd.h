@@ -58,6 +58,8 @@ void LCDTick(int cycle_length);
 uint8_t LCDRead(uint16_t index);
 void LCDWrite(uint16_t index, uint8_t value);
 
+enum PPUMODES {M_HBLANK, M_VBLANK, M_OAM, M_DRAW};
+
 
 
 #endif

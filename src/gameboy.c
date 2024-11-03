@@ -1,4 +1,6 @@
 #include "gameboy.h"
+#include "interrupts.h"
+#include "lcd.h"
 #include "mbc.h"
 #include "ppu.h"
 
@@ -33,29 +35,29 @@ int GameboyProcessInstruction() {
     LCDTick(cycle_length);
     check_interrupts();
 
-    //printf("A:%.2X F:%.2X B:%.2X C:%.2X D:%.2X E:%.2X H:%.2X L:%.2X SP:%.4X PC:%.4X PCMEM:%.2X,%.2X,%.2X,%.2X - IF:%.2X IE:%.2X IME:%s\n",a,f,b,c,d,e,h,l,SP,PC,read(PC),read(PC+1),read(PC+2),read(PC+3),IF, IE, IME ? "True" : "False");
+    //printf("A:%.2X F:%.2X B:%.2X C:%.2X D:%.2X E:%.2X H:%.2X L:%.2X SP:%.4X PC:%.4X PCMEM:%.2X,%.2X,%.2X,%.2X - LY:%i\n",a,f,b,c,d,e,h,l,SP,PC,read(PC),read(PC+1),read(PC+2),read(PC+3),read(rLY));
     return cycle_length;
 
 }
 
+// TODO Correct OAM TIming
 
 bool GameboyProcessFrame() {
     clock_t begin = clock();
     // Non-VBLANK
-    for (int ly = 0; ly < 144; ly++) {
-        int cycles = 0;
-        while (cycles < 456) cycles += GameboyProcessInstruction();
-        if (LCDEnable) drawScanline(ly);
+    while (PPUMode != M_VBLANK) {
+        while (PPUMode != M_HBLANK) GameboyProcessInstruction();
+        if (LCDEnable) drawScanline(LY);
+        while (PPUMode == M_HBLANK) GameboyProcessInstruction();
     }
-    
-    // VBLANK
-    int cycles = 0;
-    while (cycles < 4560) cycles += GameboyProcessInstruction();
 
-    // Wait
+    int out = renderFrame();
+
+    while (PPUMode == VBLANK) GameboyProcessInstruction();
+
     while ((double)(clock() - begin) / CLOCKS_PER_SEC < FRAME_DURATION) {}
 
-    return renderFrame();
+    return out;
 }
 
 

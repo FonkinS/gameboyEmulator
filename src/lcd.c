@@ -67,10 +67,10 @@ void LCDTick(int cycle_length) {
         LY = (LY + 1) % 154;
     }
 
-    if (LY >= 144) PPUMode = 1;
-    else if (dot >= 252) PPUMode = 0;
-    else if  (dot >= 80) PPUMode = 3;
-    else PPUMode = 2;
+    if (LY >= 144) PPUMode = M_VBLANK;
+    else if (dot >= 252) PPUMode = M_HBLANK;
+    else if  (dot >= 80) PPUMode = M_DRAW;
+    else PPUMode = M_OAM;
 
     if (PPUMode != prevPPUMode) { // If change in Mode over this cycle
         if (PPUMode == 2 && M2Int) request_interrupt(LCDSTAT); // OAM Scan

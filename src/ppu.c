@@ -78,7 +78,9 @@ void drawScanline(int scanline) {
                     if (ox+x < 0) continue;
                     if (ox+x >= 168) break;
                     if (flags & 0x80 && faux_bg_texture[scanline*160+ox+x-8] > 0) continue; // BG Priority
-                    uint8_t color = (((first >> (7-(ox%8))) & 1)) + (((second >> (7-(ox%8))) & 1) << 1);
+                    uint8_t color;
+                    if (flags & 0x20) color = (((first >> ((ox%8))) & 1)) + (((second >> ((ox%8))) & 1) << 1); // X Flip
+                    else color = (((first >> (7-(ox%8))) & 1)) + (((second >> (7-(ox%8))) & 1) << 1);
                     if (color == 0) continue;
                     texture[(scanline * 160 + ox+x-8) * 3] = colors[obp[color-1]][0];
                     texture[(scanline * 160 + ox+x-8) * 3+1] = colors[obp[color-1]][1];
