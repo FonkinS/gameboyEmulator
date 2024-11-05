@@ -3,6 +3,7 @@
 #include "lcd.h"
 #include "mbc.h"
 #include "ppu.h"
+#include <time.h>
 
 int GameboyInit(char *boot, char *cart) {
     if (open_bootrom_file(boot)) return -1;
@@ -35,7 +36,6 @@ int GameboyProcessInstruction() {
     LCDTick(cycle_length);
     check_interrupts();
 
-    //printf("A:%.2X F:%.2X B:%.2X C:%.2X D:%.2X E:%.2X H:%.2X L:%.2X SP:%.4X PC:%.4X PCMEM:%.2X,%.2X,%.2X,%.2X - LY:%i\n",a,f,b,c,d,e,h,l,SP,PC,read(PC),read(PC+1),read(PC+2),read(PC+3),read(rLY));
     return cycle_length;
 
 }

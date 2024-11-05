@@ -8,6 +8,7 @@
 #include "joypad.h"
 #include "timer.h"
 #include "interrupts.h"
+#include "apu.h"
 
 #include "mbc.h"
 

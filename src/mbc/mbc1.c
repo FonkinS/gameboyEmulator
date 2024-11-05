@@ -32,7 +32,7 @@ void MBC1Init(uint8_t *data, long long length) {
 uint8_t MBC1Read(uint16_t index) {
     if (index < 0x4000) return rom[rom_bank_num & 0xe0][index & 0x3FFF];
     if (index < 0x8000) return rom[rom_bank_num][index & 0x3FFF];
-    if (index < 0xC000) return ram[ram_bank_num][index & 0x1FFF];
+    if (index < 0xC000 && ram_enable) return ram[ram_bank_num][index & 0x1FFF];
     return 0;
 }
 

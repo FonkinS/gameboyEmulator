@@ -2,6 +2,7 @@
 #include "../include/sgf.h"
 #include "joypad.h"
 #include "lcd.h"
+#include <stdint.h>
 #include <stdio.h>
 
 SGFwindow window;
@@ -54,12 +55,42 @@ void drawScanline(int scanline) {
 
 
         // WINDOW TODO
-        if (WinEnable) {
+        if (WinEnable && WX >= 0 && WX <= 166 && WY >= 0 && WY <= 143) {
+            uint8_t ty = (scanline + WY);
+            for (int x = 0; x < 160;x++) {
+                uint8_t tx = (x + WX-7);
+                if (tx < 0 || tx >= 160) continue;
+                uint8_t tilex = tx / 8;
+                uint8_t tiley = ty / 8;
+
+                uint8_t index = read(WinTileMap + tilex + tiley*32);
+                int tile = BGWinTileData;
+                if (BGWinTileData == 0x8000) tile += (int)((uint8_t)index) * 16;
+                if (BGWinTileData == 0x9000) tile += (int)((int8_t)index) * 16;
+
+                uint8_t first = read(tile + (ty%8)*2);
+                uint8_t second = read(tile + (ty%8)*2+1);
+
+                uint8_t color = (((first >> (7-(tx%8))) & 1)) + (((second >> (7-(tx%8))) & 1) << 1);
+                texture[(scanline * 160 + x)*3] = colors[BGP[color]][0];
+                texture[(scanline * 160 + x)*3+1] = colors[BGP[color]][1];
+                texture[(scanline * 160 + x)*3+2] = colors[BGP[color]][2];
+                faux_bg_texture[scanline*160+x] = color;
+
+            }
         }
+    } else {
+        /*for (int x = 0; x < 160; x++) {
+            texture[(scanline * 160 + x)*3] = colors[0][0];
+            texture[(scanline * 160 + x)*3+1] = colors[0][1];
+            texture[(scanline * 160 + x)*3+2] = colors[0][2];
+        }*/
     }
     
 
     // TODO Support for Sprite Flipping
+    // TODO Support For 8x16 sprites
+    // TODO Pokemon Blue long blank screen pauses?
     // Objects
     if (OBJEnable) {
         for (int o = 0xfe00; o < 0xfea0; o+=4) {
@@ -91,7 +122,6 @@ void drawScanline(int scanline) {
             }
     }
 }
-
 
 int renderFrame() {
     SGFFillColor(1.0f,0.0f,0.0f,1.0f);

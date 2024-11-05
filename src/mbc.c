@@ -16,6 +16,12 @@ int MBCInit(uint8_t *data, long long length) {
         MBCNRead = &MBC1Read;
         MBCNWrite = &MBC1Write;
         MBCNKill = &MBC1Kill;
+    } else if (type >= 0xf && type <= 0x13) {
+        mbc = 3;
+        MBC3Init(data, length);
+        MBCNRead = &MBC3Read;
+        MBCNWrite = &MBC3Write;
+        MBCNKill = &MBC3Kill;
     } else {
         printf("Invalid Cartridge Type: %X!\n", data[0x147]);
         return -1;
