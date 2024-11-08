@@ -10,11 +10,10 @@ void APUWrite(uint16_t index, uint8_t value);
 
 void APUTick(int cycles);
 
-void triggerCH1();
-void triggerCH2();
-void triggerCH3();
-void triggerCH4();
+void APUKill();
 
+void triggerChannel(int n);
+// TODO SUper Mario Land running slowlu?
 
 enum APUIO {
     NR10 = 0xff10, // Channel 1 Sweep
@@ -47,8 +46,9 @@ enum SOUND_PANNING CH4Pan;
 uint8_t leftVolume;
 uint8_t rightVolume;
 
-
 // Channel 1
+bool CH1Enabled;
+int CH1Timer;
 uint8_t CH1Pace;
 bool CH1Direction;
 uint8_t CH1Step;
@@ -62,6 +62,8 @@ bool CH1LengthEnable;
 
 
 // Channel 2
+bool CH2Enabled;
+int CH2Timer;
 uint8_t CH2WaveDuty;
 uint8_t CH2InitLength;
 uint8_t CH2InitVolume;

@@ -1,4 +1,5 @@
 #include "gameboy.h"
+#include "apu.h"
 #include "interrupts.h"
 #include "lcd.h"
 #include "mbc.h"
@@ -10,9 +11,10 @@ int GameboyInit(char *boot, char *cart) {
     if (open_cartridge_file(cart)) return -1;
 
     char *title = (char*) calloc(0x10, sizeof(char)); 
-    for (int c = 0x134;c<0x143;c++) title[c-0x134] = read(c);
+    for (int c = 0x134;c<0x143;c++) title[c-0x134] = BusRead(c);
     CPUInit();
     PPUInit(title);
+    APUInit();
     timerInit();
     
     return 0;
@@ -34,6 +36,7 @@ int GameboyProcessInstruction() {
     }
     timerTick(cycle_length);
     LCDTick(cycle_length);
+    APUTick(cycle_length);
     check_interrupts();
 
     return cycle_length;
@@ -64,4 +67,5 @@ bool GameboyProcessFrame() {
 void GameboyKill() {
     PPUKill();
     MBCKill();
+    APUKill();
 }

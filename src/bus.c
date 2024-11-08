@@ -2,7 +2,7 @@
 #include "lcd.h"
 #include "mbc.h"
 
-uint8_t read(uint16_t index) {
+uint8_t BusRead(uint16_t index) {
     if (index < 0x0100 && !io_read(rBOOT)) return boot_rom[index];
     else if (index < 0x8000) return MBCRead(index);
     else if (index < 0xA000) return vram        [index-0x8000];
@@ -19,7 +19,7 @@ uint8_t read(uint16_t index) {
 }
 
 
-void write(uint16_t index, uint8_t value) {
+void BusWrite(uint16_t index, uint8_t value) {
     if (index < 0x0100 && io_read(rBOOT)) boot_rom[index] = value;
     else if (index < 0x8000) MBCWrite(index, value);
     else if (index < 0xA000) vram        [index-0x8000] = value;
@@ -109,7 +109,7 @@ void io_write(int io, uint8_t value) {
     else if (io == rLYC) LCDWrite(io, value);
     else if (io == rDMA) { // Pretend 640 Clock Cycles passes
         for (int i = 0; i < 0xa0; i++) {
-            write(0xfe00+i, read((value<<8)+i));
+            BusWrite(0xfe00+i, BusRead((value<<8)+i));
         }
     }else if(io == rBGP) LCDWrite(io, value);
     else if (io == rOBP0) LCDWrite(io, value);

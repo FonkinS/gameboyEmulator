@@ -37,13 +37,13 @@ void drawScanline(int scanline) {
             uint8_t tilex = tx / 8;
             uint8_t tiley = ty / 8;
 
-            uint8_t index = read(BGTileMap + tilex + tiley*32);
+            uint8_t index = BusRead(BGTileMap + tilex + tiley*32);
             int tile = BGWinTileData;
             if (BGWinTileData == 0x8000) tile += (int)((uint8_t)index) * 16;
             if (BGWinTileData == 0x9000) tile += (int)((int8_t)index) * 16;
             // make tmu
-            uint8_t first = read(tile + (ty%8)*2);
-            uint8_t second = read(tile + (ty%8)*2+1);
+            uint8_t first = BusRead(tile + (ty%8)*2);
+            uint8_t second = BusRead(tile + (ty%8)*2+1);
 
             uint8_t color = (((first >> (7-(tx%8))) & 1)) + (((second >> (7-(tx%8))) & 1) << 1);
             texture[(scanline * 160 + x)*3] = colors[BGP[color]][0];
@@ -54,7 +54,6 @@ void drawScanline(int scanline) {
         }
 
 
-        // WINDOW TODO
         if (WinEnable && WX >= 0 && WX <= 166 && WY >= 0 && WY <= 143) {
             uint8_t ty = (scanline + WY);
             for (int x = 0; x < 160;x++) {
@@ -63,13 +62,14 @@ void drawScanline(int scanline) {
                 uint8_t tilex = tx / 8;
                 uint8_t tiley = ty / 8;
 
-                uint8_t index = read(WinTileMap + tilex + tiley*32);
+                uint8_t index = BusRead(WinTileMap + tilex + tiley*32);
                 int tile = BGWinTileData;
                 if (BGWinTileData == 0x8000) tile += (int)((uint8_t)index) * 16;
                 if (BGWinTileData == 0x9000) tile += (int)((int8_t)index) * 16;
+                //printf("%.4X: %.4X (%.2X)\n", BGWinTileData, tile, index);
 
-                uint8_t first = read(tile + (ty%8)*2);
-                uint8_t second = read(tile + (ty%8)*2+1);
+                uint8_t first = BusRead(tile + (ty%8)*2);
+                uint8_t second = BusRead(tile + (ty%8)*2+1);
 
                 uint8_t color = (((first >> (7-(tx%8))) & 1)) + (((second >> (7-(tx%8))) & 1) << 1);
                 texture[(scanline * 160 + x)*3] = colors[BGP[color]][0];
@@ -94,15 +94,15 @@ void drawScanline(int scanline) {
     // Objects
     if (OBJEnable) {
         for (int o = 0xfe00; o < 0xfea0; o+=4) {
-            uint8_t y = read(o)-16;
-            uint8_t x = read(o+1);
+            uint8_t y = BusRead(o)-16;
+            uint8_t x = BusRead(o+1);
             if (scanline-y < 8 && scanline >= y && x != 0 && x < 168) {
-                uint8_t tile = read(o+2);
-                uint8_t flags = read(o+3);
+                uint8_t tile = BusRead(o+2);
+                uint8_t flags = BusRead(o+3);
                 uint8_t act_y = scanline-y;
 
-                uint8_t first = read(0x8000 + tile*16 + act_y * 2);
-                uint8_t second = read(0x8000 + tile*16 + act_y * 2 + 1);
+                uint8_t first = BusRead(0x8000 + tile*16 + act_y * 2);
+                uint8_t second = BusRead(0x8000 + tile*16 + act_y * 2 + 1);
                 
                 uint8_t *obp = (flags & 0x10) ? OBP1 : OBP0;
                 for (int ox = 0; ox < 8; ox++) {

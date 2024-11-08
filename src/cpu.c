@@ -104,7 +104,7 @@ uint8_t get_reg(char r) {
 // Fetching
 uint8_t fetch(uint16_t index){
     //if (index == 0xff44 && data[0xff50]) return 0x90; ONLY FOR BlarggsTESTS
-    return read(index);
+    return BusRead(index);
 }
 
 
@@ -125,7 +125,7 @@ int get_flag(int flag) {
 }
 
 void post(uint16_t address, uint8_t value) {
-    write(address, value);
+    BusWrite(address, value);
 }
 
 uint8_t execute_cb_op(uint8_t next_op) {

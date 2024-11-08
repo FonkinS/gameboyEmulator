@@ -17,8 +17,8 @@
 
 void interrupt();
 
-uint8_t read(uint16_t index);
-void write(uint16_t index, uint8_t value);
+uint8_t BusRead(uint16_t index);
+void BusWrite(uint16_t index, uint8_t value);
 
 
 bool bootrom_enabled;
