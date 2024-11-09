@@ -59,6 +59,7 @@ bool GameboyProcessFrame() {
     while (PPUMode == VBLANK) GameboyProcessInstruction();
 
     while ((double)(clock() - begin) / CLOCKS_PER_SEC < FRAME_DURATION) {}
+    //printf("%i%%\n", (int)(CLOCKS_PER_SEC / (double)(clock() - begin) / (59.726453f) * 100));
 
     return out;
 }

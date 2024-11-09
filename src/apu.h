@@ -14,6 +14,9 @@ void APUKill();
 
 void triggerChannel(int n);
 // TODO SUper Mario Land running slowlu?
+// TODO SUper Mario Land OAM Glitches
+// TODO Super Mario Land Pause Screen Glitch
+// TODO Audio High Pitched
 
 enum APUIO {
     NR10 = 0xff10, // Channel 1 Sweep
@@ -34,6 +37,9 @@ enum APUIO {
     NR42 = 0xff21, // Channel 4 Volume
     NR43 = 0xff22, // Channel 4 Frequency / Randomness
     NR44 = 0xff23, // Channel 4 Control
+    NR50 = 0xff24, // Master Volume
+    NR51 = 0xff25, // Sound Panning 
+    NR52 = 0xff26, // Master Control
 };
 
 bool APUEnabled;
@@ -72,6 +78,9 @@ uint8_t CH2SweepPace;
 uint16_t CH2Period;
 bool CH2LengthEnable;
 
+
+bool CH3Enabled;
+bool CH4Enabled;
 
 
 
