@@ -121,7 +121,7 @@ int appending_timer = 0;
 void APUTick(int cycles) {
     //if (!APUEnabled) return;
     if (CH2Enabled) {
-        CH2Timer += cycles;
+        CH2Timer += cycles/4;
         if (CH2Timer > 0x7ff) {
             CH2Timer = CH2Period + (CH2Timer % 0x800);
             CH2_wave_index = (CH2_wave_index+1) % 8;
