@@ -12,10 +12,10 @@ int GameboyInit(char *boot, char *cart) {
 
     char *title = (char*) calloc(0x10, sizeof(char)); 
     for (int c = 0x134;c<0x143;c++) title[c-0x134] = BusRead(c);
-    CPUInit();
-    PPUInit(title);
-    APUInit();
     timerInit();
+    CPUInit();
+    APUInit();
+    PPUInit(title);
     
     return 0;
 }

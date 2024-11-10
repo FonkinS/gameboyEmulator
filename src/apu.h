@@ -2,6 +2,7 @@
 #define APU_H
 #include <stdint.h>
 #include <stdbool.h>
+#include "timer.h"
 
 void APUInit();
 
@@ -13,11 +14,12 @@ void APUTick(int cycles);
 void APUKill();
 
 void triggerChannel(int n);
+void channelTick(int cycles, int *timer, uint8_t* dutyIndex, int period);
 // TODO SUper Mario Land running slowlu?
 // TODO SUper Mario Land OAM Glitches
 // TODO Super Mario Land Pause Screen Glitch
-// TODO Audio High Pitched
 // TODO Save Data (Ext RAM)
+// TODO POkemon Blue Main Menu issue
 
 enum APUIO {
     NR10 = 0xff10, // Channel 1 Sweep
@@ -61,6 +63,7 @@ bool CH1Direction;
 uint8_t CH1Step;
 uint8_t CH1WaveDuty;
 uint8_t CH1InitLength;
+uint8_t CH1Length;
 uint8_t CH1InitVolume;
 bool CH1EnvDir;
 uint8_t CH1SweepPace;
@@ -73,6 +76,7 @@ bool CH2Enabled;
 int CH2Timer;
 uint8_t CH2WaveDuty;
 uint8_t CH2InitLength;
+uint8_t CH2Length;
 uint8_t CH2InitVolume;
 bool CH2EnvDir;
 uint8_t CH2SweepPace;
