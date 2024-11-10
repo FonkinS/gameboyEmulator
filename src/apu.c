@@ -112,23 +112,30 @@ void APUWrite(uint16_t index, uint8_t value) {
 
 int appending_timer = 0;
 
+
+int t = 0;
+int tim = 0;
 void APUTick(int cycles) {
     if (CH1Enabled) channelTick(cycles, &CH1Timer, &CH1DutyIndex, CH1Period);
     if (CH2Enabled) channelTick(cycles, &CH2Timer, &CH2DutyIndex, CH2Period);
 
-    if ((sys_counter & 0x1f) < ((sys_counter - cycles) & 0x1f)) { // DIV APU timer
+    tim += cycles;
+    if (tim >= 16384) { // DIV APU timer
+        tim = 0;
+        //printf("%f\n", 4194304.0f / (double)(sys_counter - t));
+        t = sys_counter;
         APUTimer = (APUTimer+1) % 8;
         if (APUTimer % 2) {
             if (CH1LengthEnable) {
-                CH1Length--;
-                if (CH1Length == 0) {
+                CH1Length++;
+                if (CH1Length == 64) {
                     CH1LengthEnable = false;
                     CH1Enabled = false;
                 }
             }
             if (CH2LengthEnable) {
-                CH2Length--;
-                if (CH2Length == 0) {
+                CH2Length++;
+                if (CH2Length == 64) {
                     CH2LengthEnable = false;
                     CH2Enabled = false;
                 }
