@@ -35,8 +35,9 @@ void queue_audio(uint8_t* data) {
 void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
     uint8_t* pFramesOutF32 = (uint8_t*)pOutput;
     for (ma_uint64 iFrame = 0; iFrame < frameCount; iFrame += 1) {
-        pFramesOutF32[iFrame*2] = outBuffer[iFrame] * 60;
-        pFramesOutF32[iFrame*2+1] = outBuffer[iFrame] * 60;
+        //if (outBuffer[iFrame] == 255) continue; // Silent
+        pFramesOutF32[iFrame*2] = outBuffer[iFrame];
+        pFramesOutF32[iFrame*2+1] = outBuffer[iFrame];
     }
     for (int i = frameCount; i < endOfOutBuffer;i++){
         outBuffer[i-frameCount] = outBuffer[i];
@@ -87,22 +88,31 @@ void APUWrite(uint16_t index, uint8_t value) {
         CH1WaveDuty = (value & 0xc0) >> 6;
         CH1InitLength = value & 0x3f;
         CH1Length = CH1InitLength;
-        CH1LengthEnable = true;
-    }
-    else if (index == NR13) CH1Period = (CH1Period & 0x700) + value;
+    } else if (index == NR12) {
+        CH1InitVolume = (value & 0xf0) >> 4;
+        CH1Volume = CH1InitVolume;
+        CH1EnvDir = value & 0x8;
+        CH1SweepPace = value & 0x7;
+    } else if (index == NR13) CH1Period = (CH1Period & 0x700) + value;
     else if (index == NR14) {
         if (value & 0x80) triggerChannel(1);
+        CH1LengthEnable = value & 0x40;
         CH1Period = (CH1Period & 0xff) + ((value & 7) << 8); 
     }
     else if (index == NR21) {
         CH2WaveDuty = (value & 0xc0) >> 6;
         CH2InitLength = value & 0x3f;
         CH2Length = CH2InitLength;
-        CH2LengthEnable = true;
+    } else if (index == NR22) {
+        CH2InitVolume = (value & 0xf0) >> 4;
+        CH2Volume = CH2InitVolume;
+        CH2EnvDir = value & 0x8;
+        CH2SweepPace = value & 0x7;
     }
     else if (index == NR23) CH2Period = (CH2Period & 0x700) + value;
     else if (index == NR24) {
         if (value & 0x80) triggerChannel(2);
+        CH2LengthEnable = value & 0x40;
         CH2Period = (CH2Period & 0xff) + ((value & 7) << 8); 
     }
     else if (index == NR52) APUEnabled = value & 0x80;
@@ -140,6 +150,11 @@ void APUTick(int cycles) {
                     CH2Enabled = false;
                 }
             }
+        } else if (APUTimer == 7) {
+            int newCH1Vol = CH1Volume + (int8_t)CH1SweepPace * (int8_t)(CH1EnvDir ? 1 : -1);
+            if (newCH1Vol >= 0 && newCH1Vol <= 15) CH1Volume = newCH1Vol;
+            int newCH2Vol = CH2Volume + (int8_t)CH2SweepPace * (int8_t)(CH2EnvDir ? 1 : -1);
+            if (newCH2Vol >= 0 && newCH2Vol <= 15) CH2Volume = newCH2Vol;
         }
     }
     
@@ -147,8 +162,10 @@ void APUTick(int cycles) {
     if (appending_timer >= 75 && endOfOutBuffer < 1920) {
         appending_timer = 0;
         gbBuffer[gbBufferPos] = 0;
-        gbBuffer[gbBufferPos] += ((wave_duty[CH1WaveDuty] & (1 << CH1DutyIndex)) >> CH1DutyIndex);
-        gbBuffer[gbBufferPos++] += ((wave_duty[CH2WaveDuty] & (1 << CH2DutyIndex)) >> CH2DutyIndex);
+        gbBuffer[gbBufferPos] += ((wave_duty[CH1WaveDuty] & (1 << CH1DutyIndex)) >> CH1DutyIndex) * CH1Volume;
+        gbBuffer[gbBufferPos] += ((wave_duty[CH2WaveDuty] & (1 << CH2DutyIndex)) >> CH2DutyIndex) * CH2Volume;
+        //if (CH1Volume == 0 && CH2Volume == 0) gbBuffer[gbBufferPos] = 255;
+        gbBufferPos++;
         if (gbBufferPos >= 960) {
             queue_audio(gbBuffer);
             gbBufferPos = 0;

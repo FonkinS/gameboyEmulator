@@ -96,7 +96,7 @@ void drawScanline(int scanline) {
         for (int o = 0xfe00; o < 0xfea0; o+=4) {
             uint8_t y = BusRead(o)-16;
             uint8_t x = BusRead(o+1);
-            if (scanline-y < 8 && scanline >= y && x != 0 && x < 168) {
+            if (scanline-y < OBJSize && scanline >= y && x != 0 && x < 168) {
                 uint8_t tile = BusRead(o+2);
                 uint8_t flags = BusRead(o+3);
                 uint8_t act_y = scanline-y;

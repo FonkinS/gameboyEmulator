@@ -20,6 +20,8 @@ void channelTick(int cycles, int *timer, uint8_t* dutyIndex, int period);
 // TODO Super Mario Land Pause Screen Glitch
 // TODO Save Data (Ext RAM)
 // TODO POkemon Blue Main Menu issue
+// TODO Pokemon Blue Music sounds shit
+// TODO CH3 and CH4
 
 enum APUIO {
     NR10 = 0xff10, // Channel 1 Sweep
@@ -65,6 +67,7 @@ uint8_t CH1WaveDuty;
 uint8_t CH1InitLength;
 uint8_t CH1Length;
 uint8_t CH1InitVolume;
+uint8_t CH1Volume;
 bool CH1EnvDir;
 uint8_t CH1SweepPace;
 uint16_t CH1Period;
@@ -78,6 +81,7 @@ uint8_t CH2WaveDuty;
 uint8_t CH2InitLength;
 uint8_t CH2Length;
 uint8_t CH2InitVolume;
+uint8_t CH2Volume;
 bool CH2EnvDir;
 uint8_t CH2SweepPace;
 uint16_t CH2Period;
