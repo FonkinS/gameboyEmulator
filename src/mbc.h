@@ -14,7 +14,7 @@ void MBCWrite(uint16_t index, uint8_t value);
 
 void MBCKill();
 
-int mbc;
+extern int mbc;
 
 // Function pointers for read and write
 uint8_t (*MBCNRead)(uint16_t);

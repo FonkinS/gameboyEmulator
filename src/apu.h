@@ -29,6 +29,7 @@ enum APUIO {
     NR12 = 0xff12, // Channel 1 Volume
     NR13 = 0xff13, // Channel 1 Period Low
     NR14 = 0xff14, // Channel 1 Period High
+    NR20 = 0xff15, 
     NR21 = 0xff16, // Channel 2 Length
     NR22 = 0xff17, // Channel 2 Volume
     NR23 = 0xff18, // Channel 2 Period Low
@@ -47,54 +48,15 @@ enum APUIO {
     NR52 = 0xff26, // Master Control
 };
 
-bool APUEnabled;
+extern bool APUEnabled;
 enum SOUND_PANNING {CENTER, LEFT, RIGHT};
-enum SOUND_PANNING CH1Pan;
-enum SOUND_PANNING CH2Pan;
-enum SOUND_PANNING CH3Pan;
-enum SOUND_PANNING CH4Pan;
+extern enum SOUND_PANNING CH1Pan;
+extern enum SOUND_PANNING CH2Pan;
+extern enum SOUND_PANNING CH3Pan;
+extern enum SOUND_PANNING CH4Pan;
 
-uint8_t leftVolume;
-uint8_t rightVolume;
-
-// Channel 1
-bool CH1Enabled;
-int CH1Timer;
-uint8_t CH1Pace;
-bool CH1Direction;
-uint8_t CH1Step;
-uint8_t CH1WaveDuty;
-uint8_t CH1InitLength;
-uint8_t CH1Length;
-uint8_t CH1InitVolume;
-uint8_t CH1Volume;
-bool CH1EnvDir;
-uint8_t CH1SweepPace;
-uint16_t CH1Period;
-bool CH1LengthEnable;
-
-
-// Channel 2
-bool CH2Enabled;
-int CH2Timer;
-uint8_t CH2WaveDuty;
-uint8_t CH2InitLength;
-uint8_t CH2Length;
-uint8_t CH2InitVolume;
-uint8_t CH2Volume;
-bool CH2EnvDir;
-uint8_t CH2SweepPace;
-uint16_t CH2Period;
-bool CH2LengthEnable;
-
-
-bool CH3Enabled;
-bool CH4Enabled;
-
-
-
-
-
+extern uint8_t leftVolume;
+extern uint8_t rightVolume;
 
 
 #endif // AUDIO_H

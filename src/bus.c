@@ -2,6 +2,18 @@
 #include "lcd.h"
 #include "mbc.h"
 
+ bool bootrom_enabled;
+
+ uint8_t boot_rom[0x100];    // 0x0000-0x0100
+ uint8_t vram[0x2000];       // 0x8000-0x9FFF
+ uint8_t wram_bank_0[0x1000];// 0xC000-0xCFFF
+ uint8_t wram_bank_1[0x1000];// 0xD000-0xDFFF
+ uint8_t OAM[0xA0];          // 0xFE00-0xFE9F
+ uint8_t io_regs[0x80];      // 0xFF00-0xFF7F
+ uint8_t HRAM[0x7F];         // 0xFF80-0xFFFE
+
+
+
 uint8_t BusRead(uint16_t index) {
     if (index < 0x0100 && !io_read(rBOOT)) return boot_rom[index];
     else if (index < 0x8000) return MBCRead(index);

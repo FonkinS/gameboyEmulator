@@ -2,6 +2,8 @@
 #include "mbc/mbc0.h"
 #include "mbc/mbc1.h"
 
+int mbc;
+
 int MBCInit(uint8_t *data, long long length) {
     int type = data[0x147];
     if (type == 0) {

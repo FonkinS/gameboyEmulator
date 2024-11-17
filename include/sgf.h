@@ -1,7 +1,13 @@
 #ifndef SGF_H
 #define SGF_H
 
-#include <OpenGL/OpenGL.h>
+#if defined(__linux__) && defined(__arm__)
+    #define SGF_USE_GLES
+#else
+    #define SGF_USE_GL
+#endif
+
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -11,8 +17,12 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include <OpenGL/gl3.h>
 
+#ifdef SGF_USE_GLES
+    #include <GLES3/gl3.h>
+#else
+    #include <OpenGL/gl3.h>
+#endif
 
 /* -------------------- PNG LOADING ---------------------------------- */
 enum COLOR_TYPES {

@@ -1,5 +1,10 @@
 #include "mbc0.h"
 
+uint8_t *rom;
+uint8_t *ram;
+
+
+
 void MBC0Init(uint8_t *data, long long length) {
     rom = (uint8_t*) malloc(0x8000 * sizeof(uint8_t)); 
     ram = (uint8_t*) malloc(0x2000 * sizeof(uint8_t)); 

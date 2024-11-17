@@ -7,21 +7,19 @@
 uint8_t joypad_read();
 void joypad_write(uint8_t value);
 
-bool buttons_selected;
-bool dpad_selected;
-
-bool button_start;
-bool dpad_down;
-bool button_select;
-bool dpad_up;
-bool button_b;
-bool dpad_left;
-bool button_a;
-bool dpad_right;
-
 enum JoypadIO {
     rJOY = 0xff00
 };
+
+
+extern bool button_start;
+extern bool dpad_down;
+extern bool button_select;
+extern bool dpad_up;
+extern bool button_b;
+extern bool dpad_left;
+extern bool button_a;
+extern bool dpad_right;
 
 
 

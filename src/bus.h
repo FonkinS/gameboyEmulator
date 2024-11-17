@@ -21,20 +21,15 @@ uint8_t BusRead(uint16_t index);
 void BusWrite(uint16_t index, uint8_t value);
 
 
-bool bootrom_enabled;
+extern bool bootrom_enabled;
 
-uint8_t boot_rom[0x100];    // 0x0000-0x0100
-//uint8_t rom_bank_0[0x4000]; // 0x0000-0x3FFF
-//uint8_t rom_bank_1[0x4000]; // 0x4000-0x7FFF
-uint8_t vram[0x2000];       // 0x8000-0x9FFF
-//uint8_t ext_ram[0x2000];    // 0xA000-0xBFFF
-uint8_t wram_bank_0[0x1000];// 0xC000-0xCFFF
-uint8_t wram_bank_1[0x1000];// 0xD000-0xDFFF
-//      ECHO RAM               0xE000-0xFDFF
-uint8_t OAM[0xA0];          // 0xFE00-0xFE9F
-//      NOT USABLE             0xFEA0-0xFEFF                            
-uint8_t io_regs[0x80];      // 0xFF00-0xFF7F
-uint8_t HRAM[0x7F];         // 0xFF80-0xFFFE
+extern uint8_t boot_rom[0x100];    // 0x0000-0x0100
+extern uint8_t vram[0x2000];       // 0x8000-0x9FFF
+extern uint8_t wram_bank_0[0x1000];// 0xC000-0xCFFF
+extern uint8_t wram_bank_1[0x1000];// 0xD000-0xDFFF
+extern uint8_t OAM[0xA0];          // 0xFE00-0xFE9F
+extern uint8_t io_regs[0x80];      // 0xFF00-0xFF7F
+extern uint8_t HRAM[0x7F];         // 0xFF80-0xFFFE
 
 // IO Section
 enum IO {

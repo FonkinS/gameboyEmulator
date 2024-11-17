@@ -1,7 +1,68 @@
 #include "apu.h"
-#include "timer.h"
+#include "ppu.h"
 #define MINIAUDIO_IMPLEMENTATION
 #include "../include/miniaudio.h"
+
+bool APUEnabled;
+enum SOUND_PANNING CH1Pan;
+enum SOUND_PANNING CH2Pan;
+enum SOUND_PANNING CH3Pan;
+enum SOUND_PANNING CH4Pan;
+
+uint8_t leftVolume;
+uint8_t rightVolume;
+
+// Channel 1
+bool CH1Enabled;
+int CH1Timer;
+uint8_t CH1Pace;
+bool CH1Direction;
+uint8_t CH1Step;
+uint8_t CH1WaveDuty;
+uint8_t CH1InitLength;
+uint8_t CH1Length;
+uint8_t CH1InitVolume;
+uint8_t CH1Volume;
+bool CH1EnvDir;
+uint8_t CH1SweepPace;
+uint16_t CH1Period;
+bool CH1LengthEnable;
+
+
+// Channel 2
+bool CH2Enabled;
+int CH2Timer;
+uint8_t CH2WaveDuty;
+uint8_t CH2InitLength;
+uint8_t CH2Length;
+uint8_t CH2InitVolume;
+uint8_t CH2Volume;
+bool CH2EnvDir;
+uint8_t CH2SweepPace;
+uint16_t CH2Period;
+bool CH2LengthEnable;
+
+
+bool CH3Enabled;
+
+
+// Channel 4
+bool CH4Enabled;
+int CH4Length;
+int CH4InitLength;
+int CH4Volume;
+int CH4InitVolume;
+bool CH4EnvDir;
+int CH4SweepPace;
+int CH4ClockShift;
+bool CH4LSFRWidth;
+int CH4ClockDivider;
+bool CH4LengthEnable;
+
+
+
+
+
 
 uint8_t wave_duty[4] = {
     0x1, // 0b00000001 - 12.5%
@@ -66,6 +127,9 @@ void triggerChannel(int n) {
     if (n == 2) {
         CH2Enabled = true;
     }
+    if (n == 4) {
+        CH4Enabled = true;
+    }
 }
 
 
@@ -73,18 +137,24 @@ uint8_t APURead(uint16_t index) {
     if (index == NR10) return 0x80 + (CH1Pace << 4) + (CH1Direction << 3) + CH1Step;
     if (index == NR11) return (CH1WaveDuty << 6) + 0x3F;
     if (index == NR12) return (CH1InitVolume << 4) + (CH1EnvDir << 3) + CH1SweepPace;
-    if (index == NR14) return (CH1LengthEnable << 6) + 0xDF;
+    if (index == NR14) return (CH1LengthEnable << 6) + 0xBF;
     if (index == NR21) return (CH2WaveDuty << 6) + 0x3F;
     if (index == NR22) return (CH2InitVolume << 4) + (CH2EnvDir << 3) + CH2SweepPace;
-    if (index == NR24) return (CH2LengthEnable << 6) + 0xDF;
-
+    if (index == NR24) return (CH2LengthEnable << 6) + 0xBF;
+    if (index == NR42) return (CH4InitVolume << 4) + (CH4EnvDir << 3) + CH4SweepPace;
+    if (index == NR43) return (CH4ClockShift << 4) + (CH4LSFRWidth << 3) + CH4ClockDivider;
+    if (index == NR44) return (CH4LengthEnable << 6) + 0xBf;
     if (index == NR52) return 0x70 + (APUEnabled << 7) + (CH4Enabled << 3) + (CH3Enabled << 2) + (CH2Enabled << 1) + CH1Enabled;
     return 0xff;
 }
 
 
 void APUWrite(uint16_t index, uint8_t value) {
-    if (index == NR11) {
+    if (index == NR10) {
+        CH1Pace = (value & 0x70) >> 4;
+        CH1Direction = (value & 0x8);
+        CH1Step = (value & 0x7);
+    } else if (index == NR11) {
         CH1WaveDuty = (value & 0xc0) >> 6;
         CH1InitLength = value & 0x3f;
         CH1Length = CH1InitLength;
@@ -114,6 +184,21 @@ void APUWrite(uint16_t index, uint8_t value) {
         if (value & 0x80) triggerChannel(2);
         CH2LengthEnable = value & 0x40;
         CH2Period = (CH2Period & 0xff) + ((value & 7) << 8); 
+    } else if (index == NR41) CH4InitLength = value & 0x3f;
+    else if (index == NR42) {
+        CH4InitVolume = value >> 4;
+        CH4Volume = CH4InitVolume;
+        CH4EnvDir = value & 8;
+        CH4SweepPace = value & 7;
+    } else if (index == NR43) {
+        CH4ClockShift = value >> 4;
+        CH4LSFRWidth = value & 8;
+        CH4ClockDivider = value & 7;
+    } else if (index == NR44) {
+        if (value & 0x80) triggerChannel(4);
+        CH4LengthEnable = value & 0x40;
+    } else if (index == NR51) {
+
     }
     else if (index == NR52) APUEnabled = value & 0x80;
     //printf("%.4x:%.2x\n", index, value);

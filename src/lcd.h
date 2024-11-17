@@ -18,38 +18,38 @@ enum LCDIO {
     rWX = 0xff4b
 };
 
-int dot;
+extern int dot;
 
 // LCD Control
-bool LCDEnable;
-uint16_t WinTileMap;
-bool WinEnable;
-uint16_t BGWinTileData;
-uint16_t BGTileMap;
-uint8_t OBJSize;
-bool OBJEnable;
-bool BGWinEnable;
+extern bool LCDEnable;
+extern uint16_t WinTileMap;
+extern bool WinEnable;
+extern uint16_t BGWinTileData;
+extern uint16_t BGTileMap;
+extern uint8_t OBJSize;
+extern bool OBJEnable;
+extern bool BGWinEnable;
 
-uint8_t LY;
-uint8_t LYC;
+extern uint8_t LY;
+extern uint8_t LYC;
 
 // STAT
-bool LYCInt;
-bool M2Int;
-bool M1Int;
-bool M0Int;
-int PPUMode;
+extern bool LYCInt;
+extern bool M2Int;
+extern bool M1Int;
+extern bool M0Int;
+extern int PPUMode;
 
 // Scrolling
-uint8_t SCY;
-uint8_t SCX;
-uint8_t WY;
-uint8_t WX;
+extern uint8_t SCY;
+extern uint8_t SCX;
+extern uint8_t WY;
+extern uint8_t WX;
 
 // Palettes
-uint8_t BGP[4];
-uint8_t OBP0[3];
-uint8_t OBP1[3];
+extern uint8_t BGP[4];
+extern uint8_t OBP0[3];
+extern uint8_t OBP1[3];
 
 
 

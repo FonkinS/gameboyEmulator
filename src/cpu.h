@@ -10,17 +10,39 @@ int CPUInit();
 //void connect_bus(Bus *b);
 int execute_op();
 
-uint16_t PC; // program counter
-uint16_t SP; // stack pointer
+extern uint16_t PC; // program counter
+extern uint16_t SP; // stack pointer
 
-uint8_t a;
-uint8_t b;
-uint8_t c;
-uint8_t d;
-uint8_t e;
-uint8_t f;
-uint8_t h;
-uint8_t l;
+extern uint8_t a;
+extern uint8_t b;
+extern uint8_t c;
+extern uint8_t d;
+extern uint8_t e;
+extern uint8_t f;
+extern uint8_t h;
+extern uint8_t l;
+
+
+extern int serial_interrupt;
+extern unsigned long long cycles;
+
+enum {NOHALT, HALTIME, HALTNOIMENOINT, HALTBUG, HALTBUGEI, HALTBUGRST};
+extern int halt;
+ 
+
+
+enum flags {
+    zero = 128,
+    subtract = 64,
+    half_carry = 32,
+    carry = 16
+};
+
+extern uint8_t z;
+extern uint8_t n;
+extern uint8_t hy;
+extern uint8_t cy;
+
         
 //int set_reg(char r, uint8_t val);   // For the Unit Tester
 //uint8_t get_reg(char r);            // For the Unit Tester
@@ -33,12 +55,7 @@ uint16_t get_hl();
 
 //bool IME; // interrupt master enable flag
 
-int serial_interrupt;
-unsigned long long cycles;
-
-enum {NOHALT, HALTIME, HALTNOIMENOINT, HALTBUG, HALTBUGEI, HALTBUGRST};
-int halt;
-        
+       
         
 uint8_t execute_cb_op(uint8_t next_op);
 
@@ -58,17 +75,6 @@ void set_bc(uint16_t value);
 void set_de(uint16_t value);
 void set_hl(uint16_t value);
 
-enum flags {
-    zero = 128,
-    subtract = 64,
-    half_carry = 32,
-    carry = 16
-};
-
-uint8_t z;
-uint8_t n;
-uint8_t hy;
-uint8_t cy;
 
 // Op Codes
 

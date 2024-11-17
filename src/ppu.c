@@ -143,4 +143,5 @@ void key_callback(SGFwindow window, int key, int scancode, int action, int mods)
     else if (key == GLFW_KEY_ENTER) button_start = action == GLFW_RELEASE ? false : true;
     else if (key == GLFW_KEY_Z) button_b = action == GLFW_RELEASE ? false : true;
     else if (key == GLFW_KEY_X) button_a = action == GLFW_RELEASE ? false : true;
+    else if (key == GLFW_KEY_Q) exit(0);
 }

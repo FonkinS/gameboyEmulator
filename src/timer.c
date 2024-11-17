@@ -3,6 +3,19 @@
 #include "interrupts.h"
 #include <time.h>
 
+
+bool timer_enabled;
+int clock_select;
+
+uint16_t sys_counter;
+
+uint8_t timer_modulo;
+uint8_t timer_counter;
+
+bool previous_timer_edge;
+
+
+
 void timerInit() {
     timer_enabled = false;
     clock_select = 0;

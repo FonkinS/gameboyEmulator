@@ -1,5 +1,19 @@
 #include "joypad.h"
 
+bool buttons_selected;
+bool dpad_selected;
+
+bool button_start;
+bool dpad_down;
+bool button_select;
+bool dpad_up;
+bool button_b;
+bool dpad_left;
+bool button_a;
+bool dpad_right;
+
+
+
 uint8_t joypad_read() {
     if (!buttons_selected && !dpad_selected) return 0xff;
     else if (buttons_selected) {

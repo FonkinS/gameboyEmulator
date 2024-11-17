@@ -6,6 +6,9 @@ FLAGS = -c -Wall
 all: $(BIN)
 	$(CC) $(BIN) -L /usr/local/lib -lglfw -framework OpenGL -o $(OUT)
 
+raspi: $(BIN)
+	$(CC) $(BIN) -lglfw -lGL -o $(OUT)
+
 bin/main.o: src/main.c
 	$(CC) $(FLAGS) src/main.c -o bin/main.o
 

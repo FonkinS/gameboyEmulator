@@ -1,5 +1,42 @@
 #include "lcd.h"
 
+
+int dot;
+
+// LCD Control
+bool LCDEnable;
+uint16_t WinTileMap;
+bool WinEnable;
+uint16_t BGWinTileData;
+uint16_t BGTileMap;
+uint8_t OBJSize;
+bool OBJEnable;
+bool BGWinEnable;
+
+uint8_t LY;
+uint8_t LYC;
+
+// STAT
+bool LYCInt;
+bool M2Int;
+bool M1Int;
+bool M0Int;
+int PPUMode;
+
+// Scrolling
+uint8_t SCY;
+uint8_t SCX;
+uint8_t WY;
+uint8_t WX;
+
+// Palettes
+uint8_t BGP[4];
+uint8_t OBP0[3];
+uint8_t OBP1[3];
+
+
+
+
 uint8_t LCDRead(uint16_t index) {
     if (index == rLCDC) return (LCDEnable << 7) + ((WinTileMap == 0x9c00) << 6) + (WinEnable << 5) + ((BGWinTileData == 0x8000) << 4) + ((BGTileMap == 0x9c00) << 3) + ((OBJSize == 16) << 2) + (OBJEnable << 1) + BGWinEnable;
     else if (index == rSTAT) return 0x80 + (LYCInt << 6) + (M2Int << 5) + (M1Int << 4) + (M0Int << 3) + ((LYC == LY) << 2) + PPUMode;

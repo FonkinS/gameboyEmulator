@@ -1,5 +1,15 @@
 #include "interrupts.h"
 
+
+uint8_t IF;
+uint8_t IE;
+
+bool IME;
+
+int interrupt_called;
+
+
+
 void request_interrupt(int type) {
     IF |= type;
 }

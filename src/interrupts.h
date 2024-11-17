@@ -8,12 +8,12 @@ enum InterruptIO {
     rIF = 0xff0f
 };
 
-uint8_t IF;
-uint8_t IE;
+extern uint8_t IF;
+extern uint8_t IE;
 
-bool IME;
+extern bool IME;
 
-int interrupt_called;
+extern int interrupt_called;
 
 uint8_t interruptTypeToLocation(uint8_t type);
 
