@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    if (GameboyInit("demofiles/dmg_boot.bin",argv[1])) {
+    if (GameboyInit("demoFiles/dmg_boot.bin",argv[1])) {
         return -1;
     }
     while (GameboyProcessFrame()) {}

@@ -1,13 +1,13 @@
 CC = gcc
 BIN = bin/main.o bin/cpu.o bin/ppu.o bin/lcd.o bin/gameboy.o bin/interrupts.o bin/joypad.o bin/bus.o bin/timer.o bin/mbc.o bin/mbc0.o bin/mbc1.o bin/apu.o bin/mbc3.o
 OUT = bin/main
-FLAGS = -c -Wall 
+FLAGS = -c -Wall -fcommon
 
 all: $(BIN)
 	$(CC) $(BIN) -L /usr/local/lib -lglfw -framework OpenGL -o $(OUT)
 
 raspi: $(BIN)
-	$(CC) $(BIN) -lglfw -lGL -o $(OUT)
+	$(CC) $(BIN) -lglfw -lGL -lm -ldl -lpthread -latomic -o $(OUT)
 
 bin/main.o: src/main.c
 	$(CC) $(FLAGS) src/main.c -o bin/main.o
