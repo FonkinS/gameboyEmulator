@@ -39,6 +39,8 @@ int GameboyProcessInstruction() {
     APUTick(cycle_length);
     check_interrupts();
 
+    //printf("A:%.2X F:%.2X B:%.2X C:%.2X D:%.2X E:%.2X H:%.2X L:%.2X SP:%.4X PC:%.4X PCMEM:%.2X,%.2X,%.2X,%.2X\n", a, f, b, c, d, e, h, l, SP, PC, fetch(PC), fetch(PC+1), fetch(PC+2), fetch(PC+3));
+
     return cycle_length;
 
 }
@@ -58,8 +60,8 @@ bool GameboyProcessFrame() {
 
     while (PPUMode == VBLANK) GameboyProcessInstruction();
 
-    while ((double)(clock() - begin) / CLOCKS_PER_SEC < FRAME_DURATION) {}
-    //printf("%i%%\n", (int)(CLOCKS_PER_SEC / (double)(clock() - begin) / (59.726453f) * 100));
+    //while ((double)(clock() - begin) / CLOCKS_PER_SEC < FRAME_DURATION) {}
+    printf("%i FPS\n", (int)(CLOCKS_PER_SEC / (double)(clock() - begin)));
 
     return out;
 }
