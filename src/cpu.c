@@ -56,75 +56,6 @@ void interrupt() {
     interrupt_called = 0;
 }
 
-/*int set_reg(char r, uint8_t val) {
-    switch (r) {
-        case 'a':
-            a = val;
-            break;
-        case 'b':
-            b = val;
-            break;
-        case 'c':
-            c = val;
-            break;
-        case 'd':
-            d = val;
-            break;
-        case 'e':
-            e = val;
-            break;
-        case 'f':
-            f = val;
-            break;
-        case 'l':
-            l = val;
-            break;
-        case 'h':
-            h = val;
-            break;
-        default:
-            return -1;
-            break;
-    }
-    return 0;
-}*/
-/*
-uint8_t get_reg(char r) {
-    switch(r) {
-        case 'a':
-            return a;
-            break;
-        case 'b':
-            return b;
-            break;
-        case 'c':
-            return c;
-            break;
-        case 'd':
-            return d;
-            break;
-        case 'e':
-            return e;
-            break;
-        case 'f':
-            return f;
-            break;
-        case 'l':
-            return l;
-            break;
-        case 'h':
-            return h;
-            break;
-        default:
-            return -1;
-            break;
-    }
-}*/
-
-/*void connect_bus(Bus *b){
-    bus = b;
-}*/
-
 // Fetching
 uint8_t fetch(uint16_t index){
     //if (index == 0xff44 && data[0xff50]) return 0x90; ONLY FOR BlarggsTESTS
@@ -134,6 +65,10 @@ uint8_t fetch(uint16_t index){
 
 uint8_t fetchOP(){
     return fetch(PC++);
+}
+
+uint16_t fetchOP16() {
+    return fetchOP() + (fetchOP() << 8);
 }
 
 void set_flag(int flag, int value) {
@@ -925,125 +860,16 @@ uint8_t execute_cb_op(uint8_t next_op) {
     return -1;
 }
 
-uint8_t *r8[8] = {&b, &c, &d, &e, &h, &l, NULL, &a};
-int (*mathOps[8])(uint8_t*) = {ADD_A_R, ADC_A_R,  SUB_A_R, SBC_A_R, AND_A_R, XOR_A_R, OR_A_R, CP_A_R};
 int execute_op() {
     uint8_t op = fetchOP();
-    if (op < 0x40) {
-        int opcol = op % 16;
-        int oplayer = op / 16;
-        if (opcol == 0) {
-            if (op == 0x00) return NOP();
-            if (op == 0x10) return STOP();
-            if (op == 0x20) return JR_F_DD(fetchOP(), !(bool)get_flag(z));
-            if (op == 0x30) return JR_F_DD(fetchOP(), !(bool)get_flag(cy));
-        } else if (opcol == 1) {
-            if (oplayer == 3) return LD_SP_NN(fetchOP(), fetchOP());
-            return LD_RR_NN(r8[oplayer*2], r8[oplayer*2+1], fetchOP(), fetchOP());
-        } else if (opcol == 2) {
-            if (oplayer == 0) return LD_BC_A();
-            if (oplayer == 1) return LD_DE_A();
-            if (oplayer == 2) return LDI_HL_A();
-            if (oplayer == 3) return LDD_HL_A();
-        } else if (opcol == 3) {
-            if (oplayer == 3) return INC_SP();
-            return INC_RR(r8[oplayer*2], r8[oplayer*2+1]);
-        } else if (opcol == 4) return INC_R(r8[oplayer*2]);
-        else if (opcol == 5) return DEC_R(r8[oplayer*2]);
-        else if (opcol == 6) return LD_R_N(r8[oplayer*2], fetchOP());
-        else if (opcol == 7) {
-            if (oplayer == 0) return RLCA();
-            if (oplayer == 1) return RLA();
-            if (oplayer == 2) return DAA();
-            if (oplayer == 3) return SCF();
-        } else if (opcol == 8) {
-            if (oplayer == 0) return LD_NN_SP(fetchOP(), fetchOP());
-            if (oplayer == 1) return JR_DD(fetchOP());
-            if (oplayer == 2) return JR_F_DD(fetchOP(), (bool)get_flag(z));
-            if (oplayer == 3) return JR_F_DD(fetchOP(), (bool)get_flag(cy));
-        } else if (opcol == 9) {
-            if (opcol == 3) return ADD_HL_SP();
-            return ADD_HL_RR(r8[oplayer*2], r8[oplayer*2+1]);
-        } else if (opcol == 0xa) {
-            if (opcol == 0) return LD_A_BC();
-            if (opcol == 1) return LD_A_DE();
-            if (opcol == 2) return LDI_A_HL();
-            if (opcol == 3) return LDD_A_HL();
-        } else if (opcol == 0xb) {
-            if (opcol == 3) return DEC_SP();
-            return DEC_RR(r8[oplayer*2], r8[oplayer*2+1]);
-        }
-        else if (opcol == 0xc) return INC_R(r8[oplayer*2+1]);
-        else if (opcol == 0xd) return DEC_R(r8[oplayer*2+1]);
-        else if (opcol == 0xe) return LD_R_N(r8[oplayer*2+1], fetchOP());
-        else if (opcol == 0xf) {
-            if (opcol == 0) return RRCA();
-            if (opcol == 1) return RCA();
-            if (opcol == 2) return CPL();
-            if (opcol == 3) return CCF();
-        }
-    } 
-    else if (op == 0x76) return HALT();
-    else if  (op < 0x80) return LD_R_R(r8[(op / 8) - 8], r8[(op %8)]);
-    else if (op < 0xc0) return (*mathOps[(op / 8) - 16])(r8[op % 8]);
-    else {
-        int opcol = op % 16;
-        int oplayer = op / 16 - 12;
-        if (opcol == 0) {
-            if (oplayer == 0) return RET_F(!(bool)get_flag(z)); 
-            if (oplayer == 1) return RET_F(!(bool)get_flag(cy)); 
-            if (oplayer == 2) return LD_ION_A(fetchOP());
-            if (oplayer == 3) return LD_A_ION(fetchOP());
-        } if (opcol == 1) {
-            if (oplayer == 3) return POP_RR(&a, &f);
-            return POP_RR(r8[oplayer*2], r8[oplayer*2+1]);
-        } if (opcol == 2) {
-            if (oplayer == 0) return JP_F_NN(fetchOP(), fetchOP(), !(bool)get_flag(z));
-            if (oplayer == 1) return JP_F_NN(fetchOP(), fetchOP(), !(bool)get_flag(cy));
-            if (oplayer == 2) return LD_IOC_A();
-            if (oplayer == 3) return LD_A_IOC();
-        } if (opcol == 3) {
-            if (oplayer == 0) return JP_NN(fetchOP(), fetchOP());
-            return DI();
-        } if (opcol == 4) {
-            if (oplayer == 0) return CALL_F_NN(fetchOP(), fetchOP(), !(bool)get_flag(z));
-            return CALL_F_NN(fetchOP(), fetchOP(), !(bool)get_flag(cy));
-        } if (opcol == 5) {
-            if (oplayer == 3) return PUSH_RR(&a, &f);
-            return PUSH_RR(r8[oplayer*2], r8[oplayer*2+1]);
-        } if (opcol == 6) {uint8_t t = fetchOP(); return (*mathOps[oplayer*2])(&t)+4;};
-        if (opcol == 7) return RST(oplayer*2);
-        if (opcol == 8) {
-            if (oplayer == 0) return RET_F((bool)get_flag(z));
-            if (oplayer == 1) return RET_F((bool)get_flag(cy));
-            if (oplayer == 2) return ADD_SP_DD(fetchOP());
-            if (oplayer == 3) return LD_HL_SP_DD(fetchOP());
-        } if (opcol == 9) {
-            if (oplayer == 0) return RET();
-            if (oplayer == 1) return RETI();
-            if (oplayer == 2) return JP_HL();
-            if (oplayer == 3) return LD_SP_HL();
-        } if (opcol == 0xa) {
-            if (oplayer == 0) return JP_F_NN(fetchOP(), fetchOP(), (bool) get_flag(z));
-            if (oplayer == 1) return JP_F_NN(fetchOP(), fetchOP(), (bool) get_flag(cy));
-            if (oplayer == 2) return LD_NN_A(fetchOP(), fetchOP());
-            if (oplayer == 3) return LD_A_NN(fetchOP(), fetchOP());
-        } if (opcol == 0xb) {
-            if (oplayer == 0) return execute_cb_op(fetchOP());
-            return EI();
-        } if (opcol == 0xc) {
-            if (oplayer == 0) return CALL_F_NN(fetchOP(), fetchOP(), (bool) get_flag(z));
-            if (oplayer == 1) return CALL_F_NN(fetchOP(), fetchOP(), (bool) get_flag(cy));
-        } if (opcol == 0xd) return CALL_NN(fetchOP(), fetchOP());
-        if (opcol == 0xe) {uint8_t t = fetchOP(); return (*mathOps[oplayer*2+1])(&t)+4;};
-        if (opcol == 0xf) return RST(oplayer*2+1);
-    }
-    /*switch (op) {
+    uint8_t next_op;
+    
+    switch (op) {
         case 0x00:
             return NOP();
             break;
         case 0x01:
-            return LD_RR_NN(&b,&c,fetchOP(), fetchOP());
+            return LD_RR_NN(&b,&c);
             break;
         case 0x02:
             return LD_BC_A();
@@ -1058,13 +884,13 @@ int execute_op() {
             return DEC_R(&b);
             break;
         case 0x06:
-            return LD_R_N(&b, fetchOP());
+            return LD_R_N(&b);
             break;
         case 0x07:
             return RLCA();
             break;
         case 0x08:
-            return LD_NN_SP(fetchOP(), fetchOP());
+            return LD_NN_SP();
             break;
         case 0x09:
             return ADD_HL_RR(&b,&c);
@@ -1082,7 +908,7 @@ int execute_op() {
             return DEC_R(&c);
             break;
         case 0x0e:
-            return LD_R_N(&c, fetchOP());
+            return LD_R_N(&c);
             break;
         case 0x0f:
             return RRCA();
@@ -1091,7 +917,7 @@ int execute_op() {
             return STOP();
             break;
         case 0x11:
-            return LD_RR_NN(&d, &e, fetchOP(), fetchOP());
+            return LD_RR_NN(&d, &e);
             break;
         case 0x12:
             return LD_DE_A();
@@ -1106,13 +932,13 @@ int execute_op() {
             return DEC_R(&d);
             break;
         case 0x16:
-            return LD_R_N(&d, fetchOP());
+            return LD_R_N(&d);
             break;
         case 0x17:
             return RLA();
             break;
         case 0x18:
-            return JR_DD(fetchOP());
+            return JR_DD();
             break;
         case 0x19:
             return ADD_HL_RR(&d, &e);
@@ -1130,16 +956,16 @@ int execute_op() {
             return DEC_R(&e);
             break;
         case 0x1e:
-            return LD_R_N(&e, fetchOP());
+            return LD_R_N(&e);
             break;
         case 0x1f:
             return RCA();
             break;
         case 0x20:
-            return JR_F_DD(fetchOP(), !(bool)get_flag(z));
+            return JR_F_DD(!(bool)get_flag(z));
             break;
         case 0x21:
-            return LD_RR_NN(&h, &l, fetchOP(), fetchOP());
+            return LD_RR_NN(&h, &l);
             break;
         case 0x22:
             return LDI_HL_A();
@@ -1154,13 +980,13 @@ int execute_op() {
             return DEC_R(&h);
             break;
         case 0x26:
-            return LD_R_N(&h, fetchOP());
+            return LD_R_N(&h);
             break;
         case 0x27:
             return DAA();
             break;
         case 0x28:
-            return JR_F_DD(fetchOP(), (bool) get_flag(z));
+            return JR_F_DD((bool) get_flag(z));
             break;
         case 0x29:
             return ADD_HL_RR(&h,&l);
@@ -1178,16 +1004,16 @@ int execute_op() {
             return DEC_R(&l);
             break;
         case 0x2e:
-            return LD_R_N(&l, fetchOP());
+            return LD_R_N(&l);
             break;
         case 0x2f:
             return CPL();
             break;
         case 0x30:
-            return JR_F_DD(fetchOP(), !(bool)get_flag(cy));
+            return JR_F_DD(!(bool)get_flag(cy));
             break;
         case 0x31:
-            return LD_SP_NN(fetchOP(), fetchOP());
+            return LD_SP_NN();
             break;
         case 0x32:
             return LDD_HL_A();
@@ -1202,13 +1028,13 @@ int execute_op() {
             return DEC_HL();
             break;
         case 0x36:
-            return LD_HL_N(fetchOP());
+            return LD_HL_N();
             break;
         case 0x37:
             return SCF();
             break;
         case 0x38:
-            return JR_F_DD(fetchOP(), (bool) get_flag(cy));
+            return JR_F_DD((bool) get_flag(cy));
             break;
         case 0x39:
             return ADD_HL_SP();
@@ -1226,7 +1052,7 @@ int execute_op() {
             return DEC_R(&a);
             break;
         case 0x3e:
-            return LD_R_N(&a, fetchOP());
+            return LD_R_N(&a);
             break;
         case 0x3f:
             return CCF();
@@ -1622,19 +1448,19 @@ int execute_op() {
             return POP_RR(&b, &c);
             break;
         case 0xc2:
-            return JP_F_NN(fetchOP(), fetchOP(), !(bool) get_flag(z));
+            return JP_F_NN(!(bool) get_flag(z));
             break;
         case 0xc3:
-            return JP_NN(fetchOP(), fetchOP());
+            return JP_NN();
             break;
         case 0xc4:
-            return CALL_F_NN(fetchOP(), fetchOP(), !(bool) get_flag(z));
+            return CALL_F_NN(!(bool) get_flag(z));
             break;
         case 0xc5:
             return PUSH_RR(&b, &c);
             break;
         case 0xc6:
-            return ADD_A_N(fetchOP());
+            return ADD_A_N();
             break;
         case 0xc7:
             return RST(0);
@@ -1646,20 +1472,20 @@ int execute_op() {
             return RET();
             break;
         case 0xca:
-            return JP_F_NN(fetchOP(), fetchOP(), (bool) get_flag(z));
+            return JP_F_NN((bool) get_flag(z));
             break;
         case 0xcb:
             next_op = fetchOP();
             return execute_cb_op(next_op); 
             break;
         case 0xcc:
-            return CALL_F_NN(fetchOP(), fetchOP(), (bool) get_flag(z));
+            return CALL_F_NN((bool) get_flag(z));
             break;
         case 0xcd:
-            return CALL_NN(fetchOP(), fetchOP());
+            return CALL_NN();
             break;
         case 0xce:
-            return ADC_A_N(fetchOP());
+            return ADC_A_N();
             break;
         case 0xcf:
             return RST(1);
@@ -1671,16 +1497,16 @@ int execute_op() {
             return POP_RR(&d, &e);
             break;
         case 0xd2:
-            return JP_F_NN(fetchOP(), fetchOP(), !(bool) get_flag(cy));
+            return JP_F_NN(!(bool) get_flag(cy));
             break;
         case 0xd4:
-            return CALL_F_NN(fetchOP(), fetchOP(), !(bool) get_flag(cy));
+            return CALL_F_NN(!(bool) get_flag(cy));
             break;
         case 0xd5:
             return PUSH_RR(&d, &e);
             break;
         case 0xd6:
-            return SUB_A_N(fetchOP());
+            return SUB_A_N();
             break;
         case 0xd7:
             return RST(2);
@@ -1692,19 +1518,19 @@ int execute_op() {
             return RETI();
             break;
         case 0xda:
-            return JP_F_NN(fetchOP(), fetchOP(), (bool) get_flag(cy));
+            return JP_F_NN((bool) get_flag(cy));
             break;
         case 0xdc:
-            return CALL_F_NN(fetchOP(), fetchOP(), (bool) get_flag(cy));
+            return CALL_F_NN((bool) get_flag(cy));
             break;
         case 0xde:
-            return SBC_A_N(fetchOP());
+            return SBC_A_N();
             break;
         case 0xdf:
             return RST(3);
             break;
         case 0xe0:
-            return LD_ION_A(fetchOP());
+            return LD_ION_A();
             break;
         case 0xe1:
             return POP_RR(&h,&l);
@@ -1716,28 +1542,28 @@ int execute_op() {
             return PUSH_RR(&h, &l);
             break;
         case 0xe6:
-            return AND_A_N(fetchOP());
+            return AND_A_N();
             break;
         case 0xe7:
             return RST(4);
             break;
         case 0xe8:
-            return ADD_SP_DD(fetchOP());
+            return ADD_SP_DD();
             break;
         case 0xe9:
             return JP_HL();
             break;
         case 0xea:
-            return LD_NN_A(fetchOP(), fetchOP());
+            return LD_NN_A();
             break;
         case 0xee:
-            return XOR_A_N(fetchOP());
+            return XOR_A_N();
             break;
         case 0xef:
             return RST(5);
             break;
         case 0xf0:
-            return LD_A_ION(fetchOP());
+            return LD_A_ION();
             break;
         case 0xf1:
             return POP_RR(&a,&f);
@@ -1752,31 +1578,31 @@ int execute_op() {
             return PUSH_RR(&a,&f);
             break;
         case 0xf6:
-            return OR_A_N(fetchOP());
+            return OR_A_N();
             break;
         case 0xf7:
             return RST(6);
             break;
         case 0xf8:
-            return LD_HL_SP_DD(fetchOP());
+            return LD_HL_SP_DD();
             break;
         case 0xf9:
             return LD_SP_HL();
             break;
         case 0xfa:
-            return LD_A_NN(fetchOP(), fetchOP());
+            return LD_A_NN();
             break;
         case 0xfb:
             return EI();
             break;
         case 0xfe:
-            return CP_A_N(fetchOP());
+            return CP_A_N();
             break;
         case 0xff:
             return RST(7);
             break;
          
-    }*/
+    }
 
     return -1;
 }
@@ -1836,16 +1662,27 @@ void set_hl(uint16_t value){
 
 // Opcodes:
 int LD_R_R(uint8_t* reg1, uint8_t* reg2){
-    if (reg1 == NULL) post(get_hl(), *reg2);
-    else if (reg2 == NULL) *reg1 = fetch(get_hl());
-    else *reg1 = *reg2;
-    return (reg1 == NULL || reg2 == NULL) ? 8 : 4;
+    *reg1 = *reg2;
+    return 4;
 
 }  // REG1 = REG2
-int LD_R_N(uint8_t* reg, uint8_t value){
+int LD_R_N(uint8_t* reg){
+    uint8_t value = fetchOP();
     *reg = value;
     return 8;
 }   // REG = Value
+int LD_R_HL(uint8_t* reg){
+    *reg = fetch(get_hl());
+    return 8;
+}                 // REG = *(HL)
+int LD_HL_R(uint8_t* reg){
+    post(get_hl(), *reg);
+    return 8;
+}// *(HL) = REG
+int LD_HL_N(){
+    post(get_hl(), fetchOP());
+    return 12;
+}
 int LD_A_BC(){
     a = fetch(get_bc());
     return 8;
@@ -1854,8 +1691,8 @@ int LD_A_DE(){
     a = fetch(get_de());
     return 8;
 }                             // A = *(DE)
-int LD_A_NN(uint8_t value1, uint8_t value2){
-    a = fetch(x8_x16(value2, value1));
+int LD_A_NN(){
+    a = fetch(fetchOP16());
     return 16;
 }               // A = *(Value)
 int LD_BC_A(){
@@ -1866,16 +1703,16 @@ int LD_DE_A(){
     post(get_de(), a);
     return 8;
 }                             // *(DE) = A
-int LD_NN_A(uint8_t value1, uint8_t value2){
-    post(x8_x16(value2, value1), a);
+int LD_NN_A(){
+    post(fetchOP16(), a);
     return 16;
 }                             // *(NN) = A
-int LD_A_ION(uint8_t index){
-    a = fetch((uint16_t)(0xFF00 + (uint16_t)index));
+int LD_A_ION(){
+    a = fetch((uint16_t)(0xFF00 + (uint16_t)fetchOP()));
     return 12;
 }               // A = *(FF00+n) 
-int LD_ION_A(uint8_t index){
-    post(0xFF00 + index, a);
+int LD_ION_A(){
+    post(0xFF00 + fetchOP(), a);
     return 12;
 }               // *(FF00+n) = A
 int LD_A_IOC(){
@@ -1908,13 +1745,13 @@ int LDD_A_HL(){
 }                            // A = *(HL), HL-=1
         
 // 16 Bit Load Commands
-int LD_RR_NN(uint8_t *reg1, uint8_t *reg2, uint8_t value1, uint8_t value2){
-    *reg2 = value1;
-    *reg1 = value2;
+int LD_RR_NN(uint8_t *reg1, uint8_t *reg2){
+    *reg2 = fetchOP();
+    *reg1 = fetchOP();
     return 12;
 }// RR = NN (rr is like BC or DE or HL)
-int LD_SP_NN(uint8_t value1, uint8_t value2){
-    SP = x8_x16(value2, value1);
+int LD_SP_NN(){
+    SP = fetchOP16();
     return 12;
 } // SP = NN (is merged with op above in pan docs)
 int LD_SP_HL(){
@@ -1934,112 +1771,245 @@ int POP_RR(uint8_t *reg1, uint8_t *reg2){
     return 12;
 }                                  // SP+=2. rr=*(SP)
 
-int LD_NN_SP(uint8_t value1, uint8_t value2) {
-    post(x8_x16(value2,value1), (uint8_t) SP);
-    post(x8_x16(value2,value1) + 1, (uint8_t) (SP >> 8));
+int LD_NN_SP() {
+    uint16_t address = fetchOP16();
+    post(address, (uint8_t) SP);
+    post(address + 1, (uint8_t) (SP >> 8));
     return 20;
 }
         
 // 8 bit Arithmetic/Logic
 int ADD_A_R(uint8_t* reg){
-    int value = *reg;
-    if (reg == NULL) value = fetch(get_hl());
+    set_flag(hy, (a & 0xf) + (*reg & 0xf) > 0xf);
+    set_flag(cy, a + *reg > 0xff);
+    a += *reg;
+    set_flag(z, a==0);
+    set_flag(n, 0);
+    return 4;
+}                // Adds register to accumulator
+int ADD_A_N(){
+    uint8_t value = fetchOP();
     set_flag(hy, (a & 0xf) + (value & 0xf) > 0xf);
     set_flag(cy, a + value > 0xff);
     a += value;
     set_flag(z, a==0);
     set_flag(n, 0);
-    return (reg == NULL) ? 8 : 4;
-}                // Adds register to accumulator
+    return 8;
+}               // Adds value to accumulator
+int ADD_A_HL(){
+    set_flag(hy, (a & 0xf) + (fetch(get_hl()) & 0xf) > 0xf);
+    set_flag(cy, a + fetch(get_hl()) > 0xff);
+    a += fetch(get_hl());
+    set_flag(z, a==0);
+    set_flag(n, 0);
+    return 8;
+}                           // Adds (HL) pointer's value to accumulator
 int ADC_A_R(uint8_t* reg) {
-    int value = *reg;
-    if (reg == NULL) value = fetch(get_hl());
+    set_flag(hy, (a & 0xf) + (*reg & 0xf) + get_flag(cy)> 0xf);
+    bool p = get_flag(cy);
+    set_flag(cy, a + *reg + get_flag(cy) > 0xff);
+    a += *reg + p;
+    set_flag(z, a==0);
+    set_flag(n, 0);
+    return 4;
+}                 // Adds register and c flag to accumulator
+int ADC_A_N(){
+    uint8_t value = fetchOP();
     set_flag(hy, (a & 0xf) + (value & 0xf) + get_flag(cy)> 0xf);
     bool p = get_flag(cy);
     set_flag(cy, a + value + get_flag(cy) > 0xff);
     a += value + p;
     set_flag(z, a==0);
     set_flag(n, 0);
-    return (reg == NULL) ? 8 : 4;
-}                 // Adds register and c flag to accumulator
+    return 8;
+}               // Adds value and c flag to accumulator
+int ADC_A_HL(){
+    set_flag(hy, (a & 0xf) + (fetch(get_hl()) & 0xf) + get_flag(cy)> 0xf);
+    bool p = get_flag(cy);
+    set_flag(cy, a + fetch(get_hl()) + get_flag(cy) > 0xff);
+    a += fetch(get_hl()) + p;
+    set_flag(z, a==0);
+    set_flag(n, 0);
+    return 8;
+}                           // Adds (HL) pointer's value and c flag to accumulator
 int SUB_A_R(uint8_t* reg){
-    int value = *reg;
-    if (reg == NULL) value = fetch(get_hl());
+    set_flag(hy, (a & 0xf) - (*reg & 0xf) < 0x0);
+    set_flag(cy, a - *reg < 0x0000);
+    a -= *reg;
+    set_flag(z, a==0);
+    set_flag(n, 1);
+    return 4;
+}                // Subtracts register from accumulator
+int SUB_A_N(){
+    uint8_t value = fetchOP();
     set_flag(hy, (a & 0xf) - (value & 0xf) < 0x0);
     set_flag(cy, a - value < 0x0000);
     a -= value;
     set_flag(z, a==0);
     set_flag(n, 1);
-    return (reg == NULL) ? 8 : 4;
-}                // Subtracts register from accumulator
+    return 8;
+}               // Subtracts value from accumulator
+int SUB_A_HL(){
+    set_flag(hy, (a & 0xf) - (fetch(get_hl()) & 0xf) < 0x0);
+    set_flag(cy, a - fetch(get_hl()) < 0x0000);
+    a -= fetch(get_hl());
+    set_flag(z, a==0);
+    set_flag(n, 1);
+    return 8;
+}                           // Subtracts (HL) pointer's value from accumulator
 int SBC_A_R(uint8_t* reg){
-    int value = *reg;
-    if (reg == NULL) value = fetch(get_hl());
+    set_flag(hy, (a & 0xf) - (*reg & 0xf) - get_flag(cy) < 0x0);
+    bool p = get_flag(cy);
+    set_flag(cy, a - *reg - get_flag(cy) < 0x0000);
+    a = a - *reg - p;
+    set_flag(z, a==0);
+    set_flag(n, 1);
+    return 4;
+}                // Subtracts register and c flag from accumulator
+int SBC_A_N(){
+    uint8_t value = fetchOP();
     set_flag(hy, (a & 0xf) - (value & 0xf) - get_flag(cy) < 0x0);
     bool p = get_flag(cy);
     set_flag(cy, a - value - get_flag(cy) < 0x0000);
     a = a - value - p;
     set_flag(z, a==0);
     set_flag(n, 1);
-    return (reg == NULL) ? 8 : 4;
-}                // Subtracts register and c flag from accumulator
+    return 8;
+}               // Subtracts value and c flag from accumulator
+int SBC_A_HL(){
+    set_flag(hy, (a & 0xf) - (fetch(get_hl()) & 0xf) - get_flag(cy) < 0x0);
+    bool p = get_flag(cy);
+    set_flag(cy, a - fetch(get_hl()) - get_flag(cy) < 0x0000);
+    a = a - fetch(get_hl()) - p;
+    set_flag(z, a==0);
+    set_flag(n, 1);
+    return 8;
+}                           // Subtracts (HL) pointer's value and c flag from accumulator
 int AND_A_R(uint8_t* reg){
-    int value = *reg;
-    if (reg == NULL) value = fetch(get_hl());
+    a &= *reg;
+    set_flag(z, a==0);
+    set_flag(n, 0);
+    set_flag(hy, 1);
+    set_flag(cy, 0);
+    return 4;
+}                // Masks A and Register, returns into A
+int AND_A_N(){
+    uint8_t value = fetchOP();
     a &= value;
     set_flag(z, a==0);
     set_flag(n, 0);
     set_flag(hy, 1);
     set_flag(cy, 0);
-    return (reg == NULL) ? 8 : 4;
-}                // Masks A and Register, returns into A
+    return 8;
+}               // Masks A and value, returns into A
+int AND_A_HL(){
+    a &= fetch(get_hl());
+    set_flag(z, a==0);
+    set_flag(n, 0);
+    set_flag(hy, 1);
+    set_flag(cy, 0);
+    return 8;
+}                           // Masks A and (HL) pointers value, returns into A
 int XOR_A_R(uint8_t* reg){
-    int value = *reg;
-    if (reg == NULL) value = fetch(get_hl());
+    a ^= *reg;
+    set_flag(z, a==0);
+    set_flag(n, 0);
+    set_flag(hy, 0);
+    set_flag(cy, 0);
+    return 4;
+}                // Opposite of Mask A and Register, returns into A
+int XOR_A_N(){
+    uint8_t value = fetchOP();
     a ^= value;
     set_flag(z, a==0);
     set_flag(n, 0);
     set_flag(hy, 0);
     set_flag(cy, 0);
-    return (reg == NULL) ? 8 : 4;
-}                // Opposite of Mask A and Register, returns into A
+    return 8;
+}               // Opposite of Mask A and value, returns into A
+int XOR_A_HL(){
+    a^= fetch(get_hl());
+    set_flag(z, a==0);
+    set_flag(n, 0);
+    set_flag(hy, 0);
+    set_flag(cy, 0);
+    return 8;
+}                           // Opposite of Mask A and (HL) pointers value, returns into A
 int OR_A_R(uint8_t* reg){
-    int value = *reg;
-    if (reg == NULL) value = fetch(get_hl());
+    a |= *reg;
+    set_flag(z, a==0);
+    set_flag(n, 0);
+    set_flag(hy, 0);
+    set_flag(cy, 0);
+    return 4;
+}                 // Combines A and Register, returns into A
+int OR_A_N(){
+    uint8_t value = fetchOP();
     a |= value;
     set_flag(z, a==0);
     set_flag(n, 0);
     set_flag(hy, 0);
     set_flag(cy, 0);
-    return (reg == NULL) ? 8 : 4;
-}                 // Combines A and Register, returns into A
+    return 8;
+}                // Combines A and value, returns into A
+int OR_A_HL(){
+    a |= fetch(get_hl());
+    set_flag(z, a==0);
+    set_flag(n, 0);
+    set_flag(hy, 0);
+    set_flag(cy, 0);
+    return 8;
+}                            // Combines A and (HL) pointers value, returns into A
 int CP_A_R(uint8_t* reg){ 
-    int value = *reg;
-    if (reg == NULL) value = fetch(get_hl());
-    set_flag(z, a==value);
+    set_flag(z, a==*reg);
     set_flag(n, 1);
     set_flag(hy, (a & 0xf) - (*reg & 0xf) < 0);
-    set_flag(cy, a-value < 0);
-    return (reg == NULL) ? 8 : 4;
+    set_flag(cy, a-*reg < 0);
+    return 4;
 }                 // Compares A and Register, returns into A
-int INC_R(uint8_t* reg){
-    int value = reg == NULL ? fetch(get_hl())+1 : *reg+1;
-    if (reg == NULL) post(get_hl(), fetch(get_hl())+1);
-    else *reg += 1;
-    set_flag(z, value == 0);
-    set_flag(n, 0);
-    set_flag(hy, (value>>4) % 2 != ((value-1)>>4) % 2);
-    return (reg == NULL) ? 12 : 4;
-}                  // Adds one to register
-int DEC_R(uint8_t* reg){
-    int value = reg == NULL ? fetch(get_hl())-1 : *reg-1;
-    if (reg == NULL) post(get_hl(), fetch(get_hl())-1);
-    else *reg -= 1;
-    set_flag(z, value == 0);
+int CP_A_N(){
+    uint8_t value = fetchOP();
+    set_flag(z, a==value);
     set_flag(n, 1);
-    set_flag(hy, (value>>4) % 2 != ((value+1)>>4) % 2);
-    return (reg == NULL) ? 12 : 4;
+    set_flag(hy, (a & 0xf) - (value & 0xf) < 0);
+    set_flag(cy, a-value < 0);
+    return 8;
+}                // Compares A and value, returns into A
+int CP_A_HL(){
+    set_flag(z, a==fetch(get_hl()));
+    set_flag(n, 1);
+    set_flag(hy, (a & 0xf) - (fetch(get_hl()) & 0xf) < 0);
+    set_flag(cy, a-fetch(get_hl()) < 0);
+    return 8;
+}                            // Compares A and (HL) pointers value, returns into A
+int INC_R(uint8_t* reg){
+    *reg +=1;
+    set_flag(z, *reg == 0);
+    set_flag(n, 0);
+    set_flag(hy, (*reg>>4) % 2 != ((*reg-1)>>4) % 2);
+    return 4;
+}                  // Adds one to register
+int INC_HL(){
+    post(get_hl(), fetch(get_hl())+1);
+    set_flag(z, fetch(get_hl()) == 0);
+    set_flag(n, 0);
+    set_flag(hy, (fetch(get_hl()) & 0xf) == 0);
+    return 12;
+}                             // Adds on to (HL) pointer's value
+int DEC_R(uint8_t* reg){
+    *reg -= 1;
+    set_flag(z, *reg == 0);
+    set_flag(n, 1);
+    set_flag(hy, (*reg>>4) % 2 != ((*reg+1)>>4) % 2);
+    return 4;
 }                  // Subtracts one from register
+int DEC_HL(){
+    post(get_hl(), fetch(get_hl())-1);
+    set_flag(z, fetch(get_hl()) == 0);
+    set_flag(n, 1);
+    set_flag(hy, (fetch((get_hl()))&0x10) != ((fetch(get_hl())+1)&0x10));
+    return 12;
+}                             // Subtracts one from (HL) pointer's value
 int DAA(){
     if (!get_flag(n)) {  // after an addition, adjust if (half-)carry occurred or if result is out of bounds
         if (get_flag(cy)|| a > 0x99) { 
@@ -2106,7 +2076,8 @@ int DEC_SP() {
     SP--;
     return 8;
 }
-int ADD_SP_DD(int8_t value){
+int ADD_SP_DD(){
+    int8_t value = fetchOP();
     set_flag(z, 0);
     set_flag(n, 0);
     set_flag(hy, (value&0xf) + (SP & 0xf) > 0xf);
@@ -2115,7 +2086,8 @@ int ADD_SP_DD(int8_t value){
     return 16;
 } // SP += DD
 
-int LD_HL_SP_DD(int8_t value){
+int LD_HL_SP_DD(){
+    int8_t value = fetchOP();
     set_flag(z, 0);
     set_flag(n, 0);
     set_flag(hy, ((uint8_t)value & 0xf) + (SP & 0xf) > 0xf);
@@ -2383,45 +2355,45 @@ int EI(){
 }                                   // Enable interrupts
 
 // Jump commands
-int JP_NN(uint8_t value1, uint8_t value2){
-    PC = x8_x16(value2, value1);
+int JP_NN(){
+    PC = fetchOP16();
     return 16;
 }  // PC = 16 bit value1+2
 int JP_HL(){
     PC = get_hl();
     return 4;
 }                                // PC = HL 
-int JP_F_NN(uint8_t value1, uint8_t value2, bool flag_value){
+int JP_F_NN(bool flag_value){
     if (flag_value) {
-        PC = x8_x16(value2, value1);
+        PC = fetchOP16();
         return 16;
     }
     return 12;
 }  // PC = 16 bit value1+2 if FLAG is set
-int JR_DD(int8_t value){
-    PC += value;    // minus 2 because the instruction itself is 2 bytes
+int JR_DD(){
+    PC += (int8_t)fetchOP();    // minus 2 because the instruction itself is 2 bytes
     return 12;
 }                   // PC += value
-int JR_F_DD(int8_t value, bool flag_value){
+int JR_F_DD(bool flag_value){
     if (flag_value) {
-        PC += value;
+        PC += (int8_t)fetchOP();
         return 12;
     }
     return 8;
 }   // PC += value if FLAG is set
-int CALL_NN(uint8_t value1, uint8_t value2){
+int CALL_NN(){
     post(SP-1, (uint8_t) (PC>>8));
     post(SP-2, (uint8_t) PC);
     SP-=2;
-    PC = x8_x16(value2,value1);
+    PC = fetchOP16();
     return 24;
 }// PC = 16 bit value1+2, SP-=2, (SP) = PC
-int CALL_F_NN(uint8_t value1, uint8_t value2, bool flag_value){
+int CALL_F_NN(bool flag_value){
     if (flag_value) {
         post(SP-1, (uint8_t) (PC>>8));
         post(SP-2, (uint8_t) PC);
         SP-=2;
-        PC = x8_x16(value2,value1);
+        PC = fetchOP16();
         return 24;
     }
     return 12;

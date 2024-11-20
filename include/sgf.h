@@ -1,6 +1,7 @@
 #ifndef SGF_H
 #define SGF_H
 
+#include <OpenGL/OpenGL.h>
 #if defined(__linux__) && defined(__arm__)
     #define SGF_USE_GLES
 #else
@@ -827,7 +828,10 @@ void SGFSetBitmapTexture(SGFsprite s, int tex_w, int tex_h, unsigned char* data,
     glBindTexture(GL_TEXTURE_2D, s.texture);
     glTexImage2D(GL_TEXTURE_2D, 0, alpha ? GL_RGBA : GL_RGB, 160, 144, 0, alpha ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
+}
 
+void SGFReDrawBitmapTexture(SGFsprite s, int tex_w, int tex_h, unsigned char* data, int alpha) {
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex_w, tex_h, alpha ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, data);
 }
 
 

@@ -28,6 +28,9 @@ void PPUKill() {
     SGFTerminate();
 }
 
+// TODO Notes FOr TOmorrow
+// - Table of which objects visible
+// - STRUCTURE for objects
 void drawScanline(int scanline) {
     if (BGWinEnable) {
         // TODO Fix scrolling edges
@@ -126,7 +129,7 @@ void drawScanline(int scanline) {
 int renderFrame() {
     SGFFillColor(1.0f,0.0f,0.0f,1.0f);
 
-    SGFSetBitmapTexture(bg, 160, 144, texture, 0);
+    SGFReDrawBitmapTexture(bg, 160, 144, texture, 0);
     SGFDrawSprite(bg);
 
     SGFLoopEnd(window);

@@ -26,6 +26,7 @@ void timerInit() {
 }
 
 
+// TODO Optimize
 void timerTick(int cycles) {
     for (int i = 0; i < cycles; i++) {
         sys_counter += 1; 

@@ -1,4 +1,5 @@
 #include "bus.h"
+#include "joypad.h"
 #include "lcd.h"
 #include "mbc.h"
 
@@ -50,85 +51,250 @@ void BusWrite(uint16_t index, uint8_t value) {
 
 uint8_t io_read(int io) {
     uint8_t i = io_regs[io-0xff00];
-    if (io == rJOY) return joypad_read();
-    if (io == rDIV) return timerRead(io);
-    if (io == rTIMA) return timerRead(io);
-    if (io == rTMA) return timerRead(io);
-    if (io == rTAC) return timerRead(io);
-    if (io == rIF) return IFRead();
-    if (io == NR10) return APURead(io);
-    if (io == NR11) return APURead(io);
-    if (io == NR12) return APURead(io);
-    if (io == NR13) return APURead(io);
-    if (io == NR14) return APURead(io);
-    if (io == NR21) return APURead(io);
-    if (io == NR22) return APURead(io);
-    if (io == NR23) return APURead(io);
-    if (io == NR24) return APURead(io);
-    if (io == NR30) return APURead(io);
-    if (io == NR31) return APURead(io);
-    if (io == NR32) return APURead(io);
-    if (io == NR33) return APURead(io);
-    if (io == NR34) return APURead(io);
-    if (io == NR41) return APURead(io);
-    if (io == NR42) return APURead(io);
-    if (io == NR43) return APURead(io);
-    if (io == NR44) return APURead(io);
-    if (io == rLCDC) return LCDRead(io);
-    if (io == rSTAT) return LCDRead(io);
-    if (io == rSCY) return LCDRead(io);
-    if (io == rSCX) return LCDRead(io);
-    if (io == rLY) return LCDRead(io);
-    if (io == rLYC) return LCDRead(io);
-    if (io == rBGP) return LCDRead(io);
-    if (io == rOBP0) return LCDRead(io);
-    if (io == rOBP1) return LCDRead(io);
-    if (io == rWY) return LCDRead(io);
-    if (io == rWX) return LCDRead(io);
-    return i;
+    switch (io) {
+        case rJOY:
+            return joypad_read();
+            break;
+        case rDIV:
+            return timerRead(io);
+            break;
+        case rTIMA:
+            return timerRead(io);
+            break;
+        case rTMA:
+            return timerRead(io);
+            break;
+        case rTAC:
+            return timerRead(io);
+            break;
+        case rIF:
+            return IFRead();
+            break;
+        case NR10:
+            return APURead(io);
+            break;
+        case NR11:
+            return APURead(io);
+            break;
+        case NR12:
+            return APURead(io);
+            break;
+        case NR13:
+            return APURead(io);
+            break;
+        case NR14:
+            return APURead(io);
+            break;
+        case NR21:
+            return APURead(io);
+            break;
+        case NR22:
+            return APURead(io);
+            break;
+        case NR23:
+            return APURead(io);
+            break;
+        case NR24:
+            return APURead(io);
+            break;
+        case NR30:
+            return APURead(io);
+            break;
+        case NR31:
+            return APURead(io);
+            break;
+        case NR32:
+            return APURead(io);
+            break;
+        case NR33:
+            return APURead(io);
+            break;
+        case NR34:
+            return APURead(io);
+            break;
+        case NR41:
+            return APURead(io);
+            break;
+        case NR42:
+            return APURead(io);
+            break;
+        case NR43:
+            return APURead(io);
+            break;
+        case NR44:
+            return APURead(io);
+            break;
+        case NR50:
+            return APURead(io);
+            break;
+        case NR51:
+            return APURead(io);
+            break;
+        case NR52:
+            return APURead(io);
+            break;
+        case rLCDC:
+            return LCDRead(io);
+            break;
+        case rSTAT:
+            return LCDRead(io);
+            break;
+        case rSCY:
+            return LCDRead(io);
+            break;
+        case rSCX:
+            return LCDRead(io);
+            break;
+        case rLY:
+            return LCDRead(io);
+            break;
+        case rLYC:
+            return LCDRead(io);
+            break;
+        case rBGP:
+            return LCDRead(io);
+            break;
+        case rOBP0:
+            return LCDRead(io);
+            break;
+        case rOBP1:
+            return LCDRead(io);
+            break;
+        case rWY:
+            return LCDRead(io);
+            break;
+        case rWX:
+            return LCDRead(io);
+            break;
+
+    }
+        return i;
 }
 
 void io_write(int io, uint8_t value) {
-    if (io == rJOY) joypad_write(value);
-    else if (io == rDIV) timerWrite(io, value);
-    else if (io == rTIMA) timerWrite(io, value);
-    else if (io == rTMA) timerWrite(io, value);
-    else if (io == rTAC) timerWrite(io, value);
-    else if (io == rIF) IFWrite(value);
-    else if (io == NR10) APUWrite(io, value);
-    else if (io == NR11) APUWrite(io, value);
-    else if (io == NR12) APUWrite(io, value);
-    else if (io == NR13) APUWrite(io, value);
-    else if (io == NR14) APUWrite(io, value);
-    else if (io == NR21) APUWrite(io, value);
-    else if (io == NR22) APUWrite(io, value);
-    else if (io == NR23) APUWrite(io, value);
-    else if (io == NR24) APUWrite(io, value);
-    else if (io == NR30) APUWrite(io, value);
-    else if (io == NR31) APUWrite(io, value);
-    else if (io == NR32) APUWrite(io, value);
-    else if (io == NR33) APUWrite(io, value);
-    else if (io == NR34) APUWrite(io, value);
-    else if (io == NR41) APUWrite(io, value);
-    else if (io == NR42) APUWrite(io, value);
-    else if (io == NR43) APUWrite(io, value);
-    else if (io == NR44) APUWrite(io, value);
-    else if (io == rLCDC) LCDWrite(io, value);
-    else if (io == rSTAT) LCDWrite(io, value);
-    else if (io == rSCY) LCDWrite(io, value);
-    else if (io == rSCX) LCDWrite(io, value);
-    else if (io == rLY) LCDWrite(io, value);
-    else if (io == rLYC) LCDWrite(io, value);
-    else if (io == rDMA) { // Pretend 640 Clock Cycles passes
-        for (int i = 0; i < 0xa0; i++) {
-            BusWrite(0xfe00+i, BusRead((value<<8)+i));
-        }
-    }else if(io == rBGP) LCDWrite(io, value);
-    else if (io == rOBP0) LCDWrite(io, value);
-    else if (io == rOBP1) LCDWrite(io, value);
-    else if (io == rWY) LCDWrite(io, value);
-    else if (io == rWX) LCDWrite(io, value);
-    else io_regs[io-0xff00] = value;
+    switch (io) {
+        case rJOY:
+            joypad_write(value);
+            break;
+        case rDIV:
+            timerWrite(io, value);
+            break;
+        case rTIMA:
+            timerWrite(io, value);
+            break;
+        case rTMA:
+            timerWrite(io, value);
+            break;
+        case rTAC:
+            timerWrite(io, value);
+            break;
+        case rIF:
+            IFWrite(value);
+            break;
+        case NR10:
+            APUWrite(io, value);
+            break;
+        case NR11:
+            APUWrite(io, value);
+            break;
+        case NR12:
+            APUWrite(io, value);
+            break;
+        case NR13:
+            APUWrite(io, value);
+            break;
+        case NR14:
+            APUWrite(io, value);
+            break;
+        case NR21:
+            APUWrite(io, value);
+            break;
+        case NR22:
+            APUWrite(io, value);
+            break;
+        case NR23:
+            APUWrite(io, value);
+            break;
+        case NR24:
+            APUWrite(io, value);
+            break;
+        case NR30:
+            APUWrite(io, value);
+            break;
+        case NR31:
+            APUWrite(io, value);
+            break;
+        case NR32:
+            APUWrite(io, value);
+            break;
+        case NR33:
+            APUWrite(io, value);
+            break;
+        case NR34:
+            APUWrite(io, value);
+            break;
+        case NR41:
+            APUWrite(io, value);
+            break;
+        case NR42:
+            APUWrite(io, value);
+            break;
+        case NR43:
+            APUWrite(io, value);
+            break;
+        case NR44:
+            APUWrite(io, value);
+            break;
+        case NR50:
+            APUWrite(io, value);
+            break;
+        case NR51:
+            APUWrite(io, value);
+            break;
+        case NR52:
+            APUWrite(io, value);
+            break;
+        case rLCDC:
+            LCDWrite(io, value);
+            break;
+        case rSTAT:
+            LCDWrite(io, value);
+            break;
+        case rSCY:
+            LCDWrite(io, value);
+            break;
+        case rSCX:
+            LCDWrite(io, value);
+            break;
+        case rLY:
+            LCDWrite(io, value);
+            break;
+        case rLYC:
+            LCDWrite(io, value);
+            break;
+        case rDMA: // Pretend 640 Clock Cycles passes
+            for (int i = 0; i < 0xa0; i++) BusWrite(0xfe00+i, BusRead((value<<8)+i));
+            break;
+        case rBGP:
+            LCDWrite(io, value);
+            break;
+        case rOBP0:
+            LCDWrite(io, value);
+            break;
+        case rOBP1:
+            LCDWrite(io, value);
+            break;
+        case rWY:
+            LCDWrite(io, value);
+            break;
+        case rWX:
+            LCDWrite(io, value);
+            break;
+        default:
+            io_regs[io-0xff00] = value;
+            break;
+
+    }
 }
 
 

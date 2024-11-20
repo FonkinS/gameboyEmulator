@@ -81,18 +81,18 @@ void set_hl(uint16_t value);
 // 8 bit load commands
 
 int LD_R_R(uint8_t* reg1, uint8_t* reg2);  // REG1 = REG2
-int LD_R_N(uint8_t* reg, uint8_t value);   // REG = Value
+int LD_R_N(uint8_t* reg);   // REG = Value
 int LD_R_HL(uint8_t* reg);                 // REG = *(HL)
 int LD_HL_R(uint8_t* reg);                 // *(HL) = REG
-int LD_HL_N(uint8_t value);                // *(HL) = Value
+int LD_HL_N();                // *(HL) = Value
 int LD_A_BC();                             // A = *(BC)
 int LD_A_DE();                             // A = *(DE)
-int LD_A_NN(uint8_t value1, uint8_t value2);               // A = *(Value)  
+int LD_A_NN();               // A = *(Value)  
 int LD_BC_A();                             // *(BC) = A
 int LD_DE_A();                             // *(DE) = A
-int LD_NN_A(uint8_t value1, uint8_t value2);                             // *(NN) = A
-int LD_A_ION(uint8_t index);               // A = *(FF00+n) 
-int LD_ION_A(uint8_t index);               // *(FF00+n) = A
+int LD_NN_A();                             // *(NN) = A
+int LD_A_ION();               // A = *(FF00+n) 
+int LD_ION_A();               // *(FF00+n) = A
 int LD_A_IOC();                            // A = *(FF00+C)
 int LD_IOC_A();                            // *(FF00+c) = A
 int LDI_HL_A();                            // *(HL) = A, HL+=1
@@ -101,37 +101,37 @@ int LDD_HL_A();                            // *(HL) = A, HL-=1
 int LDD_A_HL();                            // A = *(HL), HL-=1
 
 // 16 Bit Load Commands
-int LD_RR_NN(uint8_t *reg1, uint8_t *reg2, uint8_t value1, uint8_t value2);// RR = NN (rr is like BC or DE or HL)
-int LD_SP_NN(uint8_t value1, uint8_t value2); // SP = NN (is merged with op above in pan docs)
+int LD_RR_NN(uint8_t *reg1, uint8_t *reg2);// RR = NN (rr is like BC or DE or HL)
+int LD_SP_NN(); // SP = NN (is merged with op above in pan docs)
 int LD_SP_HL();                                                            // SP = HL
 int PUSH_RR(uint8_t *reg1, uint8_t *reg2);                                 // SP-=2, *(SP)=rr
 int POP_RR(uint8_t *reg1, uint8_t *reg2);                                  // SP+=2. rr=*(SP)
-int LD_NN_SP(uint8_t value1, uint8_t value2);                              // *(value1+value2) = SP. MISING IN PAN DOCS
+int LD_NN_SP();                              // *(value1+value2) = SP. MISING IN PAN DOCS
 
 // 8 bit Arithmetic/Logic
 int ADD_A_R(uint8_t* reg);                // Adds register to accumulator
-int ADD_A_N(uint8_t value);               // Adds value to accumulator
+int ADD_A_N();               // Adds value to accumulator
 int ADD_A_HL();                           // Adds (HL) pointer's value to accumulator
 int ADC_A_R(uint8_t* reg);                 // Adds register and c flag to accumulator
-int ADC_A_N(uint8_t value);               // Adds value and c flag to accumulator
+int ADC_A_N();               // Adds value and c flag to accumulator
 int ADC_A_HL();                           // Adds (HL) pointer's value and c flag to accumulator
 int SUB_A_R(uint8_t* reg);                // Subtracts register from accumulator
-int SUB_A_N(uint8_t value);               // Subtracts value from accumulator
+int SUB_A_N();               // Subtracts value from accumulator
 int SUB_A_HL();                           // Subtracts (HL) pointer's value from accumulator
 int SBC_A_R(uint8_t* reg);                // Subtracts register and c flag from accumulator
-int SBC_A_N(uint8_t value);               // Subtracts value and c flag from accumulator
+int SBC_A_N();               // Subtracts value and c flag from accumulator
 int SBC_A_HL();                           // Subtracts (HL) pointer's value and c flag from accumulator
 int AND_A_R(uint8_t* reg);                // Masks A and Register, returns into A
-int AND_A_N(uint8_t value);               // Masks A and value, returns into A
+int AND_A_N();               // Masks A and value, returns into A
 int AND_A_HL();                           // Masks A and (HL) pointers value, returns into A
 int XOR_A_R(uint8_t* reg);                // Opposite of Mask A and Register, returns into A
-int XOR_A_N(uint8_t value);               // Opposite of Mask A and value, returns into A
+int XOR_A_N();               // Opposite of Mask A and value, returns into A
 int XOR_A_HL();                           // Opposite of Mask A and (HL) pointers value, returns into A
 int OR_A_R(uint8_t* reg);                 // Combines A and Register, returns into A
-int OR_A_N(uint8_t value);                // Combines A and value, returns into A
+int OR_A_N();                // Combines A and value, returns into A
 int OR_A_HL();                            // Combines A and (HL) pointers value, returns into A
 int CP_A_R(uint8_t* reg);                 // Compares A and Register, returns into A
-int CP_A_N(uint8_t value);                // Compares A and value, returns into A
+int CP_A_N();                // Compares A and value, returns into A
 int CP_A_HL();                            // Compares A and (HL) pointers value, returns into A
 int INC_R(uint8_t* reg);                  // Adds one to register
 int INC_HL();                             // Adds on to (HL) pointer's value
@@ -147,8 +147,8 @@ int INC_RR(uint8_t* reg1, uint8_t* reg2);   // RR += 1
 int DEC_RR(uint8_t* reg1, uint8_t* reg2);   // RR -= 1
 int INC_SP();
 int DEC_SP();
-int ADD_SP_DD(int8_t value); // SP += DD
-int LD_HL_SP_DD(int8_t value); // HL = SP + DD
+int ADD_SP_DD(); // SP += DD
+int LD_HL_SP_DD(); // HL = SP + DD
 
 
 // Rotate And Shift Commands
@@ -191,13 +191,13 @@ int DI();                                   // disable interrupts
 int EI();                                   // Enable interrupts
 
 // Jump commands
-int JP_NN(uint8_t value1, uint8_t value2);  // PC = 16 bit value1+2
+int JP_NN();  // PC = 16 bit value1+2
 int JP_HL();                                // PC = HL 
-int JP_F_NN(uint8_t value1, uint8_t value2, bool flag_value);  // PC = 16 bit value1+2 if FLAG is set
-int JR_DD(int8_t value);                   // PC += value
-int JR_F_DD(int8_t value, bool flag_value);   // PC += value if FLAG is set
-int CALL_NN(uint8_t value1, uint8_t value2);// PC = 16 bit value1+2, SP-=2, (SP) = PC
-int CALL_F_NN(uint8_t value1, uint8_t value2, bool flag_value);// PC = 16 bit value1+2, SP-=2, (SP) = PC IF Flag is set
+int JP_F_NN(bool flag_value);  // PC = 16 bit value1+2 if FLAG is set
+int JR_DD();                   // PC += value
+int JR_F_DD(bool flag_value);   // PC += value if FLAG is set
+int CALL_NN();// PC = 16 bit value1+2, SP-=2, (SP) = PC
+int CALL_F_NN(bool flag_value);// PC = 16 bit value1+2, SP-=2, (SP) = PC IF Flag is set
 int RET();                                  // PC=(SP), SP+=2
 int RET_F(bool flag_value);                    // PC=(SP), SP+=2 IF Flag is set
 int RETI();                                 // PC=(SP), SP+=2, enable interrupts
