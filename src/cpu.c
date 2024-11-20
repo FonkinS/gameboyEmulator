@@ -869,13 +869,13 @@ int execute_op() {
             return NOP();
             break;
         case 0x01:
-            return LD_RR_NN(&b,&c);
+            return LD_RR_NN(BC);
             break;
         case 0x02:
             return LD_BC_A();
             break;
         case 0x03:
-            return INC_RR(&b,&c);
+            return INC_RR(BC);
             break;
         case 0x04:
             return INC_R(&b);
@@ -893,13 +893,13 @@ int execute_op() {
             return LD_NN_SP();
             break;
         case 0x09:
-            return ADD_HL_RR(&b,&c);
+            return ADD_HL_RR(BC);
             break;
         case 0x0a:
             return LD_A_BC();
             break;
         case 0x0b:
-            return DEC_RR(&b,&c);
+            return DEC_RR(BC);
             break;
         case 0x0c:
             return INC_R(&c);
@@ -917,13 +917,13 @@ int execute_op() {
             return STOP();
             break;
         case 0x11:
-            return LD_RR_NN(&d, &e);
+            return LD_RR_NN(DE);
             break;
         case 0x12:
             return LD_DE_A();
             break;
         case 0x13:
-            return INC_RR(&d, &e);
+            return INC_RR(DE);
             break;
         case 0x14:
             return INC_R(&d);
@@ -941,13 +941,13 @@ int execute_op() {
             return JR_DD();
             break;
         case 0x19:
-            return ADD_HL_RR(&d, &e);
+            return ADD_HL_RR(DE);
             break;
         case 0x1a:
             return LD_A_DE();
             break;
         case 0x1b:
-            return DEC_RR(&d, &e);
+            return DEC_RR(DE);
             break;
         case 0x1c:
             return INC_R(&e);
@@ -965,13 +965,13 @@ int execute_op() {
             return JR_F_DD(!(bool)get_flag(z));
             break;
         case 0x21:
-            return LD_RR_NN(&h, &l);
+            return LD_RR_NN(HL);
             break;
         case 0x22:
             return LDI_HL_A();
             break;
         case 0x23:
-            return INC_RR(&h, &l);
+            return INC_RR(HL);
             break;
         case 0x24:
             return INC_R(&h);
@@ -989,13 +989,13 @@ int execute_op() {
             return JR_F_DD((bool) get_flag(z));
             break;
         case 0x29:
-            return ADD_HL_RR(&h,&l);
+            return ADD_HL_RR(HL);
             break;
         case 0x2a:
             return LDI_A_HL();
             break;
         case 0x2b:
-            return DEC_RR(&h,&l);
+            return DEC_RR(HL);
             break;
         case 0x2c:
             return INC_R(&l);
@@ -1445,7 +1445,7 @@ int execute_op() {
             return RET_F(!(bool)get_flag(z));
             break;
         case 0xc1:
-            return POP_RR(&b, &c);
+            return POP_RR(BC);
             break;
         case 0xc2:
             return JP_F_NN(!(bool) get_flag(z));
@@ -1457,7 +1457,7 @@ int execute_op() {
             return CALL_F_NN(!(bool) get_flag(z));
             break;
         case 0xc5:
-            return PUSH_RR(&b, &c);
+            return PUSH_RR(BC);
             break;
         case 0xc6:
             return ADD_A_N();
@@ -1494,7 +1494,7 @@ int execute_op() {
             return RET_F(!(bool) get_flag(cy));
             break;
         case 0xd1:
-            return POP_RR(&d, &e);
+            return POP_RR(DE);
             break;
         case 0xd2:
             return JP_F_NN(!(bool) get_flag(cy));
@@ -1503,7 +1503,7 @@ int execute_op() {
             return CALL_F_NN(!(bool) get_flag(cy));
             break;
         case 0xd5:
-            return PUSH_RR(&d, &e);
+            return PUSH_RR(DE);
             break;
         case 0xd6:
             return SUB_A_N();
@@ -1533,13 +1533,13 @@ int execute_op() {
             return LD_ION_A();
             break;
         case 0xe1:
-            return POP_RR(&h,&l);
+            return POP_RR(HL);
             break;
         case 0xe2:
             return LD_IOC_A();
             break;
         case 0xe5:
-            return PUSH_RR(&h, &l);
+            return PUSH_RR(HL);
             break;
         case 0xe6:
             return AND_A_N();
@@ -1566,7 +1566,7 @@ int execute_op() {
             return LD_A_ION();
             break;
         case 0xf1:
-            return POP_RR(&a,&f);
+            return POP_RR(AF);
             break;
         case 0xf2:
             return LD_A_IOC();
@@ -1575,7 +1575,7 @@ int execute_op() {
             return DI();
             break;
         case 0xf5:
-            return PUSH_RR(&a,&f);
+            return PUSH_RR(AF);
             break;
         case 0xf6:
             return OR_A_N();
@@ -1604,6 +1604,7 @@ int execute_op() {
          
     }
 
+    f &= 0xf0;
     return -1;
 }
 
@@ -1657,6 +1658,19 @@ void set_hl(uint16_t value){
     h = (uint8_t) (value>>8);
     l = (uint8_t) value;
 
+}
+
+uint8_t *rr_regs[8] = {&a, &f, &b, &c, &d, &e, &h, &l};
+uint8_t* get_rr_1(enum RR type) {
+    return rr_regs[type * 2];
+}
+
+uint8_t* get_rr_2(enum RR type) {
+    return rr_regs[type * 2+1];
+}
+
+uint16_t get_rr(enum RR type) {
+    return (*rr_regs[type * 2] << 8) + *rr_regs[type*2+1];
 }
 
 
@@ -1745,9 +1759,9 @@ int LDD_A_HL(){
 }                            // A = *(HL), HL-=1
         
 // 16 Bit Load Commands
-int LD_RR_NN(uint8_t *reg1, uint8_t *reg2){
-    *reg2 = fetchOP();
-    *reg1 = fetchOP();
+int LD_RR_NN(enum RR type){
+    *get_rr_2(type) = fetchOP();
+    *get_rr_1(type) = fetchOP();
     return 12;
 }// RR = NN (rr is like BC or DE or HL)
 int LD_SP_NN(){
@@ -1758,15 +1772,15 @@ int LD_SP_HL(){
     SP = get_hl();
     return 8;
 }                                                            // SP = HL
-int PUSH_RR(uint8_t *reg1, uint8_t *reg2){
-    post(SP-1, *reg1);
-    post(SP-2, *reg2);
+int PUSH_RR(enum RR type){
+    post(SP-1, *get_rr_1(type));
+    post(SP-2, *get_rr_2(type));
     SP-=2;
     return 16;
 }                                 // SP-=2, *(SP)=rr
-int POP_RR(uint8_t *reg1, uint8_t *reg2){
-    *reg2 = fetch(SP);
-    *reg1 = fetch(SP+1);
+int POP_RR(enum RR type){
+    *get_rr_2(type) = fetch(SP);
+    *get_rr_1(type) = fetch(SP+1);
     SP+=2;
     return 12;
 }                                  // SP+=2. rr=*(SP)
@@ -2038,9 +2052,9 @@ int CPL(){
 }                                // Flips all bits in Acumulator
 
 // 16 Bit Arithmetic
-int ADD_HL_RR(uint8_t* reg1, uint8_t* reg2){
+int ADD_HL_RR(enum RR type){
     uint16_t first = get_hl();
-    uint16_t second = x8_x16(*reg1, *reg2);
+    uint16_t second = get_rr(type);
     set_flag(hy, (first&0xfff)+(second&0xfff) > 0xfff);
     set_flag(cy, first + second > 0xffff);
     set_hl(first+second);
@@ -2056,14 +2070,14 @@ int ADD_HL_SP() {
     return 8;
 }
 
-int INC_RR(uint8_t* reg1, uint8_t* reg2){
-    *reg1 = x16_x81(x8_x16(*reg1, *reg2)+1);
-    *reg2 = x16_x82(x8_x16(*reg1, *reg2)+1);
+int INC_RR(enum RR type){
+    *get_rr_1(type) = x16_x81(get_rr(type)+1);
+    *get_rr_2(type) = x16_x82(get_rr(type)+1);
     return 8;
 }   // RR += 1
-int DEC_RR(uint8_t* reg1, uint8_t* reg2){
-    *reg1 = x16_x81(x8_x16(*reg1, *reg2)-1);
-    *reg2 = x16_x82(x8_x16(*reg1, *reg2)-1);
+int DEC_RR(enum RR type){
+    *get_rr_1(type) = x16_x81(get_rr(type)-1);
+    *get_rr_2(type) = x16_x82(get_rr(type)-1);
     return 8;
 }   // RR -= 1
 
@@ -2364,8 +2378,9 @@ int JP_HL(){
     return 4;
 }                                // PC = HL 
 int JP_F_NN(bool flag_value){
+    uint16_t value = fetchOP16();
     if (flag_value) {
-        PC = fetchOP16();
+        PC = value;
         return 16;
     }
     return 12;
@@ -2375,25 +2390,28 @@ int JR_DD(){
     return 12;
 }                   // PC += value
 int JR_F_DD(bool flag_value){
+    int8_t value = fetchOP();
     if (flag_value) {
-        PC += (int8_t)fetchOP();
+        PC += value;
         return 12;
     }
     return 8;
 }   // PC += value if FLAG is set
 int CALL_NN(){
+    uint16_t value = fetchOP16();
     post(SP-1, (uint8_t) (PC>>8));
     post(SP-2, (uint8_t) PC);
     SP-=2;
-    PC = fetchOP16();
+    PC = value;
     return 24;
 }// PC = 16 bit value1+2, SP-=2, (SP) = PC
 int CALL_F_NN(bool flag_value){
+    uint16_t value = fetchOP16();
     if (flag_value) {
         post(SP-1, (uint8_t) (PC>>8));
         post(SP-2, (uint8_t) PC);
         SP-=2;
-        PC = fetchOP16();
+        PC = value;
         return 24;
     }
     return 12;

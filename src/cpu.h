@@ -52,6 +52,11 @@ uint16_t get_bc();
 uint16_t get_de();
 uint16_t get_hl();
 
+enum RR {AF, BC, DE, HL};
+uint8_t* get_rr_1(enum RR type);
+uint8_t* get_rr_2(enum RR type);
+uint16_t get_rr(enum RR type);
+
 
 //bool IME; // interrupt master enable flag
 
@@ -101,11 +106,11 @@ int LDD_HL_A();                            // *(HL) = A, HL-=1
 int LDD_A_HL();                            // A = *(HL), HL-=1
 
 // 16 Bit Load Commands
-int LD_RR_NN(uint8_t *reg1, uint8_t *reg2);// RR = NN (rr is like BC or DE or HL)
+int LD_RR_NN(enum RR type);// RR = NN (rr is like BC or DE or HL)
 int LD_SP_NN(); // SP = NN (is merged with op above in pan docs)
 int LD_SP_HL();                                                            // SP = HL
-int PUSH_RR(uint8_t *reg1, uint8_t *reg2);                                 // SP-=2, *(SP)=rr
-int POP_RR(uint8_t *reg1, uint8_t *reg2);                                  // SP+=2. rr=*(SP)
+int PUSH_RR(enum RR type);                                 // SP-=2, *(SP)=rr
+int POP_RR(enum RR type);                                  // SP+=2. rr=*(SP)
 int LD_NN_SP();                              // *(value1+value2) = SP. MISING IN PAN DOCS
 
 // 8 bit Arithmetic/Logic
@@ -141,10 +146,10 @@ int DAA();                                // BCD Corrects Acumulator.(idk what t
 int CPL();                                // Flips all bits in Acumulator
 
 // 16 Bit Arithmetic
-int ADD_HL_RR(uint8_t* reg1, uint8_t* reg2); // HL = HL + rr
+int ADD_HL_RR(enum RR type); // HL = HL + rr
 int ADD_HL_SP();
-int INC_RR(uint8_t* reg1, uint8_t* reg2);   // RR += 1
-int DEC_RR(uint8_t* reg1, uint8_t* reg2);   // RR -= 1
+int INC_RR(enum RR type);   // RR += 1
+int DEC_RR(enum RR type);   // RR -= 1
 int INC_SP();
 int DEC_SP();
 int ADD_SP_DD(); // SP += DD
