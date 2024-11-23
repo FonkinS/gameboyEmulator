@@ -42,29 +42,55 @@ void drawScanline(int scanline, int vsync) {
     if ((frame+scanline) % vsync != 0) return;
     if (BGWinEnable) {
         // TODO Fix scrolling edges
-        uint8_t ty = (scanline + SCY) % 256;
-        for (int x = 0; x < 160;x++) {
+        uint8_t y = (scanline + SCY) % 256;
+        uint8_t tiley = y / 8;
+        uint8_t ty = (scanline + SCY) % 8; 
+        for (int tilex = 0; tilex < 32; tilex++) {
+            uint8_t index = BusRead(BGTileMap + tilex + tiley*32);
+            int tile = BGWinTileData + (int)(BGWinTileData == 0x8000 ? (uint8_t)index : (int8_t)index) * 16;
+            uint8_t first = BusRead(tile + ty*2);
+            uint8_t second = BusRead(tile + ty*2+1);
+            for (int tx = 0; tx < 8; tx++) {
+                uint8_t x = (tilex * 8 + tx + SCX) % 256;
+                if (x < 0 || x >= 160) continue;
+                texture[scanline*160+x] = BGP[((first >> (7-tx)) & 1) + (((second >> (7-tx)) & 1) << 1)];
+            }
+        }
+        /*for (int x = 0; x < 160;x++) {
             uint8_t tx = (x + SCX) % 256;
             uint8_t tilex = tx / 8;
             uint8_t tiley = ty / 8;
 
             uint8_t index = BusRead(BGTileMap + tilex + tiley*32);
-            int tile = BGWinTileData;
-            if (BGWinTileData == 0x8000) tile += (int)((uint8_t)index) * 16;
-            if (BGWinTileData == 0x9000) tile += (int)((int8_t)index) * 16;
+            int tile = BGWinTileData + (int)(BGWinTileData == 0x8000 ? (uint8_t)index : (int8_t)index) * 16;
             // make tmu
             uint8_t first = BusRead(tile + (ty%8)*2);
             uint8_t second = BusRead(tile + (ty%8)*2+1);
 
-            uint8_t color = (((first >> (7-(tx%8))) & 1)) + (((second >> (7-(tx%8))) & 1) << 1);
+            uint8_t color = (((first >> (7-tx))) & 1)) + (((second >> (7-(tx%8))) & 1) << 1);
             texture[scanline * 160 + x] = BGP[color];
             faux_bg_texture[scanline*160+x] = color;
 
-        }
+        }*/
+
 
 
         if (WinEnable && WX >= 0 && WX <= 166 && WY >= 0 && WY <= 143) {
-            uint8_t ty = (scanline + WY);
+            uint8_t wy = (scanline + WY) % 256;
+            uint8_t tiley = y / 8;
+            uint8_t ty = (scanline + WY) % 8; 
+            for (int tilex = WX / 8; tilex < 21 + WX / 8; tilex++) {
+                uint8_t index = BusRead(WinTileMap + tilex + tiley*32);
+                int tile = BGWinTileData + (int)(BGWinTileData == 0x8000 ? (uint8_t)index : (int8_t)index) * 16;
+                uint8_t first = BusRead(tile + ty*2);
+                uint8_t second = BusRead(tile + ty*2+1);
+                for (int tx = 0; tx < 8; tx++) {
+                    uint8_t wx = tilex * 8 + tx;
+                    if (wx < 0 || wx >= 160) continue;
+                    texture[scanline*160+wx] = BGP[((first >> (7-tx)) & 1) + (((second >> (7-tx)) & 1) << 1)];
+                }
+            }
+            /*uint8_t ty = (scanline + WY);
             for (int x = 0; x < 160;x++) {
                 uint8_t tx = (x + WX-7);
                 if (tx < 0 || tx >= 160) continue;
@@ -83,7 +109,7 @@ void drawScanline(int scanline, int vsync) {
                 uint8_t color = (((first >> (7-(tx%8))) & 1)) + (((second >> (7-(tx%8))) & 1) << 1);
                 texture[(scanline * 160 + x)] = BGP[color];
                 faux_bg_texture[scanline*160+x] = color;
-            }
+            }*/
         }
     } else {
         /*for (int x = 0; x < 160; x++) {
