@@ -614,12 +614,15 @@ const char* textureVSS = "#version 330 core\n" \
                            "\ttexCoord = aTexCoord;\n" \
                            "}\n";
 
+
 const char* textureFSS = "#version 330 core\n" \
                             "out vec4 FragColor;\n" \
                             "in vec2 texCoord;\n" \
                             "uniform sampler2D inTexture;\n" \
+                            "uniform vec3 colors[4];\n" \
                             "void main() {\n" \
-                            "\tFragColor = texture(inTexture, vec2(texCoord.x, texCoord.y));\n" \
+                            "\tint col = int(texture(inTexture, texCoord).r*256);\n" \
+                            "\tFragColor = vec4(colors[col],1.0f);\n" \
                             "}\n";
 
 const char* colorFSS = "#version 330 core\n" \
@@ -826,12 +829,12 @@ SGFsprite SGFCreateSprite(SGFwindow win, int x, int y, int w, int h, char* p, in
 
 void SGFSetBitmapTexture(SGFsprite s, int tex_w, int tex_h, unsigned char* data, int alpha) {
     glBindTexture(GL_TEXTURE_2D, s.texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, alpha ? GL_RGBA : GL_RGB, 160, 144, 0, alpha ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 160, 144, 0, GL_RED, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 }
 
 void SGFReDrawBitmapTexture(SGFsprite s, int tex_w, int tex_h, unsigned char* data, int alpha) {
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex_w, tex_h, alpha ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, data);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex_w, tex_h, GL_RED, GL_UNSIGNED_BYTE, data);
 }
 
 
@@ -850,10 +853,10 @@ void SGFSetShaderFloatProperty(SGFshader shader, char* property, double value, .
     float values[4];
     for (int i = 0; i < value; i++) values[i] = va_arg(ptr, double);
     va_end(ptr);
-    if (value == 1) glUniform1f(glGetUniformLocation(shader, "pos"), values[0]);
-    if (value == 2) glUniform2f(glGetUniformLocation(shader, "pos"), values[0], values[1]);
-    if (value == 3) glUniform3f(glGetUniformLocation(shader, "pos"), values[0], values[1], values[2]);
-    if (value == 4) glUniform4f(glGetUniformLocation(shader, "pos"), values[0], values[1], values[2], values[3]);
+    if (value == 1) glUniform1f(glGetUniformLocation(shader, property), values[0]);
+    if (value == 2) glUniform2f(glGetUniformLocation(shader, property), values[0], values[1]);
+    if (value == 3) glUniform3f(glGetUniformLocation(shader, property), values[0], values[1], values[2]);
+    if (value == 4) glUniform4f(glGetUniformLocation(shader, property), values[0], values[1], values[2], values[3]);
 }
 
 int SGFRunning(SGFwindow window) {

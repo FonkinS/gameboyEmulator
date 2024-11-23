@@ -23,7 +23,7 @@ extern uint16_t sys_counter;
 extern uint8_t timer_modulo;
 extern uint8_t timer_counter;
 
-extern bool previous_timer_edge;
+extern uint8_t clock_freq;
 
 
 

@@ -2,16 +2,15 @@
 #include "../include/sgf.h"
 #include "joypad.h"
 #include "lcd.h"
+#include <OpenGL/OpenGL.h>
 #include <stdint.h>
 #include <stdio.h>
 
 SGFwindow window;
 
-uint8_t texture[160*144*3];
+uint8_t texture[160*144];
 uint8_t faux_bg_texture[160*144];
 SGFsprite bg;
-
-uint8_t colors[4][4] = {{202, 221, 149}, {139, 162, 106}, {66, 96, 61}, {12, 24, 17}};
 
 
 void key_callback(SGFwindow window, int key, int scancode, int action, int mods);
@@ -20,6 +19,12 @@ int PPUInit(char* title) {
     window = SGFCreateWindow(640,576, title, 0);
     bg = SGFCreateBitmapSprite(window, 0, 0, 640, 576, 160, 144, texture, 0);
     SGFSetKeyCallback(window, key_callback);
+    
+    float colors[4][3] = {{0.79, 0.86, 0.58}, {0.54, 0.63, 0.41}, {0.26, 0.37, 0.24}, {0.05, 0.09, 0.07}};
+    glUseProgram(bg.object.shader);
+    glUniform3fv(glGetUniformLocation(bg.object.shader, "colors"), 4, colors);
+
+    glfwSwapInterval(0);
     return 1;
 }
 
@@ -31,7 +36,10 @@ void PPUKill() {
 // TODO Notes FOr TOmorrow
 // - Table of which objects visible
 // - STRUCTURE for objects
-void drawScanline(int scanline) {
+int frame = 0;
+void drawScanline(int scanline, int vsync) {
+    if (scanline == 0) frame++;
+    if ((frame+scanline) % vsync != 0) return;
     if (BGWinEnable) {
         // TODO Fix scrolling edges
         uint8_t ty = (scanline + SCY) % 256;
@@ -49,9 +57,7 @@ void drawScanline(int scanline) {
             uint8_t second = BusRead(tile + (ty%8)*2+1);
 
             uint8_t color = (((first >> (7-(tx%8))) & 1)) + (((second >> (7-(tx%8))) & 1) << 1);
-            texture[(scanline * 160 + x)*3] = colors[BGP[color]][0];
-            texture[(scanline * 160 + x)*3+1] = colors[BGP[color]][1];
-            texture[(scanline * 160 + x)*3+2] = colors[BGP[color]][2];
+            texture[scanline * 160 + x] = BGP[color];
             faux_bg_texture[scanline*160+x] = color;
 
         }
@@ -75,11 +81,8 @@ void drawScanline(int scanline) {
                 uint8_t second = BusRead(tile + (ty%8)*2+1);
 
                 uint8_t color = (((first >> (7-(tx%8))) & 1)) + (((second >> (7-(tx%8))) & 1) << 1);
-                texture[(scanline * 160 + x)*3] = colors[BGP[color]][0];
-                texture[(scanline * 160 + x)*3+1] = colors[BGP[color]][1];
-                texture[(scanline * 160 + x)*3+2] = colors[BGP[color]][2];
+                texture[(scanline * 160 + x)] = BGP[color];
                 faux_bg_texture[scanline*160+x] = color;
-
             }
         }
     } else {
@@ -116,19 +119,15 @@ void drawScanline(int scanline) {
                     if (flags & 0x20) color = (((first >> ((ox%8))) & 1)) + (((second >> ((ox%8))) & 1) << 1); // X Flip
                     else color = (((first >> (7-(ox%8))) & 1)) + (((second >> (7-(ox%8))) & 1) << 1);
                     if (color == 0) continue;
-                    texture[(scanline * 160 + ox+x-8) * 3] = colors[obp[color-1]][0];
-                    texture[(scanline * 160 + ox+x-8) * 3+1] = colors[obp[color-1]][1];
-                    texture[(scanline * 160 + ox+x-8) * 3+2] = colors[obp[color-1]][2];
-
+                    texture[scanline * 160 + ox+x-8] = obp[color-1];
                     }
                 }
             }
     }
 }
 
-int renderFrame() {
-    SGFFillColor(1.0f,0.0f,0.0f,1.0f);
 
+int renderFrame() {
     SGFReDrawBitmapTexture(bg, 160, 144, texture, 0);
     SGFDrawSprite(bg);
 

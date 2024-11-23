@@ -12,8 +12,7 @@ uint16_t sys_counter;
 uint8_t timer_modulo;
 uint8_t timer_counter;
 
-bool previous_timer_edge;
-
+uint8_t clock_freq;
 
 
 void timerInit() {
@@ -22,24 +21,20 @@ void timerInit() {
     sys_counter = 0;
     timer_modulo = 0;
     timer_counter = 0;
-    previous_timer_edge = false;
+    clock_freq = 0;
 }
 
 
-// TODO Optimize
+int previous_timer_counter = 0;
 void timerTick(int cycles) {
-    for (int i = 0; i < cycles; i++) {
-        sys_counter += 1; 
-        bool andresult = (sys_counter & (1 << (clock_select == 0 ? 9 : (1 + clock_select * 2)))) && timer_enabled;
-        if (previous_timer_edge == 1 && andresult == 0) {
-            timer_counter++;
-            if (timer_counter == 0) { // OVERFLOW
-                timer_counter = timer_modulo;
-                request_interrupt(TIMER);
-            }
+    if ((sys_counter / clock_freq < ((int)sys_counter + cycles) / clock_freq) && timer_enabled) {
+        timer_counter += (cycles / clock_freq) + 1;
+        if (timer_counter < previous_timer_counter) { // OVERFLOW
+            timer_counter = timer_modulo;
+            request_interrupt(TIMER);
         }
-        previous_timer_edge = andresult;
     }
+    sys_counter += cycles; 
 }
 
 
@@ -58,6 +53,7 @@ void timerWrite(uint16_t index, uint8_t value) {
     else if (index == 0xff06) timer_modulo = value;
     else if (index == 0xff07) {
         clock_select = value & 3;
+        clock_freq = clock_select == 0 ? 9 : (clock_select * 2 + 1);
         timer_enabled = value & 4;
     }
 }

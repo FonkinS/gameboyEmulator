@@ -50,7 +50,7 @@ bool GameboyProcessFrame() {
     // Non-VBLANK
     while (PPUMode != M_VBLANK) {
         while (PPUMode != M_HBLANK) GameboyProcessInstruction();
-        if (LCDEnable) drawScanline(LY);
+        if (LCDEnable) drawScanline(LY, 1);
         while (PPUMode == M_HBLANK) GameboyProcessInstruction();
     }
 
@@ -60,6 +60,8 @@ bool GameboyProcessFrame() {
 
     //printf("%i FPS\n", (int)(CLOCKS_PER_SEC / (double)(clock() - begin)));
     while ((double)(clock() - begin) / CLOCKS_PER_SEC < FRAME_DURATION) {}
+    //if (PC >= 0x100) return 0;
+
 
     return out;
 }

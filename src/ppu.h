@@ -10,7 +10,7 @@
 int PPUInit(char* title);
 void PPUKill();
 int renderFrame();
-void drawScanline(int scanline);
+void drawScanline(int scanline, int vsync);
 
 
 

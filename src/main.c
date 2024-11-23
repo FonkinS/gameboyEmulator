@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 #include "gameboy.h"
 
 
@@ -18,7 +19,9 @@ int main(int argc, char** argv) {
     if (GameboyInit("demoFiles/dmg_boot.bin",argv[1])) {
         return -1;
     }
+    clock_t begin = clock();
     while (GameboyProcessFrame()) {}
+    printf("Time: %f\n", (double)(clock() - begin) / CLOCKS_PER_SEC);
     GameboyKill();
 
     return 0;
