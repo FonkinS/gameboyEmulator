@@ -26,6 +26,7 @@ int GameboyProcessInstruction() {
     if (halt == NOHALT) {
         if (interrupt_called) interrupt();
         cycle_length = execute_op();
+        f &= 0xf0;
     } else if (interrupt_called) {
         if (IME) interrupt();
         else if (halt == HALTNOIMENOINT) halt = NOHALT;
@@ -36,7 +37,7 @@ int GameboyProcessInstruction() {
     APUTick(cycle_length);
     check_interrupts();
 
-    //printf("A:%.2X F:%.2X B:%.2X C:%.2X D:%.2X E:%.2X H:%.2X L:%.2X SP:%.4X PC:%.4X PCMEM:%.2X,%.2X,%.2X,%.2X\n", a, f, b, c, d, e, h, l, SP, PC, fetch(PC), fetch(PC+1), fetch(PC+2), fetch(PC+3));
+    //if (PC >= 0x100) printf("A:%.2X F:%.2X B:%.2X C:%.2X D:%.2X E:%.2X H:%.2X L:%.2X SP:%.4X PC:%.4X PCMEM:%.2X,%.2X,%.2X,%.2X\n", a, f, b, c, d, e, h, l, SP, PC, fetch(PC), fetch(PC+1), fetch(PC+2), fetch(PC+3));
 
     return cycle_length;
 

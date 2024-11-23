@@ -21,18 +21,8 @@ unsigned long long cycles;
 
 int halt;
  
-uint8_t z;
-uint8_t n;
-uint8_t hy;
-uint8_t cy;
-
-
 
 int CPUInit() {
-    z = 7;
-    n = 6;
-    hy = 5;
-    cy = 4;
     IME = false;
     return 0;
 }
@@ -71,7 +61,7 @@ uint16_t fetchOP16() {
     return fetchOP() + (fetchOP() << 8);
 }
 
-void set_flag(int flag, int value) {
+void set_flag(enum flags flag, int value) {
     if (value == 0) {
         f = f & ~(1 << flag);
     } else {
@@ -79,7 +69,7 @@ void set_flag(int flag, int value) {
     }
 }
 
-int get_flag(int flag) {
+int get_flag(enum flags flag) {
     return ((f >> flag) & 1);
 }
 
@@ -88,1524 +78,26 @@ void post(uint16_t address, uint8_t value) {
 }
 
 
+int (*cb_ops[256])(uint8_t) = {
+    RLC_R,RLC_R,RLC_R,RLC_R,RLC_R,RLC_R,RLC_HL,RLC_R,RRC_R,RRC_R,RRC_R,RRC_R,RRC_R,RRC_R,RRC_HL,RRC_R,RL_R,RL_R,RL_R,RL_R,RL_R,RL_R,RL_HL,RL_R,RR_R,RR_R,RR_R,RR_R,RR_R,RR_R,RR_HL,RR_R,SLA_R,SLA_R,SLA_R,SLA_R,SLA_R,SLA_R,SLA_HL,SLA_R,SRA_R,SRA_R,SRA_R,SRA_R,SRA_R,SRA_R,SRA_HL,SRA_R,SWAP_R,SWAP_R,SWAP_R,SWAP_R,SWAP_R,SWAP_R,SWAP_HL,SWAP_R,SRL_R,SRL_R,SRL_R,SRL_R,SRL_R,SRL_R,SRL_HL,SRL_R,BIT_0_R,BIT_0_R,BIT_0_R,BIT_0_R,BIT_0_R,BIT_0_R,BIT_0_R,BIT_0_R,BIT_1_R,BIT_1_R,BIT_1_R,BIT_1_R,BIT_1_R,BIT_1_R,BIT_1_R,BIT_1_R,BIT_2_R,BIT_2_R,BIT_2_R,BIT_2_R,BIT_2_R,BIT_2_R,BIT_2_R,BIT_2_R,BIT_3_R,BIT_3_R,BIT_3_R,BIT_3_R,BIT_3_R,BIT_3_R,BIT_3_R,BIT_3_R,BIT_4_R,BIT_4_R,BIT_4_R,BIT_4_R,BIT_4_R,BIT_4_R,BIT_4_R,BIT_4_R,BIT_5_R,BIT_5_R,BIT_5_R,BIT_5_R,BIT_5_R,BIT_5_R,BIT_5_R,BIT_5_R,BIT_6_R,BIT_6_R,BIT_6_R,BIT_6_R,BIT_6_R,BIT_6_R,BIT_6_R,BIT_6_R,BIT_7_R,BIT_7_R,BIT_7_R,BIT_7_R,BIT_7_R,BIT_7_R,BIT_7_R,BIT_7_R,RES_0_R,RES_0_R,RES_0_R,RES_0_R,RES_0_R,RES_0_R,RES_0_R,RES_0_R,RES_1_R,RES_1_R,RES_1_R,RES_1_R,RES_1_R,RES_1_R,RES_1_R,RES_1_R,RES_2_R,RES_2_R,RES_2_R,RES_2_R,RES_2_R,RES_2_R,RES_2_R,RES_2_R,RES_3_R,RES_3_R,RES_3_R,RES_3_R,RES_3_R,RES_3_R,RES_3_R,RES_3_R,RES_4_R,RES_4_R,RES_4_R,RES_4_R,RES_4_R,RES_4_R,RES_4_R,RES_4_R,RES_5_R,RES_5_R,RES_5_R,RES_5_R,RES_5_R,RES_5_R,RES_5_R,RES_5_R,RES_6_R,RES_6_R,RES_6_R,RES_6_R,RES_6_R,RES_6_R,RES_6_R,RES_6_R,RES_7_R,RES_7_R,RES_7_R,RES_7_R,RES_7_R,RES_7_R,RES_7_R,RES_7_R,SET_0_R,SET_0_R,SET_0_R,SET_0_R,SET_0_R,SET_0_R,SET_0_R,SET_0_R,SET_1_R,SET_1_R,SET_1_R,SET_1_R,SET_1_R,SET_1_R,SET_1_R,SET_1_R,SET_2_R,SET_2_R,SET_2_R,SET_2_R,SET_2_R,SET_2_R,SET_2_R,SET_2_R,SET_3_R,SET_3_R,SET_3_R,SET_3_R,SET_3_R,SET_3_R,SET_3_R,SET_3_R,SET_4_R,SET_4_R,SET_4_R,SET_4_R,SET_4_R,SET_4_R,SET_4_R,SET_4_R,SET_5_R,SET_5_R,SET_5_R,SET_5_R,SET_5_R,SET_5_R,SET_5_R,SET_5_R,SET_6_R,SET_6_R,SET_6_R,SET_6_R,SET_6_R,SET_6_R,SET_6_R,SET_6_R,SET_7_R,SET_7_R,SET_7_R,SET_7_R,SET_7_R,SET_7_R,SET_7_R,SET_7_R
+};
+uint8_t cb_params[256] = {
+B,C,D,E,H,L,0,A,B,C,D,E,H,L,0,A,B,C,D,E,H,L,0,A,B,C,D,E,H,L,0,A,B,C,D,E,H,L,0,A,B,C,D,E,H,L,0,A,B,C,D,E,H,L,0,A,B,C,D,E,H,L,0,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A
+};
 
-uint8_t execute_cb_op(uint8_t next_op) {
-        switch(next_op) {
-                case 0x00:
-                    return RLC_R(&b);
-                    break;
-                case 0x01:
-                    return RLC_R(&c);
-                    break;
-                case 0x02:
-                    return RLC_R(&d);
-                    break;
-                case 0x03:
-                    return RLC_R(&e);
-                    break;
-                case 0x04:
-                    return RLC_R(&h);
-                    break;
-                case 0x05:
-                    return RLC_R(&l);
-                    break;
-                case 0x06:
-                    return RLC_HL();
-                    break;
-                case 0x07:
-                    return RLC_R(&a);
-                    break;
-                case 0x08:
-                    return RRC_R(&b);
-                    break;
-                case 0x09:
-                    return RRC_R(&c);
-                    break;
-                case 0x0a:
-                    return RRC_R(&d);
-                    break;
-                case 0x0b:
-                    return RRC_R(&e);
-                    break;
-                case 0x0c:
-                    return RRC_R(&h);
-                    break;
-                case 0x0d:
-                    return RRC_R(&l);
-                    break;
-                case 0x0e:
-                    return RRC_HL();
-                    break;
-                case 0x0f:
-                    return RRC_R(&a);
-                    break;
-                case 0x10:
-                    return RL_R(&b);
-                    break;
-                case 0x11:
-                    return RL_R(&c);
-                    break;
-                case 0x12:
-                    return RL_R(&d);
-                    break;
-                case 0x13:
-                    return RL_R(&e);
-                    break;
-                case 0x14:
-                    return RL_R(&h);
-                    break;
-                case 0x15:
-                    return RL_R(&l);
-                    break;
-                case 0x16:
-                    return RL_HL();
-                    break;
-                case 0x17:
-                    return RL_R(&a);
-                    break;
-                case 0x18:
-                    return RR_R(&b);
-                    break;
-                case 0x19:
-                    return RR_R(&c);
-                    break;
-                case 0x1a:
-                    return RR_R(&d);
-                    break;
-                case 0x1b:
-                    return RR_R(&e);
-                    break;
-                case 0x1c:
-                    return RR_R(&h);
-                    break;
-                case 0x1d:
-                    return RR_R(&l);
-                    break;
-                case 0x1e:
-                    return RR_HL();
-                    break;
-                case 0x1f:
-                    return RR_R(&a);
-                    break;
-                case 0x20:
-                    return SLA_R(&b);
-                    break;
-                case 0x21:
-                    return SLA_R(&c);
-                    break;
-                case 0x22:
-                    return SLA_R(&d);
-                    break;
-                case 0x23:
-                    return SLA_R(&e);
-                    break;
-                case 0x24:
-                    return SLA_R(&h);
-                    break;
-                case 0x25:
-                    return SLA_R(&l);
-                    break;
-                case 0x26:
-                    return SLA_HL();
-                    break;
-                case 0x27:
-                    return SLA_R(&a);
-                    break;
-                case 0x28:
-                    return SRA_R(&b);
-                    break;
-                case 0x29:
-                    return SRA_R(&c);
-                    break;
-                case 0x2a:
-                    return SRA_R(&d);
-                    break;
-                case 0x2b:
-                    return SRA_R(&e);
-                    break;
-                case 0x2c:
-                    return SRA_R(&h);
-                    break;
-                case 0x2d:
-                    return SRA_R(&l);
-                    break;
-                case 0x2e:
-                    return SRA_HL();
-                    break;
-                case 0x2f:
-                    return SRA_R(&a);
-                    break;
-                case 0x30:
-                    return SWAP_R(&b);
-                    break;
-                case 0x31:
-                    return SWAP_R(&c);
-                    break;
-                case 0x32:
-                    return SWAP_R(&d);
-                    break;
-                case 0x33:
-                    return SWAP_R(&e);
-                    break;
-                case 0x34:
-                    return SWAP_R(&h);
-                    break;
-                case 0x35:
-                    return SWAP_R(&l);
-                    break;
-                case 0x36:
-                    return SWAP_HL();
-                    break;
-                case 0x37:
-                    return SWAP_R(&a);
-                    break;
-                case 0x38:
-                    return SRL_R(&b);
-                    break;
-                case 0x39:
-                    return SRL_R(&c);
-                    break;
-                case 0x3a:
-                    return SRL_R(&d);
-                    break;
-                case 0x3b:
-                    return SRL_R(&e);
-                    break;
-                case 0x3c:
-                    return SRL_R(&h);
-                    break;
-                case 0x3d:
-                    return SRL_R(&l);
-                    break;
-                case 0x3e:
-                    return SRL_HL();
-                    break;
-                case 0x3f:
-                    return SRL_R(&a);
-                    break;
-                case 0x40:
-                    return BIT_N_R(0, &b);
-                    break;
-                case 0x41:
-                    return BIT_N_R(0, &c);
-                    break;
-                case 0x42:
-                    return BIT_N_R(0, &d);
-                    break;
-                case 0x43:
-                    return BIT_N_R(0, &e);
-                    break;
-                case 0x44:
-                    return BIT_N_R(0, &h);
-                    break;
-                case 0x45:
-                    return BIT_N_R(0, &l);
-                    break;
-                case 0x46:
-                    return BIT_N_HL(0);
-                    break;
-                case 0x47:
-                    return BIT_N_R(0,&a);
-                case 0x48:
-                    return BIT_N_R(1, &b);
-                    break;
-                case 0x49:
-                    return BIT_N_R(1, &c);
-                    break;
-                case 0x4a:
-                    return BIT_N_R(1, &d);
-                    break;
-                case 0x4b:
-                    return BIT_N_R(1, &e);
-                    break;
-                case 0x4c:
-                    return BIT_N_R(1, &h);
-                    break;
-                case 0x4d:
-                    return BIT_N_R(1, &l);
-                    break;
-                case 0x4e:
-                    return BIT_N_HL(1);
-                    break;
-                case 0x4f:
-                    return BIT_N_R(1, &a);
-                    break;
-                case 0x50:
-                    return BIT_N_R(2, &b);
-                    break;
-                case 0x51:
-                    return BIT_N_R(2, &c);
-                    break;
-                case 0x52:
-                    return BIT_N_R(2, &d);
-                    break;
-                case 0x53:
-                    return BIT_N_R(2, &e);
-                    break;
-                case 0x54:
-                    return BIT_N_R(2, &h);
-                    break;
-                case 0x55:
-                    return BIT_N_R(2, &l);
-                    break;
-                case 0x56:
-                    return BIT_N_HL(2);
-                    break;
-                case 0x57:
-                    return BIT_N_R(2, &a);
-                    break;
-                case 0x58:
-                    return BIT_N_R(3, &b);
-                    break;
-                case 0x59:
-                    return BIT_N_R(3, &c);
-                    break;
-                case 0x5a:
-                    return BIT_N_R(3, &d);
-                    break;
-                case 0x5b:
-                    return BIT_N_R(3, &e);
-                    break;
-                case 0x5c:
-                    return BIT_N_R(3, &h);
-                    break;
-                case 0x5d:
-                    return BIT_N_R(3, &l);
-                    break;
-                case 0x5e:
-                    return BIT_N_HL(3);
-                    break;
-                case 0x5f:
-                    return BIT_N_R(3, &a);
-                    break;
-                case 0x60:
-                    return BIT_N_R(4, &b);
-                    break;
-                case 0x61:
-                    return BIT_N_R(4, &c);
-                    break;
-                case 0x62:
-                    return BIT_N_R(4, &d);
-                    break;
-                case 0x63:
-                    return BIT_N_R(4, &e);
-                    break;
-                case 0x64:
-                    return BIT_N_R(4, &h);
-                    break;
-                case 0x65:
-                    return BIT_N_R(4, &l);
-                    break;
-                case 0x66:
-                    return BIT_N_HL(4);
-                    break;
-                case 0x67:
-                    return BIT_N_R(4, &a);
-                    break;
-                case 0x68:
-                    return BIT_N_R(5, &b);
-                    break;
-                case 0x69:
-                    return BIT_N_R(5, &c);
-                    break;
-                case 0x6a:
-                    return BIT_N_R(5, &d);
-                    break;
-                case 0x6b:
-                    return BIT_N_R(5, &e);
-                    break;
-                case 0x6c:
-                    return BIT_N_R(5, &h);
-                    break;
-                case 0x6d:
-                    return BIT_N_R(5, &l);
-                    break;
-                case 0x6e:
-                    return BIT_N_HL(5);
-                    break;
-                case 0x6f:
-                    return BIT_N_R(5, &a);
-                    break;
-                case 0x70:
-                    return BIT_N_R(6, &b);
-                    break;
-                case 0x71:
-                    return BIT_N_R(6, &c);
-                    break;
-                case 0x72:
-                    return BIT_N_R(6, &d);
-                    break;
-                case 0x73:
-                    return BIT_N_R(6, &e);
-                    break;
-                case 0x74:
-                    return BIT_N_R(6, &h);
-                    break;
-                case 0x75:
-                    return BIT_N_R(6, &l);
-                    break;
-                case 0x76:
-                    return BIT_N_HL(6);
-                    break;
-                case 0x77:
-                    return BIT_N_R(6,&a);
-                    break;
-                case 0x78:
-                    return BIT_N_R(7, &b);
-                    break;
-                case 0x79:
-                    return BIT_N_R(7, &c);
-                    break;
-                case 0x7a:
-                    return BIT_N_R(7, &d);
-                    break;
-                case 0x7b:
-                    return BIT_N_R(7, &e);
-                    break;
-                case 0x7c:
-                    return BIT_N_R(7, &h);
-                    break;
-                case 0x7d:
-                    return BIT_N_R(7, &l);
-                    break;
-                case 0x7e:
-                    return BIT_N_HL(7);
-                    break;
-                case 0x7f:
-                    return BIT_N_R(7,&a);
-                    break;
-                case 0x80:
-                    return RES_N_R(0, &b);
-                    break;
-                case 0x81:
-                    return RES_N_R(0, &c);
-                    break;
-                case 0x82:
-                    return RES_N_R(0, &d);
-                    break;
-                case 0x83:
-                    return RES_N_R(0, &e);
-                    break;
-                case 0x84:
-                    return RES_N_R(0, &h);
-                    break;
-                case 0x85:
-                    return RES_N_R(0, &l);
-                    break;
-                case 0x86:
-                    return RES_N_HL(0);
-                    break;
-                case 0x87:
-                    return RES_N_R(0,&a);
-                case 0x88:
-                    return RES_N_R(1, &b);
-                    break;
-                case 0x89:
-                    return RES_N_R(1, &c);
-                    break;
-                case 0x8a:
-                    return RES_N_R(1, &d);
-                    break;
-                case 0x8b:
-                    return RES_N_R(1, &e);
-                    break;
-                case 0x8c:
-                    return RES_N_R(1, &h);
-                    break;
-                case 0x8d:
-                    return RES_N_R(1, &l);
-                    break;
-                case 0x8e:
-                    return RES_N_HL(1);
-                    break;
-                case 0x8f:
-                    return RES_N_R(1, &a);
-                    break;
-                case 0x90:
-                    return RES_N_R(2, &b);
-                    break;
-                case 0x91:
-                    return RES_N_R(2, &c);
-                    break;
-                case 0x92:
-                    return RES_N_R(2, &d);
-                    break;
-                case 0x93:
-                    return RES_N_R(2, &e);
-                    break;
-                case 0x94:
-                    return RES_N_R(2, &h);
-                    break;
-                case 0x95:
-                    return RES_N_R(2, &l);
-                    break;
-                case 0x96:
-                    return RES_N_HL(2);
-                    break;
-                case 0x97:
-                    return RES_N_R(2, &a);
-                    break;
-                case 0x98:
-                    return RES_N_R(3, &b);
-                    break;
-                case 0x99:
-                    return RES_N_R(3, &c);
-                    break;
-                case 0x9a:
-                    return RES_N_R(3, &d);
-                    break;
-                case 0x9b:
-                    return RES_N_R(3, &e);
-                    break;
-                case 0x9c:
-                    return RES_N_R(3, &h);
-                    break;
-                case 0x9d:
-                    return RES_N_R(3, &l);
-                    break;
-                case 0x9e:
-                    return RES_N_HL(3);
-                    break;
-                case 0x9f:
-                    return RES_N_R(3, &a);
-                    break;
-                case 0xa0:
-                    return RES_N_R(4, &b);
-                    break;
-                case 0xa1:
-                    return RES_N_R(4, &c);
-                    break;
-                case 0xa2:
-                    return RES_N_R(4, &d);
-                    break;
-                case 0xa3:
-                    return RES_N_R(4, &e);
-                    break;
-                case 0xa4:
-                    return RES_N_R(4, &h);
-                    break;
-                case 0xa5:
-                    return RES_N_R(4, &l);
-                    break;
-                case 0xa6:
-                    return RES_N_HL(4);
-                    break;
-                case 0xa7:
-                    return RES_N_R(4, &a);
-                    break;
-                case 0xa8:
-                    return RES_N_R(5, &b);
-                    break;
-                case 0xa9:
-                    return RES_N_R(5, &c);
-                    break;
-                case 0xaa:
-                    return RES_N_R(5, &d);
-                    break;
-                case 0xab:
-                    return RES_N_R(5, &e);
-                    break;
-                case 0xac:
-                    return RES_N_R(5, &h);
-                    break;
-                case 0xad:
-                    return RES_N_R(5, &l);
-                    break;
-                case 0xae:
-                    return RES_N_HL(5);
-                    break;
-                case 0xaf:
-                    return RES_N_R(5, &a);
-                    break;
-                case 0xb0:
-                    return RES_N_R(6, &b);
-                    break;
-                case 0xb1:
-                    return RES_N_R(6, &c);
-                    break;
-                case 0xb2:
-                    return RES_N_R(6, &d);
-                    break;
-                case 0xb3:
-                    return RES_N_R(6, &e);
-                    break;
-                case 0xb4:
-                    return RES_N_R(6, &h);
-                    break;
-                case 0xb5:
-                    return RES_N_R(6, &l);
-                    break;
-                case 0xb6:
-                    return RES_N_HL(6);
-                    break;
-                case 0xb7:
-                    return RES_N_R(6,&a);
-                    break;
-                case 0xb8:
-                    return RES_N_R(7, &b);
-                    break;
-                case 0xb9:
-                    return RES_N_R(7, &c);
-                    break;
-                case 0xba:
-                    return RES_N_R(7, &d);
-                    break;
-                case 0xbb:
-                    return RES_N_R(7, &e);
-                    break;
-                case 0xbc:
-                    return RES_N_R(7, &h);
-                    break;
-                case 0xbd:
-                    return RES_N_R(7, &l);
-                    break;
-                case 0xbe:
-                    return RES_N_HL(7);
-                    break;
-                case 0xbf:
-                    return RES_N_R(7,&a);
-                    break;
-                case 0xc0:
-                    return SET_N_R(0, &b);
-                    break;
-                case 0xc1:
-                    return SET_N_R(0, &c);
-                    break;
-                case 0xc2:
-                    return SET_N_R(0, &d);
-                    break;
-                case 0xc3:
-                    return SET_N_R(0, &e);
-                    break;
-                case 0xc4:
-                    return SET_N_R(0, &h);
-                    break;
-                case 0xc5:
-                    return SET_N_R(0, &l);
-                    break;
-                case 0xc6:
-                    return SET_N_HL(0);
-                    break;
-                case 0xc7:
-                    return SET_N_R(0,&a);
-                case 0xc8:
-                    return SET_N_R(1, &b);
-                    break;
-                case 0xc9:
-                    return SET_N_R(1, &c);
-                    break;
-                case 0xca:
-                    return SET_N_R(1, &d);
-                    break;
-                case 0xcb:
-                    return SET_N_R(1, &e);
-                    break;
-                case 0xcc:
-                    return SET_N_R(1, &h);
-                    break;
-                case 0xcd:
-                    return SET_N_R(1, &l);
-                    break;
-                case 0xce:
-                    return SET_N_HL(1);
-                    break;
-                case 0xcf:
-                    return SET_N_R(1, &a);
-                    break;
-                case 0xd0:
-                    return SET_N_R(2, &b);
-                    break;
-                case 0xd1:
-                    return SET_N_R(2, &c);
-                    break;
-                case 0xd2:
-                    return SET_N_R(2, &d);
-                    break;
-                case 0xd3:
-                    return SET_N_R(2, &e);
-                    break;
-                case 0xd4:
-                    return SET_N_R(2, &h);
-                    break;
-                case 0xd5:
-                    return SET_N_R(2, &l);
-                    break;
-                case 0xd6:
-                    return SET_N_HL(2);
-                    break;
-                case 0xd7:
-                    return SET_N_R(2, &a);
-                    break;
-                case 0xd8:
-                    return SET_N_R(3, &b);
-                    break;
-                case 0xd9:
-                    return SET_N_R(3, &c);
-                    break;
-                case 0xda:
-                    return SET_N_R(3, &d);
-                    break;
-                case 0xdb:
-                    return SET_N_R(3, &e);
-                    break;
-                case 0xdc:
-                    return SET_N_R(3, &h);
-                    break;
-                case 0xdd:
-                    return SET_N_R(3, &l);
-                    break;
-                case 0xde:
-                    return SET_N_HL(3);
-                    break;
-                case 0xdf:
-                    return SET_N_R(3, &a);
-                    break;
-                case 0xe0:
-                    return SET_N_R(4, &b);
-                    break;
-                case 0xe1:
-                    return SET_N_R(4, &c);
-                    break;
-                case 0xe2:
-                    return SET_N_R(4, &d);
-                    break;
-                case 0xe3:
-                    return SET_N_R(4, &e);
-                    break;
-                case 0xe4:
-                    return SET_N_R(4, &h);
-                    break;
-                case 0xe5:
-                    return SET_N_R(4, &l);
-                    break;
-                case 0xe6:
-                    return SET_N_HL(4);
-                    break;
-                case 0xe7:
-                    return SET_N_R(4, &a);
-                    break;
-                case 0xe8:
-                    return SET_N_R(5, &b);
-                    break;
-                case 0xe9:
-                    return SET_N_R(5, &c);
-                    break;
-                case 0xea:
-                    return SET_N_R(5, &d);
-                    break;
-                case 0xeb:
-                    return SET_N_R(5, &e);
-                    break;
-                case 0xec:
-                    return SET_N_R(5, &h);
-                    break;
-                case 0xed:
-                    return SET_N_R(5, &l);
-                    break;
-                case 0xee:
-                    return SET_N_HL(5);
-                    break;
-                case 0xef:
-                    return SET_N_R(5, &a);
-                    break;
-                case 0xf0:
-                    return SET_N_R(6, &b);
-                    break;
-                case 0xf1:
-                    return SET_N_R(6, &c);
-                    break;
-                case 0xf2:
-                    return SET_N_R(6, &d);
-                    break;
-                case 0xf3:
-                    return SET_N_R(6, &e);
-                    break;
-                case 0xf4:
-                    return SET_N_R(6, &h);
-                    break;
-                case 0xf5:
-                    return SET_N_R(6, &l);
-                    break;
-                case 0xf6:
-                    return SET_N_HL(6);
-                    break;
-                case 0xf7:
-                    return SET_N_R(6,&a);
-                    break;
-                case 0xf8:
-                    return SET_N_R(7, &b);
-                    break;
-                case 0xf9:
-                    return SET_N_R(7, &c);
-                    break;
-                case 0xfa:
-                    return SET_N_R(7, &d);
-                    break;
-                case 0xfb:
-                    return SET_N_R(7, &e);
-                    break;
-                case 0xfc:
-                    return SET_N_R(7, &h);
-                    break;
-                case 0xfd:
-                    return SET_N_R(7, &l);
-                    break;
-                case 0xfe:
-                    return SET_N_HL(7);
-                    break;
-                case 0xff:
-                    return SET_N_R(7,&a);
-                    break;
-            }
-    return -1;
+int execute_cb_op(uint8_t t) {
+    uint8_t op = fetchOP();
+    return (cb_ops[op])(cb_params[op]);
 }
+
+int (*ops[256])(uint8_t) = {
+NOP,LD_RR_NN,LD_BC_A,INC_RR,INC_R,DEC_R,LD_B_N,RLCA,LD_NN_SP,ADD_HL_RR,LD_A_BC,DEC_RR,INC_R,DEC_R,LD_C_N,RRCA,STOP,LD_RR_NN,LD_DE_A,INC_RR,INC_R,DEC_R,LD_D_N,RLA,JR_DD,ADD_HL_RR,LD_A_DE,DEC_RR,INC_R,DEC_R,LD_E_N,RCA,JR_FF_DD,LD_RR_NN,LDI_HL_A,INC_RR,INC_R,DEC_R,LD_H_N,DAA,JR_FT_DD,ADD_HL_RR,LDI_A_HL,DEC_RR,INC_R,DEC_R,LD_L_N,CPL,JR_FF_DD,LD_SP_NN,LDD_HL_A,INC_SP,INC_HL,DEC_HL,LD_HL_N,SCF,JR_FT_DD,ADD_HL_SP,LDD_A_HL,DEC_SP,INC_R,DEC_R,LD_A_N,CCF,LD_B_R,LD_B_R,LD_B_R,LD_B_R,LD_B_R,LD_B_R,LD_B_R,LD_B_R,LD_C_R,LD_C_R,LD_C_R,LD_C_R,LD_C_R,LD_C_R,LD_C_R,LD_C_R,LD_D_R,LD_D_R,LD_D_R,LD_D_R,LD_D_R,LD_D_R,LD_D_R,LD_D_R,LD_E_R,LD_E_R,LD_E_R,LD_E_R,LD_E_R,LD_E_R,LD_E_R,LD_E_R,LD_H_R,LD_H_R,LD_H_R,LD_H_R,LD_H_R,LD_H_R,LD_H_R,LD_H_R,LD_L_R,LD_L_R,LD_L_R,LD_L_R,LD_L_R,LD_L_R,LD_L_R,LD_L_R,LD_HL_R,LD_HL_R,LD_HL_R,LD_HL_R,LD_HL_R,LD_HL_R,HALT,LD_HL_R,LD_A_R,LD_A_R,LD_A_R,LD_A_R,LD_A_R,LD_A_R,LD_A_R,LD_A_R,ADD_A_R,ADD_A_R,ADD_A_R,ADD_A_R,ADD_A_R,ADD_A_R,ADD_A_HL,ADD_A_R,ADC_A_R,ADC_A_R,ADC_A_R,ADC_A_R,ADC_A_R,ADC_A_R,ADC_A_HL,ADC_A_R,SUB_A_R,SUB_A_R,SUB_A_R,SUB_A_R,SUB_A_R,SUB_A_R,SUB_A_HL,SUB_A_R,SBC_A_R,SBC_A_R,SBC_A_R,SBC_A_R,SBC_A_R,SBC_A_R,SBC_A_HL,SBC_A_R,AND_A_R,AND_A_R,AND_A_R,AND_A_R,AND_A_R,AND_A_R,AND_A_HL,AND_A_R,XOR_A_R,XOR_A_R,XOR_A_R,XOR_A_R,XOR_A_R,XOR_A_R,XOR_A_HL,XOR_A_R,OR_A_R,OR_A_R,OR_A_R,OR_A_R,OR_A_R,OR_A_R,OR_A_HL,OR_A_R,CP_A_R,CP_A_R,CP_A_R,CP_A_R,CP_A_R,CP_A_R,CP_A_HL,CP_A_R,RET_FF,POP_RR,JP_FF_NN,JP_NN,CALL_FF_NN,PUSH_RR,ADD_A_N,RST,RET_FT,RET,JP_FT_NN,execute_cb_op ,CALL_FT_NN,CALL_NN,ADC_A_N,RST,RET_FF,POP_RR,JP_FF_NN,NOP,CALL_FF_NN,PUSH_RR,SUB_A_N,RST,RET_FT,RETI,JP_FT_NN,NOP,CALL_FT_NN,NOP,SBC_A_N,RST,LD_ION_A,POP_RR,LD_IOC_A,NOP,NOP,PUSH_RR,AND_A_N,RST,ADD_SP_DD,JP_HL,LD_NN_A,NOP,NOP,NOP,XOR_A_N,RST,LD_A_ION,POP_RR,LD_A_IOC,DI,NOP,PUSH_RR,OR_A_N,RST,LD_HL_SP_DD,LD_SP_HL,LD_A_NN,EI,NOP,NOP,CP_A_N,RST
+};
+uint8_t params[256] = {0,BC,0,BC,B,B,0,0,0,BC,0,BC,C,C,0,0,0,DE,0,DE,D,D,0,0,0,DE,0,DE,E,E,0,0,z,HL,0,HL,H,H,0,0,z,HL,0,HL,L,L,0,0,cy,0,0,0,0,0,0,0,cy,0,0,0,A,A,0,0,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,0,A,B,C,D,E,H,L,MEMHL,A,B,C,D,E,H,L,0,A,B,C,D,E,H,L,0,A,B,C,D,E,H,L,0,A,B,C,D,E,H,L,0,A,B,C,D,E,H,L,0,A,B,C,D,E,H,L,0,A,B,C,D,E,H,L,0,A,B,C,D,E,H,L,0,A,z,BC,z,0,z,BC,0,0,z,0,z,0,z,0,0,1,cy,DE,cy,0,cy,DE,0,2,cy,0,cy,0,cy,0,0,3,0,HL,0,0,0,HL,0,4,0,0,0,0,0,0,0,5,0,AF,0,0,0,AF,0,6,0,0,0,0,0,0,0,7};
 
 int execute_op() {
     uint8_t op = fetchOP();
-    uint8_t next_op;
-    
-    switch (op) {
-        case 0x00:
-            return NOP();
-            break;
-        case 0x01:
-            return LD_RR_NN(BC);
-            break;
-        case 0x02:
-            return LD_BC_A();
-            break;
-        case 0x03:
-            return INC_RR(BC);
-            break;
-        case 0x04:
-            return INC_R(&b);
-            break;
-        case 0x05:
-            return DEC_R(&b);
-            break;
-        case 0x06:
-            return LD_R_N(&b);
-            break;
-        case 0x07:
-            return RLCA();
-            break;
-        case 0x08:
-            return LD_NN_SP();
-            break;
-        case 0x09:
-            return ADD_HL_RR(BC);
-            break;
-        case 0x0a:
-            return LD_A_BC();
-            break;
-        case 0x0b:
-            return DEC_RR(BC);
-            break;
-        case 0x0c:
-            return INC_R(&c);
-            break;
-        case 0x0d:
-            return DEC_R(&c);
-            break;
-        case 0x0e:
-            return LD_R_N(&c);
-            break;
-        case 0x0f:
-            return RRCA();
-            break;
-        case 0x10:
-            return STOP();
-            break;
-        case 0x11:
-            return LD_RR_NN(DE);
-            break;
-        case 0x12:
-            return LD_DE_A();
-            break;
-        case 0x13:
-            return INC_RR(DE);
-            break;
-        case 0x14:
-            return INC_R(&d);
-            break;
-        case 0x15:
-            return DEC_R(&d);
-            break;
-        case 0x16:
-            return LD_R_N(&d);
-            break;
-        case 0x17:
-            return RLA();
-            break;
-        case 0x18:
-            return JR_DD();
-            break;
-        case 0x19:
-            return ADD_HL_RR(DE);
-            break;
-        case 0x1a:
-            return LD_A_DE();
-            break;
-        case 0x1b:
-            return DEC_RR(DE);
-            break;
-        case 0x1c:
-            return INC_R(&e);
-            break;
-        case 0x1d:
-            return DEC_R(&e);
-            break;
-        case 0x1e:
-            return LD_R_N(&e);
-            break;
-        case 0x1f:
-            return RCA();
-            break;
-        case 0x20:
-            return JR_F_DD(!(bool)get_flag(z));
-            break;
-        case 0x21:
-            return LD_RR_NN(HL);
-            break;
-        case 0x22:
-            return LDI_HL_A();
-            break;
-        case 0x23:
-            return INC_RR(HL);
-            break;
-        case 0x24:
-            return INC_R(&h);
-            break;
-        case 0x25:
-            return DEC_R(&h);
-            break;
-        case 0x26:
-            return LD_R_N(&h);
-            break;
-        case 0x27:
-            return DAA();
-            break;
-        case 0x28:
-            return JR_F_DD((bool) get_flag(z));
-            break;
-        case 0x29:
-            return ADD_HL_RR(HL);
-            break;
-        case 0x2a:
-            return LDI_A_HL();
-            break;
-        case 0x2b:
-            return DEC_RR(HL);
-            break;
-        case 0x2c:
-            return INC_R(&l);
-            break;
-        case 0x2d:
-            return DEC_R(&l);
-            break;
-        case 0x2e:
-            return LD_R_N(&l);
-            break;
-        case 0x2f:
-            return CPL();
-            break;
-        case 0x30:
-            return JR_F_DD(!(bool)get_flag(cy));
-            break;
-        case 0x31:
-            return LD_SP_NN();
-            break;
-        case 0x32:
-            return LDD_HL_A();
-            break;
-        case 0x33:
-            return INC_SP();
-            break;
-        case 0x34:
-            return INC_HL();
-            break;
-        case 0x35:
-            return DEC_HL();
-            break;
-        case 0x36:
-            return LD_HL_N();
-            break;
-        case 0x37:
-            return SCF();
-            break;
-        case 0x38:
-            return JR_F_DD((bool) get_flag(cy));
-            break;
-        case 0x39:
-            return ADD_HL_SP();
-            break;
-        case 0x3a:
-            return LDD_A_HL();
-            break;
-        case 0x3b:
-            return DEC_SP();
-            break;
-        case 0x3c:
-            return INC_R(&a);
-            break;
-        case 0x3d:
-            return DEC_R(&a);
-            break;
-        case 0x3e:
-            return LD_R_N(&a);
-            break;
-        case 0x3f:
-            return CCF();
-            break;
-        case 0x40:
-            return LD_R_R(&b, &b);
-            break;
-        case 0x41:
-            return LD_R_R(&b, &c);
-            break;
-        case 0x42:
-            return LD_R_R(&b, &d);
-            break;
-        case 0x43:
-            return LD_R_R(&b, &e);
-            break;
-        case 0x44:
-            return LD_R_R(&b, &h);
-            break;
-        case 0x45:
-            return LD_R_R(&b, &l);
-            break;
-        case 0x46:
-            return LD_R_HL(&b);
-            break;
-        case 0x47:
-            return LD_R_R(&b, &a);
-            break;
-        case 0x48:
-            return LD_R_R(&c, &b);
-            break;
-        case 0x49:
-            return LD_R_R(&c, &c);
-            break;
-        case 0x4a:
-            return LD_R_R(&c, &d);
-            break;
-        case 0x4b:
-            return LD_R_R(&c, &e);
-            break;
-        case 0x4c:
-            return LD_R_R(&c, &h);
-            break;
-        case 0x4d:
-            return LD_R_R(&c, &l);
-            break;
-        case 0x4e:
-            return LD_R_HL(&c);
-            break;
-        case 0x4f:
-            return LD_R_R(&c, &a);
-            break;
-        case 0x50:
-            return LD_R_R(&d, &b);
-            break;
-        case 0x51:
-            return LD_R_R(&d, &c);
-            break;
-        case 0x52:
-            return LD_R_R(&d, &d);
-            break;
-        case 0x53:
-            return LD_R_R(&d, &e);
-            break;
-        case 0x54:
-            return LD_R_R(&d, &h);
-            break;
-        case 0x55:
-            return LD_R_R(&d, &l);
-            break;
-        case 0x56:
-            return LD_R_HL(&d);
-            break;
-        case 0x57:
-            return LD_R_R(&d, &a);
-            break;
-        case 0x58:
-            return LD_R_R(&e, &b);
-            break;
-        case 0x59:
-            return LD_R_R(&e, &c);
-            break;
-        case 0x5a:
-            return LD_R_R(&e, &d);
-            break;
-        case 0x5b:
-            return LD_R_R(&e, &e);
-            break;
-        case 0x5c:
-            return LD_R_R(&e, &h);
-            break;
-        case 0x5d:
-            return LD_R_R(&e, &l);
-            break;
-        case 0x5e:
-            return LD_R_HL(&e);
-            break;
-        case 0x5f:
-            return LD_R_R(&e, &a);
-            break;
-        case 0x60:
-            return LD_R_R(&h, &b);
-            break;
-        case 0x61:
-            return LD_R_R(&h, &c);
-            break;
-        case 0x62:
-            return LD_R_R(&h, &d);
-            break;
-        case 0x63:
-            return LD_R_R(&h, &e);
-            break;
-        case 0x64:
-            return LD_R_R(&h, &h);
-            break;
-        case 0x65:
-            return LD_R_R(&h, &l);
-            break;
-        case 0x66:
-            return LD_R_HL(&h);
-            break;
-        case 0x67:
-            return LD_R_R(&h, &a);
-            break;
-        case 0x68:
-            return LD_R_R(&l, &b);
-            break;
-        case 0x69:
-            return LD_R_R(&l, &c);
-            break;
-        case 0x6a:
-            return LD_R_R(&l, &d);
-            break;
-        case 0x6b:
-            return LD_R_R(&l, &e);
-            break;
-        case 0x6c:
-            return LD_R_R(&l, &h);
-            break;
-        case 0x6d:
-            return LD_R_R(&l, &l);
-            break;
-        case 0x6e:
-            return LD_R_HL(&l);
-            break;
-        case 0x6f:
-            return LD_R_R(&l, &a);
-            break;
-        case 0x70:
-            return LD_HL_R(&b);
-            break;
-        case 0x71:
-            return LD_HL_R(&c);
-            break;
-        case 0x72:
-            return LD_HL_R(&d);
-            break;
-        case 0x73:
-            return LD_HL_R(&e);
-            break;
-        case 0x74:
-            return LD_HL_R(&h);
-            break;
-        case 0x75:
-            return LD_HL_R(&l);
-            break;
-        case 0x76:
-            return HALT();
-            break;
-        case 0x77:
-            return LD_HL_R(&a);
-            break;
-        case 0x78:
-            return LD_R_R(&a, &b);
-            break;
-        case 0x79:
-            return LD_R_R(&a, &c);
-            break;
-        case 0x7a:
-            return LD_R_R(&a, &d);
-            break;
-        case 0x7b:
-            return LD_R_R(&a, &e);
-            break;
-        case 0x7c:
-            return LD_R_R(&a, &h);
-            break;
-        case 0x7d:
-            return LD_R_R(&a, &l);
-            break;
-        case 0x7e:
-            return LD_R_HL(&a);
-            break;
-        case 0x7f:
-            return LD_R_R(&a, &a);
-            break;
-        case 0x80:
-            return ADD_A_R(&b);
-            break;
-        case 0x81:
-            return ADD_A_R(&c);
-            break;
-        case 0x82:
-            return ADD_A_R(&d);
-            break;
-        case 0x83:
-            return ADD_A_R(&e);
-            break;
-        case 0x84:
-            return ADD_A_R(&h);
-            break;
-        case 0x85:
-            return ADD_A_R(&l);
-            break;
-        case 0x86:
-            return ADD_A_HL();
-            break;
-        case 0x87:
-            return ADD_A_R(&a);
-            break;
-        case 0x88:
-            return ADC_A_R(&b);
-            break;
-        case 0x89:
-            return ADC_A_R(&c);
-            break;
-        case 0x8a:
-            return ADC_A_R(&d);
-            break;
-        case 0x8b:
-            return ADC_A_R(&e);
-            break;
-        case 0x8c:
-            return ADC_A_R(&h);
-            break;
-        case 0x8d:
-            return ADC_A_R(&l);
-            break;
-        case 0x8e:
-            return ADC_A_HL();
-            break;
-        case 0x8f:
-            return ADC_A_R(&a);
-            break;
-        case 0x90:
-            return SUB_A_R(&b);
-            break;
-        case 0x91:
-            return SUB_A_R(&c);
-            break;
-        case 0x92:
-            return SUB_A_R(&d);
-            break;
-        case 0x93:
-            return SUB_A_R(&e);
-            break;
-        case 0x94:
-            return SUB_A_R(&h);
-            break;
-        case 0x95:
-            return SUB_A_R(&l);
-            break;
-        case 0x96:
-            return SUB_A_HL();
-            break;
-        case 0x97:
-            return SUB_A_R(&a);
-            break;
-        case 0x98:
-            return SBC_A_R(&b);
-            break;
-        case 0x99:
-            return SBC_A_R(&c);
-            break;
-        case 0x9a:
-            return SBC_A_R(&d);
-            break;
-        case 0x9b:
-            return SBC_A_R(&e);
-            break;
-        case 0x9c:
-            return SBC_A_R(&h);
-            break;
-        case 0x9d:
-            return SBC_A_R(&l);
-            break;
-        case 0x9e:
-            return SBC_A_HL();
-            break;
-        case 0x9f:
-            return SBC_A_R(&a);
-            break;
-        case 0xa0:
-            return AND_A_R(&b);
-            break;
-        case 0xa1:
-            return AND_A_R(&c);
-            break;
-        case 0xa2:
-            return AND_A_R(&d);
-            break;
-        case 0xa3:
-            return AND_A_R(&e);
-            break;
-        case 0xa4:
-            return AND_A_R(&h);
-            break;
-        case 0xa5:
-            return AND_A_R(&l);
-            break;
-        case 0xa6:
-            return AND_A_HL();
-            break;
-        case 0xa7:
-            return AND_A_R(&a);
-            break;
-        case 0xa8:
-            return XOR_A_R(&b);
-            break;
-        case 0xa9:
-            return XOR_A_R(&c);
-            break;
-        case 0xaa:
-            return XOR_A_R(&d);
-            break;
-        case 0xab:
-            return XOR_A_R(&e);
-            break;
-        case 0xac:
-            return XOR_A_R(&h);
-            break;
-        case 0xad:
-            return XOR_A_R(&l);
-            break;
-        case 0xae:
-            return XOR_A_HL();
-            break;
-        case 0xaf:
-            return XOR_A_R(&a);
-            break;
-        case 0xb0:
-            return OR_A_R(&b);
-            break;
-        case 0xb1:
-            return OR_A_R(&c);
-            break;
-        case 0xb2:
-            return OR_A_R(&d);
-            break;
-        case 0xb3:
-            return OR_A_R(&e);
-            break;
-        case 0xb4:
-            return OR_A_R(&h);
-            break;
-        case 0xb5:
-            return OR_A_R(&l);
-            break;
-        case 0xb6:
-            return OR_A_HL();
-            break;
-        case 0xb7:
-            return OR_A_R(&a);
-            break;
-        case 0xb8:
-            return CP_A_R(&b);
-            break;
-        case 0xb9:
-            return CP_A_R(&c);
-            break;
-        case 0xba:
-            return CP_A_R(&d);
-            break;
-        case 0xbb:
-            return CP_A_R(&e);
-            break;
-        case 0xbc:
-            return CP_A_R(&h);
-            break;
-        case 0xbd:
-            return CP_A_R(&l);
-            break;
-        case 0xbe:
-            return CP_A_HL();
-            break;
-        case 0xbf:
-            return CP_A_R(&a);
-            break;
-        case 0xc0:
-            return RET_F(!(bool)get_flag(z));
-            break;
-        case 0xc1:
-            return POP_RR(BC);
-            break;
-        case 0xc2:
-            return JP_F_NN(!(bool) get_flag(z));
-            break;
-        case 0xc3:
-            return JP_NN();
-            break;
-        case 0xc4:
-            return CALL_F_NN(!(bool) get_flag(z));
-            break;
-        case 0xc5:
-            return PUSH_RR(BC);
-            break;
-        case 0xc6:
-            return ADD_A_N();
-            break;
-        case 0xc7:
-            return RST(0);
-            break;
-        case 0xc8:
-            return RET_F((bool) get_flag(z));
-            break;
-        case 0xc9:
-            return RET();
-            break;
-        case 0xca:
-            return JP_F_NN((bool) get_flag(z));
-            break;
-        case 0xcb:
-            next_op = fetchOP();
-            return execute_cb_op(next_op); 
-            break;
-        case 0xcc:
-            return CALL_F_NN((bool) get_flag(z));
-            break;
-        case 0xcd:
-            return CALL_NN();
-            break;
-        case 0xce:
-            return ADC_A_N();
-            break;
-        case 0xcf:
-            return RST(1);
-            break;
-        case 0xd0:
-            return RET_F(!(bool) get_flag(cy));
-            break;
-        case 0xd1:
-            return POP_RR(DE);
-            break;
-        case 0xd2:
-            return JP_F_NN(!(bool) get_flag(cy));
-            break;
-        case 0xd4:
-            return CALL_F_NN(!(bool) get_flag(cy));
-            break;
-        case 0xd5:
-            return PUSH_RR(DE);
-            break;
-        case 0xd6:
-            return SUB_A_N();
-            break;
-        case 0xd7:
-            return RST(2);
-            break;
-        case 0xd8:
-            return RET_F((bool) get_flag(cy));
-            break;
-        case 0xd9:
-            return RETI();
-            break;
-        case 0xda:
-            return JP_F_NN((bool) get_flag(cy));
-            break;
-        case 0xdc:
-            return CALL_F_NN((bool) get_flag(cy));
-            break;
-        case 0xde:
-            return SBC_A_N();
-            break;
-        case 0xdf:
-            return RST(3);
-            break;
-        case 0xe0:
-            return LD_ION_A();
-            break;
-        case 0xe1:
-            return POP_RR(HL);
-            break;
-        case 0xe2:
-            return LD_IOC_A();
-            break;
-        case 0xe5:
-            return PUSH_RR(HL);
-            break;
-        case 0xe6:
-            return AND_A_N();
-            break;
-        case 0xe7:
-            return RST(4);
-            break;
-        case 0xe8:
-            return ADD_SP_DD();
-            break;
-        case 0xe9:
-            return JP_HL();
-            break;
-        case 0xea:
-            return LD_NN_A();
-            break;
-        case 0xee:
-            return XOR_A_N();
-            break;
-        case 0xef:
-            return RST(5);
-            break;
-        case 0xf0:
-            return LD_A_ION();
-            break;
-        case 0xf1:
-            return POP_RR(AF);
-            break;
-        case 0xf2:
-            return LD_A_IOC();
-            break;
-        case 0xf3:
-            return DI();
-            break;
-        case 0xf5:
-            return PUSH_RR(AF);
-            break;
-        case 0xf6:
-            return OR_A_N();
-            break;
-        case 0xf7:
-            return RST(6);
-            break;
-        case 0xf8:
-            return LD_HL_SP_DD();
-            break;
-        case 0xf9:
-            return LD_SP_HL();
-            break;
-        case 0xfa:
-            return LD_A_NN();
-            break;
-        case 0xfb:
-            return EI();
-            break;
-        case 0xfe:
-            return CP_A_N();
-            break;
-        case 0xff:
-            return RST(7);
-            break;
-         
-    }
-
-    f &= 0xf0;
-    return -1;
+    return (ops[op])(params[op]);
 }
 
 
@@ -1657,135 +149,195 @@ uint16_t get_hl(){
 void set_hl(uint16_t value){
     h = (uint8_t) (value>>8);
     l = (uint8_t) value;
-
 }
 
-uint8_t *rr_regs[8] = {&a, &f, &b, &c, &d, &e, &h, &l};
-uint8_t* get_rr_1(enum RR type) {
-    return rr_regs[type * 2];
+uint8_t get_mem_hl() {
+    return fetch((h<<8)+l);
+}
+void set_mem_hl(uint8_t value) {
+    post(get_hl(), value);
 }
 
-uint8_t* get_rr_2(enum RR type) {
-    return rr_regs[type * 2+1];
+uint8_t *regs[8] = {&a, &f, &b, &c, &d, &e, &h, &l};
+uint8_t* get_rr_1(uint8_t type) {
+    return regs[type * 2];
 }
 
-uint16_t get_rr(enum RR type) {
-    return (*rr_regs[type * 2] << 8) + *rr_regs[type*2+1];
+uint8_t* get_rr_2(uint8_t type) {
+    return regs[type * 2+1];
+}
+
+uint16_t get_rr(uint8_t type) {
+    return (*regs[type * 2] << 8) + *regs[type*2+1];
 }
 
 
 // Opcodes:
-int LD_R_R(uint8_t* reg1, uint8_t* reg2){
-    *reg1 = *reg2;
-    return 4;
+int LD_B_R(uint8_t r){
+    if (r == MEMHL) b = get_mem_hl();
+    else b = *(regs[r]);
+    return r == MEMHL ? 8 : 4;
+}
+int LD_C_R(uint8_t r){
+    if (r == MEMHL) c = get_mem_hl();
+    else c = *(regs[r]);
+    return r == MEMHL ? 8 : 4;
+}
+int LD_D_R(uint8_t r){
+    if (r == MEMHL) d = get_mem_hl();
+    else d = *(regs[r]);
+    return r == MEMHL ? 8 : 4;
+}
+int LD_E_R(uint8_t r){
+    if (r == MEMHL) e = get_mem_hl();
+    else e = *(regs[r]);
+    return r == MEMHL ? 8 : 4;
+}
+int LD_H_R(uint8_t r){
+    if (r == MEMHL) h = get_mem_hl();
+    else h = *(regs[r]);
+    return r == MEMHL ? 8 : 4;
+}
+int LD_L_R(uint8_t r){
+    if (r == MEMHL) l = get_mem_hl();
+    else l = *(regs[r]);
+    return r == MEMHL ? 8 : 4;
+}
+int LD_HL_R(uint8_t r){
+    set_mem_hl(*(regs[r]));
+    return 8;
+}
+int LD_A_R(uint8_t r){
+    if (r == MEMHL) a = get_mem_hl();
+    else a = *(regs[r]);
+    return r == MEMHL ? 8 : 4;
+}
 
-}  // REG1 = REG2
-int LD_R_N(uint8_t* reg){
-    uint8_t value = fetchOP();
-    *reg = value;
+
+
+int LD_B_N(uint8_t t){
+    b = fetchOP();
     return 8;
-}   // REG = Value
-int LD_R_HL(uint8_t* reg){
-    *reg = fetch(get_hl());
+}
+int LD_C_N(uint8_t t){
+    c = fetchOP();
     return 8;
-}                 // REG = *(HL)
-int LD_HL_R(uint8_t* reg){
-    post(get_hl(), *reg);
+}
+int LD_D_N(uint8_t t){
+    d = fetchOP();
     return 8;
-}// *(HL) = REG
-int LD_HL_N(){
-    post(get_hl(), fetchOP());
+}
+int LD_E_N(uint8_t t){
+    e = fetchOP();
+    return 8;
+}
+int LD_H_N(uint8_t t){
+    h = fetchOP();
+    return 8;
+}
+int LD_L_N(uint8_t t){
+    l = fetchOP();
+    return 8;
+}
+int LD_HL_N(uint8_t t){
+    set_mem_hl(fetchOP());
     return 12;
 }
-int LD_A_BC(){
+int LD_A_N(uint8_t t){
+    a = fetchOP();
+    return 8;
+}
+
+
+int LD_A_BC(uint8_t t){
     a = fetch(get_bc());
     return 8;
 }                             // A = *(BC)
-int LD_A_DE(){
+int LD_A_DE(uint8_t t){
     a = fetch(get_de());
     return 8;
 }                             // A = *(DE)
-int LD_A_NN(){
+int LD_A_NN(uint8_t t){
     a = fetch(fetchOP16());
     return 16;
 }               // A = *(Value)
-int LD_BC_A(){
+int LD_BC_A(uint8_t t){
     post(get_bc(), a);
     return 8;
 }                           // *(BC) = A
-int LD_DE_A(){
+int LD_DE_A(uint8_t t){
     post(get_de(), a);
     return 8;
 }                             // *(DE) = A
-int LD_NN_A(){
+int LD_NN_A(uint8_t t){
     post(fetchOP16(), a);
     return 16;
 }                             // *(NN) = A
-int LD_A_ION(){
+int LD_A_ION(uint8_t t){
     a = fetch((uint16_t)(0xFF00 + (uint16_t)fetchOP()));
     return 12;
 }               // A = *(FF00+n) 
-int LD_ION_A(){
+int LD_ION_A(uint8_t t){
     post(0xFF00 + fetchOP(), a);
     return 12;
 }               // *(FF00+n) = A
-int LD_A_IOC(){
+int LD_A_IOC(uint8_t t){
     a = fetch(0xFF00 + c);
     return 8;
 }                            // A = *(FF00+C)
-int LD_IOC_A(){
+int LD_IOC_A(uint8_t t){
     post(0xFF00 + c, a);
     return 8;
 }                            // *(FF00+c) = A
-int LDI_HL_A(){
+int LDI_HL_A(uint8_t t){
     post(get_hl(), a);
     set_hl(get_hl() + 0x0001);
     return 8;
 }                            // *(HL) = A, HL+=1
-int LDI_A_HL(){
-    a = fetch(get_hl());
+int LDI_A_HL(uint8_t t){
+    a = get_mem_hl();
     set_hl(get_hl()+0x0001);
     return 8;
 }                            // A = *(HL), HL+=1
-int LDD_HL_A(){
+int LDD_HL_A(uint8_t t){
     post(get_hl(), a);
     set_hl(get_hl()-1);
     return 8;
 }                            // *(HL) = A, HL-=1
-int LDD_A_HL(){
-    a = fetch(get_hl());
+int LDD_A_HL(uint8_t t){
+    a = get_mem_hl();
     set_hl(get_hl()-1);
     return 8;
 }                            // A = *(HL), HL-=1
         
 // 16 Bit Load Commands
-int LD_RR_NN(enum RR type){
+int LD_RR_NN(uint8_t type){
     *get_rr_2(type) = fetchOP();
     *get_rr_1(type) = fetchOP();
     return 12;
 }// RR = NN (rr is like BC or DE or HL)
-int LD_SP_NN(){
+int LD_SP_NN(uint8_t t){
     SP = fetchOP16();
     return 12;
 } // SP = NN (is merged with op above in pan docs)
-int LD_SP_HL(){
+int LD_SP_HL(uint8_t t){
     SP = get_hl();
     return 8;
 }                                                            // SP = HL
-int PUSH_RR(enum RR type){
+int PUSH_RR(uint8_t type){
     post(SP-1, *get_rr_1(type));
     post(SP-2, *get_rr_2(type));
     SP-=2;
     return 16;
 }                                 // SP-=2, *(SP)=rr
-int POP_RR(enum RR type){
+int POP_RR(uint8_t type){
     *get_rr_2(type) = fetch(SP);
     *get_rr_1(type) = fetch(SP+1);
     SP+=2;
     return 12;
 }                                  // SP+=2. rr=*(SP)
 
-int LD_NN_SP() {
+int LD_NN_SP(uint8_t t) {
     uint16_t address = fetchOP16();
     post(address, (uint8_t) SP);
     post(address + 1, (uint8_t) (SP >> 8));
@@ -1793,7 +345,8 @@ int LD_NN_SP() {
 }
         
 // 8 bit Arithmetic/Logic
-int ADD_A_R(uint8_t* reg){
+int ADD_A_R(uint8_t r){
+    uint8_t *reg = regs[r];
     set_flag(hy, (a & 0xf) + (*reg & 0xf) > 0xf);
     set_flag(cy, a + *reg > 0xff);
     a += *reg;
@@ -1801,7 +354,7 @@ int ADD_A_R(uint8_t* reg){
     set_flag(n, 0);
     return 4;
 }                // Adds register to accumulator
-int ADD_A_N(){
+int ADD_A_N(uint8_t t){
     uint8_t value = fetchOP();
     set_flag(hy, (a & 0xf) + (value & 0xf) > 0xf);
     set_flag(cy, a + value > 0xff);
@@ -1810,15 +363,16 @@ int ADD_A_N(){
     set_flag(n, 0);
     return 8;
 }               // Adds value to accumulator
-int ADD_A_HL(){
-    set_flag(hy, (a & 0xf) + (fetch(get_hl()) & 0xf) > 0xf);
-    set_flag(cy, a + fetch(get_hl()) > 0xff);
-    a += fetch(get_hl());
+int ADD_A_HL(uint8_t t){
+    set_flag(hy, (a & 0xf) + (get_mem_hl() & 0xf) > 0xf);
+    set_flag(cy, a + get_mem_hl() > 0xff);
+    a += get_mem_hl();
     set_flag(z, a==0);
     set_flag(n, 0);
     return 8;
 }                           // Adds (HL) pointer's value to accumulator
-int ADC_A_R(uint8_t* reg) {
+int ADC_A_R(uint8_t r) {
+    uint8_t *reg = regs[r];
     set_flag(hy, (a & 0xf) + (*reg & 0xf) + get_flag(cy)> 0xf);
     bool p = get_flag(cy);
     set_flag(cy, a + *reg + get_flag(cy) > 0xff);
@@ -1827,7 +381,7 @@ int ADC_A_R(uint8_t* reg) {
     set_flag(n, 0);
     return 4;
 }                 // Adds register and c flag to accumulator
-int ADC_A_N(){
+int ADC_A_N(uint8_t t){
     uint8_t value = fetchOP();
     set_flag(hy, (a & 0xf) + (value & 0xf) + get_flag(cy)> 0xf);
     bool p = get_flag(cy);
@@ -1837,16 +391,17 @@ int ADC_A_N(){
     set_flag(n, 0);
     return 8;
 }               // Adds value and c flag to accumulator
-int ADC_A_HL(){
-    set_flag(hy, (a & 0xf) + (fetch(get_hl()) & 0xf) + get_flag(cy)> 0xf);
+int ADC_A_HL(uint8_t t){
+    set_flag(hy, (a & 0xf) + (get_mem_hl() & 0xf) + get_flag(cy)> 0xf);
     bool p = get_flag(cy);
-    set_flag(cy, a + fetch(get_hl()) + get_flag(cy) > 0xff);
-    a += fetch(get_hl()) + p;
+    set_flag(cy, a + get_mem_hl() + get_flag(cy) > 0xff);
+    a += get_mem_hl() + p;
     set_flag(z, a==0);
     set_flag(n, 0);
     return 8;
 }                           // Adds (HL) pointer's value and c flag to accumulator
-int SUB_A_R(uint8_t* reg){
+int SUB_A_R(uint8_t r){
+    uint8_t *reg = regs[r];
     set_flag(hy, (a & 0xf) - (*reg & 0xf) < 0x0);
     set_flag(cy, a - *reg < 0x0000);
     a -= *reg;
@@ -1854,7 +409,7 @@ int SUB_A_R(uint8_t* reg){
     set_flag(n, 1);
     return 4;
 }                // Subtracts register from accumulator
-int SUB_A_N(){
+int SUB_A_N(uint8_t t){
     uint8_t value = fetchOP();
     set_flag(hy, (a & 0xf) - (value & 0xf) < 0x0);
     set_flag(cy, a - value < 0x0000);
@@ -1863,15 +418,16 @@ int SUB_A_N(){
     set_flag(n, 1);
     return 8;
 }               // Subtracts value from accumulator
-int SUB_A_HL(){
-    set_flag(hy, (a & 0xf) - (fetch(get_hl()) & 0xf) < 0x0);
-    set_flag(cy, a - fetch(get_hl()) < 0x0000);
-    a -= fetch(get_hl());
+int SUB_A_HL(uint8_t t){
+    set_flag(hy, (a & 0xf) - (get_mem_hl() & 0xf) < 0x0);
+    set_flag(cy, a - get_mem_hl() < 0x0000);
+    a -= get_mem_hl();
     set_flag(z, a==0);
     set_flag(n, 1);
     return 8;
 }                           // Subtracts (HL) pointer's value from accumulator
-int SBC_A_R(uint8_t* reg){
+int SBC_A_R(uint8_t r){
+    uint8_t *reg = regs[r];
     set_flag(hy, (a & 0xf) - (*reg & 0xf) - get_flag(cy) < 0x0);
     bool p = get_flag(cy);
     set_flag(cy, a - *reg - get_flag(cy) < 0x0000);
@@ -1880,7 +436,7 @@ int SBC_A_R(uint8_t* reg){
     set_flag(n, 1);
     return 4;
 }                // Subtracts register and c flag from accumulator
-int SBC_A_N(){
+int SBC_A_N(uint8_t t){
     uint8_t value = fetchOP();
     set_flag(hy, (a & 0xf) - (value & 0xf) - get_flag(cy) < 0x0);
     bool p = get_flag(cy);
@@ -1890,16 +446,17 @@ int SBC_A_N(){
     set_flag(n, 1);
     return 8;
 }               // Subtracts value and c flag from accumulator
-int SBC_A_HL(){
-    set_flag(hy, (a & 0xf) - (fetch(get_hl()) & 0xf) - get_flag(cy) < 0x0);
+int SBC_A_HL(uint8_t t){
+    set_flag(hy, (a & 0xf) - (get_mem_hl() & 0xf) - get_flag(cy) < 0x0);
     bool p = get_flag(cy);
-    set_flag(cy, a - fetch(get_hl()) - get_flag(cy) < 0x0000);
-    a = a - fetch(get_hl()) - p;
+    set_flag(cy, a - get_mem_hl() - get_flag(cy) < 0x0000);
+    a = a - get_mem_hl() - p;
     set_flag(z, a==0);
     set_flag(n, 1);
     return 8;
 }                           // Subtracts (HL) pointer's value and c flag from accumulator
-int AND_A_R(uint8_t* reg){
+int AND_A_R(uint8_t r){
+    uint8_t *reg = regs[r];
     a &= *reg;
     set_flag(z, a==0);
     set_flag(n, 0);
@@ -1907,7 +464,7 @@ int AND_A_R(uint8_t* reg){
     set_flag(cy, 0);
     return 4;
 }                // Masks A and Register, returns into A
-int AND_A_N(){
+int AND_A_N(uint8_t t){
     uint8_t value = fetchOP();
     a &= value;
     set_flag(z, a==0);
@@ -1916,15 +473,16 @@ int AND_A_N(){
     set_flag(cy, 0);
     return 8;
 }               // Masks A and value, returns into A
-int AND_A_HL(){
-    a &= fetch(get_hl());
+int AND_A_HL(uint8_t t){
+    a &= get_mem_hl();
     set_flag(z, a==0);
     set_flag(n, 0);
     set_flag(hy, 1);
     set_flag(cy, 0);
     return 8;
 }                           // Masks A and (HL) pointers value, returns into A
-int XOR_A_R(uint8_t* reg){
+int XOR_A_R(uint8_t r){
+    uint8_t *reg = regs[r];
     a ^= *reg;
     set_flag(z, a==0);
     set_flag(n, 0);
@@ -1932,7 +490,7 @@ int XOR_A_R(uint8_t* reg){
     set_flag(cy, 0);
     return 4;
 }                // Opposite of Mask A and Register, returns into A
-int XOR_A_N(){
+int XOR_A_N(uint8_t t){
     uint8_t value = fetchOP();
     a ^= value;
     set_flag(z, a==0);
@@ -1941,15 +499,16 @@ int XOR_A_N(){
     set_flag(cy, 0);
     return 8;
 }               // Opposite of Mask A and value, returns into A
-int XOR_A_HL(){
-    a^= fetch(get_hl());
+int XOR_A_HL(uint8_t t){
+    a^= get_mem_hl();
     set_flag(z, a==0);
     set_flag(n, 0);
     set_flag(hy, 0);
     set_flag(cy, 0);
     return 8;
 }                           // Opposite of Mask A and (HL) pointers value, returns into A
-int OR_A_R(uint8_t* reg){
+int OR_A_R(uint8_t r){
+    uint8_t *reg = regs[r];
     a |= *reg;
     set_flag(z, a==0);
     set_flag(n, 0);
@@ -1957,7 +516,7 @@ int OR_A_R(uint8_t* reg){
     set_flag(cy, 0);
     return 4;
 }                 // Combines A and Register, returns into A
-int OR_A_N(){
+int OR_A_N(uint8_t t){
     uint8_t value = fetchOP();
     a |= value;
     set_flag(z, a==0);
@@ -1966,22 +525,23 @@ int OR_A_N(){
     set_flag(cy, 0);
     return 8;
 }                // Combines A and value, returns into A
-int OR_A_HL(){
-    a |= fetch(get_hl());
+int OR_A_HL(uint8_t t){
+    a |= get_mem_hl();
     set_flag(z, a==0);
     set_flag(n, 0);
     set_flag(hy, 0);
     set_flag(cy, 0);
     return 8;
 }                            // Combines A and (HL) pointers value, returns into A
-int CP_A_R(uint8_t* reg){ 
+int CP_A_R(uint8_t r){ 
+    uint8_t *reg = regs[r];
     set_flag(z, a==*reg);
     set_flag(n, 1);
     set_flag(hy, (a & 0xf) - (*reg & 0xf) < 0);
     set_flag(cy, a-*reg < 0);
     return 4;
 }                 // Compares A and Register, returns into A
-int CP_A_N(){
+int CP_A_N(uint8_t t){
     uint8_t value = fetchOP();
     set_flag(z, a==value);
     set_flag(n, 1);
@@ -1989,42 +549,44 @@ int CP_A_N(){
     set_flag(cy, a-value < 0);
     return 8;
 }                // Compares A and value, returns into A
-int CP_A_HL(){
-    set_flag(z, a==fetch(get_hl()));
+int CP_A_HL(uint8_t t){
+    set_flag(z, a==get_mem_hl());
     set_flag(n, 1);
-    set_flag(hy, (a & 0xf) - (fetch(get_hl()) & 0xf) < 0);
-    set_flag(cy, a-fetch(get_hl()) < 0);
+    set_flag(hy, (a & 0xf) - (get_mem_hl() & 0xf) < 0);
+    set_flag(cy, a-get_mem_hl() < 0);
     return 8;
 }                            // Compares A and (HL) pointers value, returns into A
-int INC_R(uint8_t* reg){
+int INC_R(uint8_t r){
+    uint8_t *reg = regs[r];
     *reg +=1;
     set_flag(z, *reg == 0);
     set_flag(n, 0);
     set_flag(hy, (*reg>>4) % 2 != ((*reg-1)>>4) % 2);
     return 4;
 }                  // Adds one to register
-int INC_HL(){
-    post(get_hl(), fetch(get_hl())+1);
-    set_flag(z, fetch(get_hl()) == 0);
+int INC_HL(uint8_t t){
+    post(get_hl(), get_mem_hl()+1);
+    set_flag(z, get_mem_hl() == 0);
     set_flag(n, 0);
-    set_flag(hy, (fetch(get_hl()) & 0xf) == 0);
+    set_flag(hy, (get_mem_hl() & 0xf) == 0);
     return 12;
 }                             // Adds on to (HL) pointer's value
-int DEC_R(uint8_t* reg){
+int DEC_R(uint8_t r){
+    uint8_t *reg = regs[r];
     *reg -= 1;
     set_flag(z, *reg == 0);
     set_flag(n, 1);
     set_flag(hy, (*reg>>4) % 2 != ((*reg+1)>>4) % 2);
     return 4;
 }                  // Subtracts one from register
-int DEC_HL(){
-    post(get_hl(), fetch(get_hl())-1);
-    set_flag(z, fetch(get_hl()) == 0);
+int DEC_HL(uint8_t t){
+    post(get_hl(), get_mem_hl()-1);
+    set_flag(z, get_mem_hl() == 0);
     set_flag(n, 1);
-    set_flag(hy, (fetch((get_hl()))&0x10) != ((fetch(get_hl())+1)&0x10));
+    set_flag(hy, (fetch((get_hl()))&0x10) != ((get_mem_hl()+1)&0x10));
     return 12;
 }                             // Subtracts one from (HL) pointer's value
-int DAA(){
+int DAA(uint8_t t){
     if (!get_flag(n)) {  // after an addition, adjust if (half-)carry occurred or if result is out of bounds
         if (get_flag(cy)|| a > 0x99) { 
             a += 0x60; set_flag(cy,1); 
@@ -2044,7 +606,7 @@ int DAA(){
     set_flag(z, a==0);
     return 4;
 }                                // BCD Corrects Acumulator.(idk what that means)
-int CPL(){
+int CPL(uint8_t t){
     set_flag(n, 1);
     set_flag(hy, 1);
     a ^= 0xff;
@@ -2052,7 +614,7 @@ int CPL(){
 }                                // Flips all bits in Acumulator
 
 // 16 Bit Arithmetic
-int ADD_HL_RR(enum RR type){
+int ADD_HL_RR(uint8_t type){
     uint16_t first = get_hl();
     uint16_t second = get_rr(type);
     set_flag(hy, (first&0xfff)+(second&0xfff) > 0xfff);
@@ -2062,7 +624,7 @@ int ADD_HL_RR(enum RR type){
     return 8;
 } // HL = HL + rr
 
-int ADD_HL_SP() {
+int ADD_HL_SP(uint8_t t) {
     set_flag(hy, (get_hl() & 0xfff) + (SP & 0xfff) > 0xfff);
     set_flag(cy, (int)get_hl() + (int)SP > 0xffff);
     set_hl(get_hl() + SP);
@@ -2070,27 +632,27 @@ int ADD_HL_SP() {
     return 8;
 }
 
-int INC_RR(enum RR type){
+int INC_RR(uint8_t type){
     *get_rr_1(type) = x16_x81(get_rr(type)+1);
     *get_rr_2(type) = x16_x82(get_rr(type)+1);
     return 8;
 }   // RR += 1
-int DEC_RR(enum RR type){
+int DEC_RR(uint8_t type){
     *get_rr_1(type) = x16_x81(get_rr(type)-1);
     *get_rr_2(type) = x16_x82(get_rr(type)-1);
     return 8;
 }   // RR -= 1
 
-int INC_SP() {
+int INC_SP(uint8_t t) {
     ++SP;
     return 8;
 }
 
-int DEC_SP() {
+int DEC_SP(uint8_t t) {
     SP--;
     return 8;
 }
-int ADD_SP_DD(){
+int ADD_SP_DD(uint8_t t){
     int8_t value = fetchOP();
     set_flag(z, 0);
     set_flag(n, 0);
@@ -2100,7 +662,7 @@ int ADD_SP_DD(){
     return 16;
 } // SP += DD
 
-int LD_HL_SP_DD(){
+int LD_HL_SP_DD(uint8_t t){
     int8_t value = fetchOP();
     set_flag(z, 0);
     set_flag(n, 0);
@@ -2112,7 +674,7 @@ int LD_HL_SP_DD(){
         
 
         // Rotate And Shift Commands
-int RLCA(){
+int RLCA(uint8_t t){
     set_flag(cy, a>>7);
     a = (a << 1) | (a >> 7); 
     set_flag(z, 0);
@@ -2120,7 +682,7 @@ int RLCA(){
     set_flag(hy, 0);
     return 4;
 }                             // rotates accumulator left, bit 7 -> cy flag and bit  0
-int RLA(){
+int RLA(uint8_t t){
     bool p = a>>7;
     a = (a << 1) | (a >> 7);
     if (get_flag(cy)== 0) { a = a & ~1;
@@ -2131,7 +693,7 @@ int RLA(){
     set_flag(hy, 0);
     return 4;
 }                              // rotates accumulator left, bit 0 = cy bit 7 -> cy
-int RRCA(){
+int RRCA(uint8_t t){
     set_flag(cy, a & 1);
     a = (a >> 1) | (a << 7); 
     set_flag(z, 0);
@@ -2139,7 +701,7 @@ int RRCA(){
     set_flag(hy, 0);
     return 4;
 }                             // rotates accumulator right, bit 0->cy flag and bit 7
-int RCA(){
+int RCA(uint8_t t){
     int p = a % 2;
     a = (a >> 1) | (a << 7);
     if (get_flag(cy)== 0) { a = a & ~128;
@@ -2150,7 +712,8 @@ int RCA(){
     set_flag(hy, 0);
     return 4;
 }                              // rotates accumulator right, bit 7 = cy flag, bit 0 -> cy flag
-int RLC_R(uint8_t* reg){
+int RLC_R(uint8_t r){
+    uint8_t *reg = regs[r];
     set_flag(cy, *reg>>7);
     *reg = (*reg << 1) | (*reg >> 7); 
     set_flag(z, *reg==0);
@@ -2158,15 +721,16 @@ int RLC_R(uint8_t* reg){
     set_flag(hy, 0);
     return 8;
 }                // rotate register left bit 7 -> cy flag
-int RLC_HL(){
-    set_flag(cy, fetch(get_hl()) >>7);
-    post(get_hl(), (fetch(get_hl()) << 1) | (fetch(get_hl()) >> 7)); 
-    set_flag(z, fetch(get_hl())==0);
+int RLC_HL(uint8_t t){
+    set_flag(cy, get_mem_hl() >>7);
+    post(get_hl(), (get_mem_hl() << 1) | (fetch(get_hl()) >> 7)); 
+    set_flag(z, get_mem_hl()==0);
     set_flag(n, 0);
     set_flag(hy, 0);
     return 16;
 }                           // rotate HL pointer's value left bit 7 -> cy flag
-int RL_R(uint8_t* reg){
+int RL_R(uint8_t r){
+    uint8_t *reg = regs[r];
     bool p = get_flag(cy);
     set_flag(cy, *reg >> 7);
     *reg = (*reg << 1) | (*reg >> 7);
@@ -2178,19 +742,20 @@ int RL_R(uint8_t* reg){
     return 8;
 
 }                 // rotate register left bit 0 = cy flag
-int RL_HL(){
+int RL_HL(uint8_t t){
     bool p = get_flag(cy);
-    set_flag(cy, fetch(get_hl()) >> 7);
-    post(get_hl(), (fetch(get_hl()) << 1) | (fetch(get_hl()) >> 7));
-    if (p== 0) { post(get_hl(), fetch(get_hl()) & ~ 1);
-    } else {post(get_hl(), fetch(get_hl()) | 1);}
-    set_flag(z, fetch(get_hl()) == 0);
+    set_flag(cy, get_mem_hl() >> 7);
+    post(get_hl(), (get_mem_hl() << 1) | (fetch(get_hl()) >> 7));
+    if (p== 0) { post(get_hl(), get_mem_hl() & ~ 1);
+    } else {post(get_hl(), get_mem_hl() | 1);}
+    set_flag(z, get_mem_hl() == 0);
     set_flag(n, 0);
     set_flag(hy, 0);
     return 16;
 
 }                            // rotate HL pointer's value left, 0 = cy flag
-int RRC_R(uint8_t* reg){
+int RRC_R(uint8_t r){
+    uint8_t *reg = regs[r];
     set_flag(cy, (*reg)&1);
     *reg = ((*reg) >> 1) | ((*reg) << 7); 
     set_flag(z, *reg==0);
@@ -2199,16 +764,17 @@ int RRC_R(uint8_t* reg){
     return 8;
 
 }                // rotate register right bit 0 -> cy flag
-int RRC_HL(){
-    bool p = fetch(get_hl()) & 1;
-    post(get_hl(), (fetch(get_hl()) >> 1) | (fetch(get_hl()) << 7)); 
+int RRC_HL(uint8_t t){
+    bool p = get_mem_hl() & 1;
+    post(get_hl(), (get_mem_hl() >> 1) | (fetch(get_hl()) << 7)); 
     set_flag(cy, p);
-    set_flag(z, fetch(get_hl())==0);
+    set_flag(z, get_mem_hl()==0);
     set_flag(n, 0);
     set_flag(hy, 0);
     return 16;
 }                           // rotate HL pointer's value right bit 0 -> cy flag
-int RR_R(uint8_t* reg){
+int RR_R(uint8_t r){
+    uint8_t *reg = regs[r];
     bool p = (*reg) & 1;
     *reg = ((*reg) >> 1) | ((*reg) << 7);
     if (get_flag(cy)== 0) { *reg = (*reg) & ~128;
@@ -2219,18 +785,19 @@ int RR_R(uint8_t* reg){
     set_flag(hy, 0);
     return 8;
 }                 // rotate register right bit 7 = cy flag
-int RR_HL(){
-    bool p = fetch(get_hl()) & 1;
-    post(get_hl(), (fetch(get_hl()) >> 1) | (fetch(get_hl()) << 7));
-    if (get_flag(cy)== 0) {post(get_hl(), fetch(get_hl()) & 127);
-    } else {post(get_hl(), fetch(get_hl()) | 128);}
+int RR_HL(uint8_t t){
+    bool p = get_mem_hl() & 1;
+    post(get_hl(), (get_mem_hl() >> 1) | (fetch(get_hl()) << 7));
+    if (get_flag(cy)== 0) {post(get_hl(), get_mem_hl() & 127);
+    } else {post(get_hl(), get_mem_hl() | 128);}
     set_flag(cy, p);
-    set_flag(z, fetch(get_hl()) == 0);
+    set_flag(z, get_mem_hl() == 0);
     set_flag(n, 0);
     set_flag(hy, 0);
     return 16;
 }                            // rotate HL pointer's value right, 7 = cy flag
-int SLA_R(uint8_t* reg){
+int SLA_R(uint8_t r){
+    uint8_t *reg = regs[r];
     bool p = *reg & 128;
     *reg = *reg << 1;
     set_flag(cy, p);
@@ -2239,16 +806,17 @@ int SLA_R(uint8_t* reg){
     set_flag(z, *reg==0);
     return 8;
 }                // shift register left arithmetic 0 = 0
-int SLA_HL(){
-    bool p = fetch(get_hl()) & 128;
-    post(get_hl(), fetch(get_hl()) << 1);
+int SLA_HL(uint8_t t){
+    bool p = get_mem_hl() & 128;
+    post(get_hl(), get_mem_hl() << 1);
     set_flag(cy, p);
     set_flag(n, 0);
     set_flag(hy, 0);
-    set_flag(z, fetch(get_hl())==0);
+    set_flag(z, get_mem_hl()==0);
     return 16;
 }                           // shift HL pointer's value left 0 = 0
-int SWAP_R(uint8_t* reg){
+int SWAP_R(uint8_t r){
+    uint8_t *reg = regs[r];
     *reg = *reg << 4 | *reg >> 4;
     set_flag(z, *reg==0);
     set_flag(n, 0);
@@ -2256,15 +824,16 @@ int SWAP_R(uint8_t* reg){
     set_flag(cy,0);
     return 8;
 }               // Swaps 0-4 bits and 5-8 bits. of register
-int SWAP_HL(){
-    post(get_hl(), fetch(get_hl()) << 4 | fetch(get_hl()) >> 4);
-    set_flag(z, fetch(get_hl())==0);
+int SWAP_HL(uint8_t t){
+    post(get_hl(), get_mem_hl() << 4 | fetch(get_hl()) >> 4);
+    set_flag(z, get_mem_hl()==0);
     set_flag(n, 0);
     set_flag(hy, 0);
     set_flag(cy,0);
     return 16;
 }                          // Swaps 0-4 bits and 5-8 bits of HL pointer's value
-int SRA_R(uint8_t* reg){
+int SRA_R(uint8_t r){
+    uint8_t *reg = regs[r];
     set_flag(cy, *reg & 1);
     *reg = *reg >> 1 | (*reg & 128);
     set_flag(n, 0);
@@ -2272,16 +841,17 @@ int SRA_R(uint8_t* reg){
     set_flag(z, *reg==0);
     return 8;
 }                // Shifts register right arithmetacilly (7=7)
-int SRA_HL(){
-    set_flag(cy, fetch(get_hl()) & 1);
-    uint8_t t = fetch(get_hl());
+int SRA_HL(uint8_t tmp){
+    set_flag(cy, get_mem_hl() & 1);
+    int t = get_mem_hl();
     post(get_hl(), t >> 1 | (t & 128));
     set_flag(n, 0);
     set_flag(hy, 0);
-    set_flag(z, fetch(get_hl())==0);
+    set_flag(z, get_mem_hl()==0);
     return 16;
 }                           // Shifts HL Pointer's value right arithmetically (7=7)
-int SRL_R(uint8_t* reg){
+int SRL_R(uint8_t r){
+    uint8_t *reg = regs[r];
     set_flag(cy, *reg & 1);
     *reg = *reg >> 1;
     set_flag(n, 0);
@@ -2289,62 +859,174 @@ int SRL_R(uint8_t* reg){
     set_flag(z, *reg==0);
     return 8;
 }                // Shifts register right logically (7=0)
-int SRL_HL(){
-    set_flag(cy, fetch(get_hl()) & 1);
-    post(get_hl(), fetch(get_hl()) >> 1);
+int SRL_HL(uint8_t t){
+    set_flag(cy, get_mem_hl() & 1);
+    post(get_hl(), get_mem_hl() >> 1);
     set_flag(n, 0);
     set_flag(hy, 0);
-    set_flag(z, fetch(get_hl())==0);
+    set_flag(z, get_mem_hl()==0);
     return 16;
 }                           // Shifts HL Pointer's value right logically (7=0)
         
 // Singlebit Commands
-int BIT_N_R(uint8_t value, uint8_t* reg){
+int BIT_0_R(uint8_t r){
+    uint8_t value = (r == MEMHL) ? get_mem_hl() : *(regs[r]);
     set_flag(n, 0);
     set_flag(hy, 1);
-    set_flag(z, !(((1 << value) & *reg) >> value));
-    return 8;
+    set_flag(z, !(1 & value));
+    return r == MEMHL ? 12 : 8;
 }   // Copies Bit N of register into Z Flag
-int BIT_N_HL(uint8_t value){
+int BIT_1_R(uint8_t r){
+    uint8_t value = (r == MEMHL) ? get_mem_hl() : *(regs[r]);
     set_flag(n, 0);
     set_flag(hy, 1);
-    set_flag(z, !(((1 << value) & fetch(get_hl())) >> value));
-    return 12;
-}                // Copies Bit N of HL Pointer's value into Z Flag
-int SET_N_R(uint8_t value, uint8_t* reg){
-    *reg = *reg | (1 << value);
-    return 8;
+    set_flag(z, !((2 & value) >> 1));
+    return r == MEMHL ? 12 : 8;
+}
+int BIT_2_R(uint8_t r){
+    uint8_t value = (r == MEMHL) ? get_mem_hl() : *(regs[r]);
+    set_flag(n, 0);
+    set_flag(hy, 1);
+    set_flag(z, !((4 & value) >> 2));
+    return r == MEMHL ? 12 : 8;
+}
+int BIT_3_R(uint8_t r){
+    uint8_t value = (r == MEMHL) ? get_mem_hl() : *(regs[r]);
+    set_flag(n, 0);
+    set_flag(hy, 1);
+    set_flag(z, !((8 & value) >> 3));
+    return r == MEMHL ? 12 : 8;
+}
+int BIT_4_R(uint8_t r){
+    uint8_t value = (r == MEMHL) ? get_mem_hl() : *(regs[r]);
+    set_flag(n, 0);
+    set_flag(hy, 1);
+    set_flag(z, !((16 & value) >> 4));
+    return r == MEMHL ? 12 : 8;
+}
+int BIT_5_R(uint8_t r){
+    uint8_t value = (r == MEMHL) ? get_mem_hl() : *(regs[r]);
+    set_flag(n, 0);
+    set_flag(hy, 1);
+    set_flag(z, !((32 & value) >> 5));
+    return r == MEMHL ? 12 : 8;
+}
+int BIT_6_R(uint8_t r){
+    uint8_t value = (r == MEMHL) ? get_mem_hl() : *(regs[r]);
+    set_flag(n, 0);
+    set_flag(hy, 1);
+    set_flag(z, !((64 & value) >> 6));
+    return r == MEMHL ? 12 : 8;
+}
+int BIT_7_R(uint8_t r){
+    uint8_t value = (r == MEMHL) ? get_mem_hl() : *(regs[r]);
+    set_flag(n, 0);
+    set_flag(hy, 1);
+    set_flag(z, !((128 & value) >> 7));
+    return r == MEMHL ? 12 : 8;
+}
+
+int SET_0_R(uint8_t r){
+    if (r == MEMHL) set_mem_hl(get_mem_hl() | 1);
+    else *(regs[r]) = *(regs[r]) | 1;
+    return r == MEMHL ? 16 : 8;
 }   // Sets Bit N of register to 1
-int SET_N_HL(uint8_t value){
-    post(get_hl(), fetch(get_hl()) | (1 << value));
-    return 16;
-}                // Sets bit N of HL Pointer's value to 1
-int RES_N_R(uint8_t value, uint8_t *reg){
-    *reg = *reg & ~(1 << value);
-    return 8;
+int SET_1_R(uint8_t r){
+    if (r == MEMHL) set_mem_hl(get_mem_hl() | 2);
+    else *(regs[r]) = *(regs[r]) | 2;
+    return r == MEMHL ? 16 : 8;
+}   // Sets Bit N of register to 1
+int SET_2_R(uint8_t r){
+    if (r == MEMHL) set_mem_hl(get_mem_hl() | 4);
+    else *(regs[r]) = *(regs[r]) | 4;
+    return r == MEMHL ? 16 : 8;
+}   // Sets Bit N of register to 1
+int SET_3_R(uint8_t r){
+    if (r == MEMHL) set_mem_hl(get_mem_hl() | 8);
+    else *(regs[r]) = *(regs[r]) | 8;
+    return r == MEMHL ? 16 : 8;
+}   // Sets Bit N of register to 1
+int SET_4_R(uint8_t r){
+    if (r == MEMHL) set_mem_hl(get_mem_hl() | 16);
+    else *(regs[r]) = *(regs[r]) | 16;
+    return r == MEMHL ? 16 : 8;
+}   // Sets Bit N of register to 1
+int SET_5_R(uint8_t r){
+    if (r == MEMHL) set_mem_hl(get_mem_hl() | 32);
+    else *(regs[r]) = *(regs[r]) | 32;
+    return r == MEMHL ? 16 : 8;
+}   // Sets Bit N of register to 1
+int SET_6_R(uint8_t r){
+    if (r == MEMHL) set_mem_hl(get_mem_hl() | 64);
+    else *(regs[r]) = *(regs[r]) | 64;
+    return r == MEMHL ? 16 : 8;
+}   // Sets Bit N of register to 1
+int SET_7_R(uint8_t r){
+    if (r == MEMHL) set_mem_hl(get_mem_hl() | 128);
+    else *(regs[r]) = *(regs[r]) | 128;
+    return r == MEMHL ? 16 : 8;
+}   // Sets Bit N of register to 1
+
+
+int RES_0_R(uint8_t r){
+    if (r == MEMHL) set_mem_hl(get_mem_hl() & ~1);
+    else *(regs[r]) = *(regs[r]) & ~1;
+    return r == MEMHL ? 16 : 8;
 }   // Sets Bit N of register to 0
-int RES_N_HL(uint8_t value){
-    post(get_hl(), fetch(get_hl()) & ~(1 << value));
-    return 16;
-}                // Sets bit N of HL Pointer's value to 0
-        
+int RES_1_R(uint8_t r){
+    if (r == MEMHL) set_mem_hl(get_mem_hl() & ~2);
+    else *(regs[r]) = *(regs[r]) & ~2;
+    return r == MEMHL ? 16 : 8;
+}   // Sets Bit N of register to 0
+int RES_2_R(uint8_t r){
+    if (r == MEMHL) set_mem_hl(get_mem_hl() & ~4);
+    else *(regs[r]) = *(regs[r]) & ~4;
+    return r == MEMHL ? 16 : 8;
+}   // Sets Bit N of register to 0
+int RES_3_R(uint8_t r){
+    if (r == MEMHL) set_mem_hl(get_mem_hl() & ~8);
+    else *(regs[r]) = *(regs[r]) & ~8;
+    return r == MEMHL ? 16 : 8;
+}       
+int RES_4_R(uint8_t r){
+    if (r == MEMHL) set_mem_hl(get_mem_hl() & ~16);
+    else *(regs[r]) = *(regs[r]) & ~16;
+    return r == MEMHL ? 16 : 8;
+}
+int RES_5_R(uint8_t r){
+    if (r == MEMHL) set_mem_hl(get_mem_hl() & ~32);
+    else *(regs[r]) = *(regs[r]) & ~32;
+    return r == MEMHL ? 16 : 8;
+}
+int RES_6_R(uint8_t r){
+    if (r == MEMHL) set_mem_hl(get_mem_hl() & ~64);
+    else *(regs[r]) = *(regs[r]) & ~64;
+    return r == MEMHL ? 16 : 8;
+}
+int RES_7_R(uint8_t r){
+    if (r == MEMHL) set_mem_hl(get_mem_hl() & ~128);
+    else *(regs[r]) = *(regs[r]) & ~128;
+    return r == MEMHL ? 16 : 8;
+}
+
+
 // CPU Control Commands
-int CCF(){
+int CCF(uint8_t t){
     set_flag(n, 0);
     set_flag(hy, 0);
     set_flag(cy, get_flag(cy) ^ 1);
     return 4;
 }                                  // Flips CY Flag
-int SCF(){
+int SCF(uint8_t t){
     set_flag(n, 0);
     set_flag(hy, 0);
     set_flag(cy, 1);
     return 4;
 }                                  // Sets CY Flag to 1
-int NOP(){
+int NOP(uint8_t t){
     return 4;
 }                                  // No Operation
-int HALT(){
+int HALT(uint8_t t){
     if (IME) halt = HALTIME;
     else {
         if ((fetch(0xff0f) & fetch(0xffff)) == 0) {
@@ -2355,49 +1037,65 @@ int HALT(){
     }
     return 4;
 }                                 // HAlt until Interrupt (low power)
-int STOP(){
+int STOP(uint8_t t){
     // STILL MUST DO
     return 4;
 }                                 // Low power standby mode (very low power)
-int DI(){
+int DI(uint8_t t){
     IME = false;
     return 4;
 }                                   // disable interrupts
-int EI(){
+int EI(uint8_t t){
     IME = true;
     return 4;
 }                                   // Enable interrupts
 
 // Jump commands
-int JP_NN(){
+int JP_NN(uint8_t t){
     PC = fetchOP16();
     return 16;
 }  // PC = 16 bit value1+2
-int JP_HL(){
+int JP_HL(uint8_t t){
     PC = get_hl();
     return 4;
 }                                // PC = HL 
-int JP_F_NN(bool flag_value){
+int JP_FT_NN(uint8_t fl){
     uint16_t value = fetchOP16();
-    if (flag_value) {
+    if (get_flag(fl)) {
         PC = value;
         return 16;
     }
     return 12;
-}  // PC = 16 bit value1+2 if FLAG is set
-int JR_DD(){
+}
+int JP_FF_NN(uint8_t fl){
+    uint16_t value = fetchOP16();
+    if (!get_flag(fl)) {
+        PC = value;
+        return 16;
+    }
+    return 12;
+}
+int JR_DD(uint8_t t){
     PC += (int8_t)fetchOP();    // minus 2 because the instruction itself is 2 bytes
     return 12;
 }                   // PC += value
-int JR_F_DD(bool flag_value){
+int JR_FT_DD(uint8_t fl){
     int8_t value = fetchOP();
-    if (flag_value) {
+    if (get_flag(fl)) {
         PC += value;
         return 12;
     }
     return 8;
 }   // PC += value if FLAG is set
-int CALL_NN(){
+int JR_FF_DD(uint8_t fl){
+    int8_t value = fetchOP();
+    if (!get_flag(fl)) {
+        PC += value;
+        return 12;
+    }
+    return 8;
+}
+int CALL_NN(uint8_t t){
     uint16_t value = fetchOP16();
     post(SP-1, (uint8_t) (PC>>8));
     post(SP-2, (uint8_t) PC);
@@ -2405,9 +1103,9 @@ int CALL_NN(){
     PC = value;
     return 24;
 }// PC = 16 bit value1+2, SP-=2, (SP) = PC
-int CALL_F_NN(bool flag_value){
+int CALL_FT_NN(uint8_t fl){
     uint16_t value = fetchOP16();
-    if (flag_value) {
+    if (get_flag(fl)) {
         post(SP-1, (uint8_t) (PC>>8));
         post(SP-2, (uint8_t) PC);
         SP-=2;
@@ -2416,20 +1114,39 @@ int CALL_F_NN(bool flag_value){
     }
     return 12;
 }// PC = 16 bit value1+2, SP-=2, (SP) = PC IF Flag is set
-int RET(){
+int CALL_FF_NN(uint8_t fl){
+    uint16_t value = fetchOP16();
+    if (!get_flag(fl)) {
+        post(SP-1, (uint8_t) (PC>>8));
+        post(SP-2, (uint8_t) PC);
+        SP-=2;
+        PC = value;
+        return 24;
+    }
+    return 12;
+}
+int RET(uint8_t t){
     PC = x8_x16(fetch(SP+1), fetch(SP));
     SP += 2;
     return 16;
 }                                  // PC=(SP), SP+=2
-int RET_F(bool flag_value){
-    if (flag_value) {
+int RET_FT(uint8_t fl){
+    if (get_flag(fl)) {
         PC = x8_x16(fetch(SP+1), fetch(SP));
         SP += 2;
         return 20;
     }
     return 8;
 }                    // PC=(SP), SP+=2 IF Flag is set
-int RETI(){
+int RET_FF(uint8_t fl){
+    if (!get_flag(fl)) {
+        PC = x8_x16(fetch(SP+1), fetch(SP));
+        SP += 2;
+        return 20;
+    }
+    return 8;
+}
+int RETI(uint8_t t){
     PC = x8_x16(fetch(SP+1), fetch(SP));
     SP += 2;
     IME = true;
