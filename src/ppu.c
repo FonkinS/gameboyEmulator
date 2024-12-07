@@ -5,19 +5,22 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define GL_SILENCE_DEPRECATION
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-#include <OpenGL/gl3.h>
+#include <SDL2/SDL.h>
 
 
-GLFWwindow *window;
+
+SDL_Window *window;
+SDL_Renderer *renderer;
+SDL_Texture *texture;
+
+SDL_Rect texture_dst_rect;
+
+
 uint8_t screen[160*144];
 uint8_t faux_bg_screen[160*144];
 
-unsigned int shader;
-unsigned int vao;
-unsigned int texture;
+uint8_t colors[4][3] = {{202, 221, 149}, {139, 162, 106}, {66, 96, 61}, {12, 24, 17}};
+
 
 
 const char* vertexShader = "#version 330 core\n" \
@@ -43,145 +46,83 @@ const char* fragmentShader = "#version 330 core\n" \
 
 
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 int PPUInit(char* title) {
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "0");
+    SDL_Init(SDL_INIT_VIDEO);
+    window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 320,240, SDL_WINDOW_SHOWN);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, 160, 144);
     
-    window = glfwCreateWindow(640, 576, title, NULL, NULL);
-
-    glfwMakeContextCurrent(window);
-
-
-    float vertices[] = {
-        1.0, -1.0, 0.0f, 1.0f, 1.0f,
-        1.0,1.0, 0.0f, 1.0f, 0.0f,
-        -1.0,1.0, 0.0f, 0.0f, 0.0f,
-        -1.0, -1.0, 0.0f, 0.0f, 1.0f
-    };
-
-    unsigned int indices[] = {
-        0, 1, 2,
-        0, 2, 3
-    };
-
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-    unsigned int vbo;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, 20*sizeof(float), vertices, GL_STATIC_DRAW);
-    unsigned int ebo;
-    glGenBuffers(1, &ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(float), indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) 0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    
-    glBindVertexArray(0);
-    
-
-    unsigned int vs;
-    vs = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vs, 1, &vertexShader, NULL);
-    glCompileShader(vs);
-    int success;
-    char error_log[512];
-    glGetShaderiv(vs, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(vs, 512, NULL, error_log);
-        printf("ERROR IN VERTEX SHADER:\n%s\n", error_log);
-    }
-
-
-    unsigned int fs;
-    fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fs, 1, &fragmentShader, NULL);
-    glCompileShader(fs);
-    glGetShaderiv(fs, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(fs, 512, NULL, error_log);
-        printf("ERROR IN FRAGMENT SHADER:\n%s\n", error_log);
-    }
-
-    shader = glCreateProgram();
-    glAttachShader(shader, vs);
-    glAttachShader(shader, fs);
-    glLinkProgram(shader);
-    glGetProgramiv(shader, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shader, 512, NULL, error_log);
-        printf("ERROR IN SHADER COMPILE:\n%s\n", error_log);
-    }
-
-    glDeleteShader(vs);
-    glDeleteShader(fs);
-
-
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, 160,144, 0, GL_RED, GL_UNSIGNED_BYTE, screen);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    glfwSetKeyCallback(window, key_callback);
-    
-    float colors[4][3] = {{0.79, 0.86, 0.58}, {0.54, 0.63, 0.41}, {0.26, 0.37, 0.24}, {0.05, 0.09, 0.07}};
-    glUseProgram(shader);
-    glUniform3fv(glGetUniformLocation(shader, "colors"), 4, (float*)colors);
-
-    glfwSwapInterval(0);
-    glBindVertexArray(vao);
+    texture_dst_rect.x = 0;
+    texture_dst_rect.y = 12;
+    texture_dst_rect.w = 320;
+    texture_dst_rect.h = 216;
+    //float colors[4][3] = {{0.79, 0.86, 0.58}, {0.54, 0.63, 0.41}, {0.26, 0.37, 0.24}, {0.05, 0.09, 0.07}};
     return 1;
 }
 
 int renderFrame() {
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 160, 144, GL_RED, GL_UNSIGNED_BYTE, screen);
-    
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glUseProgram(shader);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, texture, NULL, &texture_dst_rect);
+    SDL_RenderPresent(renderer);
 
-    glfwSwapBuffers(window);
-    glfwPollEvents();
+    void *pixels;
+    int pitch;
+    if (SDL_LockTexture(texture, NULL, &pixels, &pitch) == 0) {
+        uint8_t *pixel_data = (uint8_t*) pixels;
+        for (int y = 0; y < 144; y++) {
+            for (int x = 0; x < 160; x++) {
+                pixel_data[(y * 160 + x) * 4+2] = colors[screen[y * 160 + x]][0];
+                pixel_data[(y * 160 + x) * 4+1] = colors[screen[y * 160 + x]][1];
+                pixel_data[(y * 160 + x) * 4+0] = colors[screen[y * 160 + x]][2];
+            }
+        }
+        SDL_UnlockTexture(texture);
+    }
 
-    return !glfwWindowShouldClose(window);
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) return false;
+        else if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
+            SDL_KeyCode key = event.key.keysym.sym;
+            if      (key == SDLK_UP) dpad_up = event.type == SDL_KEYUP ? false : true;
+            else if (key == SDLK_LEFT) dpad_left = event.type == SDL_KEYUP ? false : true;
+            else if (key == SDLK_DOWN) dpad_down = event.type == SDL_KEYUP ? false : true;
+            else if (key == SDLK_RIGHT) dpad_right = event.type == SDL_KEYUP ? false : true;
+            else if (key == SDLK_BACKSPACE) button_select = event.type == SDL_KEYUP ? false : true;
+            else if (key == SDLK_RETURN) button_start = event.type == SDL_KEYUP ? false : true;
+            else if (key == SDLK_z) button_b = event.type == SDL_KEYUP ? false : true;
+            else if (key == SDLK_x) button_a = event.type == SDL_KEYUP ? false : true;
+            else if (key == SDLK_q) exit(0);
+
+        }
+    }
+
+    return true;
 }
 
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    if      (key == GLFW_KEY_UP) dpad_up = action == GLFW_RELEASE ? false : true;
-    else if (key == GLFW_KEY_LEFT) dpad_left = action == GLFW_RELEASE ? false : true;
-    else if (key == GLFW_KEY_DOWN) dpad_down = action == GLFW_RELEASE ? false : true;
-    else if (key == GLFW_KEY_RIGHT) dpad_right = action == GLFW_RELEASE ? false : true;
-    else if (key == GLFW_KEY_BACKSPACE) button_select = action == GLFW_RELEASE ? false : true;
-    else if (key == GLFW_KEY_ENTER) button_start = action == GLFW_RELEASE ? false : true;
-    else if (key == GLFW_KEY_Z) button_b = action == GLFW_RELEASE ? false : true;
-    else if (key == GLFW_KEY_X) button_a = action == GLFW_RELEASE ? false : true;
-    else if (key == GLFW_KEY_Q) exit(0);
+/*void key_callback(GLFWwindow* window, int key, int scancode, int event.type, int mods) {
+    if      (key == SDLK_UP) dpad_up = event.type == SDL_KEYUP ? false : true;
+    else if (key == SDLK_LEFT) dpad_left = event.type == SDL_KEYUP ? false : true;
+    else if (key == SDLK_DOWN) dpad_down = event.type == SDL_KEYUP ? false : true;
+    else if (key == SDLK_RIGHT) dpad_right = event.type == SDL_KEYUP ? false : true;
+    else if (key == SDLK_BACKSPACE) button_select = event.type == SDL_KEYUP ? false : true;
+    else if (key == SDLK_ENTER) button_start = event.type == SDL_KEYUP ? false : true;
+    else if (key == SDLK_Z) button_b = event.type == SDL_KEYUP ? false : true;
+    else if (key == SDLK_X) button_a = event.type == SDL_KEYUP ? false : true;
+    else if (key == SDLK_Q) exit(0);
 }
 
-
+*/
 
 
 void PPUKill() {
-    glfwDestroyWindow(window);
-    glfwTerminate();
+    SDL_DestroyTexture(texture);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
 }
 
 // TODO Notes FOr TOmorrow

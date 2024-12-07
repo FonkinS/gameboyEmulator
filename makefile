@@ -4,10 +4,10 @@ OUT = bin/main
 FLAGS = -c -Wall -fcommon
 
 all: $(BIN)
-	$(CC) $(BIN) -L /usr/local/lib -lglfw -framework OpenGL -o $(OUT)
+	$(CC) $(BIN) -lSDL2 -o $(OUT)
 
 raspi: $(BIN)
-	$(CC) $(BIN) -lglfw -lGL -lm -ldl -lpthread -latomic -o $(OUT)
+	$(CC) $(BIN) -lSDL2 -lm -ldl -lpthread -latomic -o $(OUT)
 
 bin/main.o: src/main.c
 	$(CC) $(FLAGS) src/main.c -o bin/main.o
