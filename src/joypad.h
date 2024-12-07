@@ -4,6 +4,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+void joypadInit();
+void joypadTick();
+
 uint8_t joypad_read();
 void joypad_write(uint8_t value);
 

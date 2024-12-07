@@ -7,7 +7,7 @@ all: $(BIN)
 	$(CC) $(BIN) -lSDL2 -o $(OUT)
 
 raspi: $(BIN)
-	$(CC) $(BIN) -lSDL2 -lm -ldl -lpthread -latomic -o $(OUT)
+	$(CC) $(BIN) -lSDL2 -lwiringPi -lm -ldl -lpthread -latomic -o $(OUT)
 
 bin/main.o: src/main.c
 	$(CC) $(FLAGS) src/main.c -o bin/main.o

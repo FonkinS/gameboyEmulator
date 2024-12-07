@@ -15,6 +15,7 @@ void request_interrupt(int type) {
 }
 
 
+// TODO Optimize this!
 void check_interrupts() {
     for (int i = VBLANK; i <= JOYPAD; i <<= 1) { // loops through all types
         if (!(IF & i && IE & i)) continue;

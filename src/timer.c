@@ -21,7 +21,7 @@ void timerInit() {
     sys_counter = 0;
     timer_modulo = 0;
     timer_counter = 0;
-    clock_freq = 0;
+    clock_freq = 9;
 }
 
 
