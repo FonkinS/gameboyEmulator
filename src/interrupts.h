@@ -19,7 +19,8 @@ uint8_t interruptTypeToLocation(uint8_t type);
 
 
 void request_interrupt(int type);
-void check_interrupts();
+//void check_interrupts();
+void reset_interrupts();
 
 uint8_t IFRead();
 void IFWrite(uint8_t value);

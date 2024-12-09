@@ -11,7 +11,7 @@
 // - Make drawScanline() like 10x faster
 // - Multithread renderFrame?
 int main(int argc, char** argv) {
-#ifdef __MACOS__
+#ifdef __MACH__
 	if (argc <= 1) {
 		printf("File Needed!\n");
 		return -1;

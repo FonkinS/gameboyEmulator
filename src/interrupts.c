@@ -12,16 +12,23 @@ int interrupt_called;
 
 void request_interrupt(int type) {
     IF |= type;
+    if (interrupt_called > type || interrupt_called == 0) {
+        if (IE & type) interrupt_called = type;
+    }
 }
 
 
-// TODO Optimize this!
-void check_interrupts() {
+/*void check_interrupts() {
+    //interrupt_called = 0;
     for (int i = VBLANK; i <= JOYPAD; i <<= 1) { // loops through all types
         if (!(IF & i && IE & i)) continue;
         interrupt_called = i;
         break;
     }
+}*/
+
+void reset_interrupts() {
+    interrupt_called = 0;
 }
 
 
