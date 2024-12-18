@@ -1,10 +1,10 @@
 CC = gcc
 BIN = bin/main.o bin/cpu.o bin/ppu.o bin/lcd.o bin/gameboy.o bin/interrupts.o bin/joypad.o bin/bus.o bin/timer.o bin/mbc.o bin/mbc0.o bin/mbc1.o bin/apu.o bin/mbc3.o
 OUT = bin/main
-FLAGS = -c -Wall -fcommon
+FLAGS = -c -Wall -fcommon -O3
 
 all: $(BIN)
-	$(CC) $(BIN) -lSDL2 -o $(OUT)
+	$(CC) $(BIN) -lSDL2 -o $(OUT) -O3
 
 raspi: $(BIN)
 	$(CC) $(BIN) -lSDL2 -lwiringPi -lm -ldl -lpthread -latomic -o $(OUT)
