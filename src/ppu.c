@@ -25,14 +25,10 @@ uint8_t colors[4][3] = {{202, 221, 149}, {139, 162, 106}, {66, 96, 61}, {12, 24,
 int PPUInit(char* title) {
     SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "0");
     SDL_Init(SDL_INIT_VIDEO);
-    window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640,480, SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640,576, SDL_WINDOW_SHOWN);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, 160, 144);
     
-    texture_dst_rect.x = 0;
-    texture_dst_rect.y = 0;
-    texture_dst_rect.w = 640;
-    texture_dst_rect.h = 480;
     //float colors[4][3] = {{0.79, 0.86, 0.58}, {0.54, 0.63, 0.41}, {0.26, 0.37, 0.24}, {0.05, 0.09, 0.07}};
     return 1;
 }
