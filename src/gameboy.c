@@ -5,6 +5,7 @@
 #include "mbc.h"
 #include "ppu.h"
 #include "joypad.h"
+#include "renderDesktop.h"
 #include <time.h>
 
 int GameboyInit(char *boot, char *cart) {
@@ -17,7 +18,7 @@ int GameboyInit(char *boot, char *cart) {
     timerInit();
     CPUInit();
     APUInit();
-    PPUInit(title);
+    renderInit(title);
     
     return 0;
 }
@@ -67,7 +68,7 @@ bool GameboyProcessFrame() {
 
     while (PPUMode == VBLANK) GameboyProcessInstruction();
 
-    printf("%i FPS\n", (int)(CLOCKS_PER_SEC / (double)(clock() - begin)));
+    //printf("%i FPS\n", (int)(CLOCKS_PER_SEC / (double)(clock() - begin)));
     while ((double)(clock() - begin) / CLOCKS_PER_SEC < FRAME_DURATION) {}
     //if (PC >= 0x100) return 0;
 
@@ -77,7 +78,7 @@ bool GameboyProcessFrame() {
 
 
 void GameboyKill() {
-    PPUKill();
+    renderKill();
     MBCKill();
     APUKill();
 }

@@ -3,8 +3,8 @@ BIN = bin/main.o bin/cpu.o bin/ppu.o bin/lcd.o bin/gameboy.o bin/interrupts.o bi
 OUT = bin/main
 FLAGS = -c -Wall -fcommon -O3
 
-all: $(BIN)
-	$(CC) $(BIN) -lSDL2 -L /usr/local/lib -lglfw -framework OpenGL -o $(OUT) -O3
+all: $(BIN) bin/renderDesktop.o
+	$(CC) $(BIN) bin/renderDesktop.o -lSDL2 -L /usr/local/lib -lglfw -framework OpenGL -o $(OUT) -O3
 
 raspi: $(BIN)
 	$(CC) $(BIN) -lSDL2 -lwiringPi -lm -ldl -lpthread -latomic -o $(OUT)
@@ -51,5 +51,8 @@ bin/apu.o: src/apu.c
 bin/mbc3.o: src/mbc/mbc3.c
 	$(CC) $(FLAGS) src/mbc/mbc3.c -o bin/mbc3.o
 
+bin/renderDesktop.o: src/renderDesktop.c
+	$(CC) $(FLAGS) src/renderDesktop.c -o bin/renderDesktop.o
+
 clean:
-	rm -rf $(BIN)
+	rm -rf $(BIN) bin/renderDesktop.o
