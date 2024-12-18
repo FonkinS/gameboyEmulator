@@ -19,34 +19,8 @@ SDL_Rect texture_dst_rect;
 uint8_t screen[160*144];
 uint8_t faux_bg_screen[160*144];
 
-//uint8_t colors[4][3] = {{202, 221, 149}, {139, 162, 106}, {66, 96, 61}, {12, 24, 17}};
-uint8_t colors[4][3] = {{186, 218, 85}, {130, 153, 59}, {74,87,34}, {19,22,8}};
-
-
-
-const char* vertexShader = "#version 330 core\n" \
-                           "layout (location = 0) in vec3 aPos;\n" \
-                           "layout (location = 1) in vec2 aTexCoord;\n" \
-                           "uniform vec2 pos;\n" \
-                           "out vec2 texCoord;\n" \
-                           "void main(){\n" \
-                           "\tgl_Position = vec4(aPos.x + pos.x, aPos.y + pos.y, aPos.z, 1.0);\n" \
-                           "\ttexCoord = aTexCoord;\n" \
-                           "}\n";
-
-
-const char* fragmentShader = "#version 330 core\n" \
-                            "out vec4 FragColor;\n" \
-                            "in vec2 texCoord;\n" \
-                            "uniform sampler2D inTexture;\n" \
-                            "uniform vec3 colors[4];\n" \
-                            "void main() {\n" \
-                            "\tint col = int(texture(inTexture, texCoord).r*256);\n" \
-                            "\tFragColor = vec4(colors[col],1.0f);\n" \
-                            "}\n";
-
-
-
+uint8_t colors[4][3] = {{202, 221, 149}, {139, 162, 106}, {66, 96, 61}, {12, 24, 17}};
+//uint8_t colors[4][3] = {{186, 218, 85}, {130, 153, 59}, {74,87,34}, {19,22,8}};
 
 int PPUInit(char* title) {
     SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "0");
