@@ -5,15 +5,12 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include <SDL2/SDL.h>
-
-
-
-SDL_Window *window;
-SDL_Renderer *renderer;
-SDL_Texture *texture;
-
-SDL_Rect texture_dst_rect;
+#include <linux/fb.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <string.h>
+#include <sys/mman.h>
 
 
 uint8_t screen[160*144];
@@ -22,83 +19,62 @@ uint8_t faux_bg_screen[160*144];
 //uint8_t colors[4][3] = {{202, 221, 149}, {139, 162, 106}, {66, 96, 61}, {12, 24, 17}};
 uint8_t colors[4][3] = {{186, 218, 85}, {130, 153, 59}, {74,87,34}, {19,22,8}};
 
+int fbfd;
+int fb_data_size;
+int fb_width;
+int fb_height;
+int fb_bytes;
 
-
-const char* vertexShader = "#version 330 core\n" \
-                           "layout (location = 0) in vec3 aPos;\n" \
-                           "layout (location = 1) in vec2 aTexCoord;\n" \
-                           "uniform vec2 pos;\n" \
-                           "out vec2 texCoord;\n" \
-                           "void main(){\n" \
-                           "\tgl_Position = vec4(aPos.x + pos.x, aPos.y + pos.y, aPos.z, 1.0);\n" \
-                           "\ttexCoord = aTexCoord;\n" \
-                           "}\n";
-
-
-const char* fragmentShader = "#version 330 core\n" \
-                            "out vec4 FragColor;\n" \
-                            "in vec2 texCoord;\n" \
-                            "uniform sampler2D inTexture;\n" \
-                            "uniform vec3 colors[4];\n" \
-                            "void main() {\n" \
-                            "\tint col = int(texture(inTexture, texCoord).r*256);\n" \
-                            "\tFragColor = vec4(colors[col],1.0f);\n" \
-                            "}\n";
-
-
-
+uint32_t *fbdata;
+uint32_t *row_cache;
 
 int PPUInit(char* title) {
-    SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "0");
-    SDL_Init(SDL_INIT_VIDEO);
-    window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640,480, SDL_WINDOW_SHOWN);
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
-    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, 160, 144);
-    
-    texture_dst_rect.x = 0;
-    texture_dst_rect.y = 0;
-    texture_dst_rect.w = 640;
-    texture_dst_rect.h = 480;
-    //float colors[4][3] = {{0.79, 0.86, 0.58}, {0.54, 0.63, 0.41}, {0.26, 0.37, 0.24}, {0.05, 0.09, 0.07}};
+	fbfd = open("/dev/fb0", O_RDWR);
+	if (fbfd < 0) printf("FB OPEN ERROR!");
+	struct fb_var_screeninfo vinfo;
+
+	ioctl(fbfd, FBIOGET_VSCREENINFO, &vinfo);
+
+	fb_width = vinfo.xres;
+	fb_height = vinfo.yres;
+	fb_bytes = vinfo.bits_per_pixel / 8;
+
+	fb_data_size = fb_width * fb_height * fb_bytes;
+
+	fbdata = mmap(0, fb_data_size, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, (off_t)0);
+
+	row_cache = (uint32_t*) malloc(160*sizeof(uint32_t));
+
     return 1;
 }
 
 int renderFrame() {
-    SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, texture, NULL, NULL);
-    SDL_RenderPresent(renderer);
-
-    void *pixels;
-    int pitch;
-    if (SDL_LockTexture(texture, NULL, &pixels, &pitch) == 0) {
-        uint8_t *pixel_data = (uint8_t*) pixels;
-        for (int y = 0; y < 144; y++) {
-            for (int x = 0; x < 160; x++) {
-                pixel_data[(y * 160 + x) * 4+2] = colors[screen[y * 160 + x]][0];
-                pixel_data[(y * 160 + x) * 4+1] = colors[screen[y * 160 + x]][1];
-                pixel_data[(y * 160 + x) * 4+0] = colors[screen[y * 160 + x]][2];
-            }
-        }
-        SDL_UnlockTexture(texture);
-    }
-
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-        if (event.type == SDL_QUIT) return false;
-        else if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
-            SDL_KeyCode key = event.key.keysym.sym;
-            if      (key == SDLK_UP) dpad_up = event.type == SDL_KEYUP ? false : true;
-            else if (key == SDLK_LEFT) dpad_left = event.type == SDL_KEYUP ? false : true;
-            else if (key == SDLK_DOWN) dpad_down = event.type == SDL_KEYUP ? false : true;
-            else if (key == SDLK_RIGHT) dpad_right = event.type == SDL_KEYUP ? false : true;
-            else if (key == SDLK_BACKSPACE) button_select = event.type == SDL_KEYUP ? false : true;
-            else if (key == SDLK_RETURN) button_start = event.type == SDL_KEYUP ? false : true;
-            else if (key == SDLK_z) button_b = event.type == SDL_KEYUP ? false : true;
-            else if (key == SDLK_x) button_a = event.type == SDL_KEYUP ? false : true;
-            else if (key == SDLK_q) exit(0);
-
-        }
-    }
+	uint32_t *pixel = fbdata + fb_width*24;
+	for (int y = 0; y < 144; y++) {
+		int line = y*160;
+		for (int x = 0; x < 160; x++) {
+			uint32_t col = (colors[screen[line+x]][2]) + (colors[screen[line+x]][1] << 8) + (colors[screen[line+x]][0] << 16);
+			row_cache[x] = col;
+			*(pixel++) = col;
+			*(pixel++) = col;
+			*(pixel++) = col;
+			*(pixel++) = col;
+		}
+		for (int x = 0; x < 160; x++) {
+			uint32_t col = row_cache[x];
+			*(pixel++) = col; 
+			*(pixel++) = col;
+			*(pixel++) = col;
+			*(pixel++) = col;
+		}
+		for (int x = 0; x < 160; x++) {
+			uint32_t col = row_cache[x];
+			*(pixel++) = col;
+			*(pixel++) = col;
+			*(pixel++) = col;
+			*(pixel++) = col;
+		}
+	}
 
     return true;
 }
@@ -106,10 +82,9 @@ int renderFrame() {
 
 
 void PPUKill() {
-    SDL_DestroyTexture(texture);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
+	free(row_cache);
+	munmap(fbdata, fb_data_size);
+	close(fbfd);
 }
 
 // TODO Notes FOr TOmorrow

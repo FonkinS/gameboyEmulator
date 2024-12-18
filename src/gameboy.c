@@ -39,7 +39,7 @@ int GameboyProcessInstruction() {
     
     timerTick(cycle_length);
     LCDTick(cycle_length);
-    //APUTick(cycle_length);
+    APUTick(cycle_length);
 
     //if (PC >= 0x100) printf("A:%.2X F:%.2X B:%.2X C:%.2X D:%.2X E:%.2X H:%.2X L:%.2X SP:%.4X PC:%.4X PCMEM:%.2X,%.2X,%.2X,%.2X\n", a, f, b, c, d, e, h, l, SP, PC, fetch(PC), fetch(PC+1), fetch(PC+2), fetch(PC+3));
 
