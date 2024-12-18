@@ -5,7 +5,11 @@
 #include "mbc.h"
 #include "ppu.h"
 #include "joypad.h"
+#ifdef __MACH__
 #include "renderDesktop.h"
+#else
+#include "renderPi.h"
+#endif
 #include <time.h>
 
 int GameboyInit(char *boot, char *cart) {

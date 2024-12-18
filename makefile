@@ -6,8 +6,8 @@ FLAGS = -c -Wall -fcommon -O3
 all: $(BIN) bin/renderDesktop.o
 	$(CC) $(BIN) bin/renderDesktop.o -lSDL2 -L /usr/local/lib -lglfw -framework OpenGL -o $(OUT) -O3
 
-raspi: $(BIN)
-	$(CC) $(BIN) -lSDL2 -lwiringPi -lm -ldl -lpthread -latomic -o $(OUT)
+raspi: $(BIN)  bin/renderPi.o
+	$(CC) $(BIN) bin/renderPi.o -lSDL2 -lwiringPi -lm -ldl -lpthread -latomic -o $(OUT)
 
 bin/main.o: src/main.c
 	$(CC) $(FLAGS) src/main.c -o bin/main.o
@@ -54,5 +54,8 @@ bin/mbc3.o: src/mbc/mbc3.c
 bin/renderDesktop.o: src/renderDesktop.c
 	$(CC) $(FLAGS) src/renderDesktop.c -o bin/renderDesktop.o
 
+bin/renderPi.o: src/renderPi.c
+	$(CC) $(FLAGS) src/renderPi.c -o bin/renderPi.o
+
 clean:
-	rm -rf $(BIN) bin/renderDesktop.o
+	rm -rf $(BIN) bin/renderDesktop.o bin/renderPi.o
