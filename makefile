@@ -4,7 +4,7 @@ OUT = bin/main
 FLAGS = -c -Wall -fcommon -O3
 
 all: $(BIN)
-	$(CC) $(BIN) -lSDL2 -o $(OUT) -O3
+	$(CC) $(BIN) -lSDL2 -L /usr/local/lib -lglfw -framework OpenGL -o $(OUT) -O3
 
 raspi: $(BIN)
 	$(CC) $(BIN) -lSDL2 -lwiringPi -lm -ldl -lpthread -latomic -o $(OUT)
