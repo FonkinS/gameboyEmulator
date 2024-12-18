@@ -6,8 +6,8 @@ FLAGS = -c -Wall -fcommon -O3
 all: $(BIN)
 	$(CC) $(BIN) -lSDL2 -o $(OUT) -O3
 
-raspi: $(BIN)
-	$(CC) $(BIN) -lSDL2 -lwiringPi -lm -ldl -lpthread -latomic -o $(OUT)
+raspi: $(BIN)  bin/renderPi.o
+	$(CC) $(BIN) bin/renderPi.o -lSDL2 -lwiringPi -lm -ldl -lpthread -latomic -o $(OUT)
 
 bin/main.o: src/main.c
 	$(CC) $(FLAGS) src/main.c -o bin/main.o
@@ -51,5 +51,8 @@ bin/apu.o: src/apu.c
 bin/mbc3.o: src/mbc/mbc3.c
 	$(CC) $(FLAGS) src/mbc/mbc3.c -o bin/mbc3.o
 
+bin/renderPi.o: src/renderPi.c
+	$(CC) $(FLAGS) src/renderPi.c -o bin/renderPi.o
+
 clean:
-	rm -rf $(BIN)
+	rm -rf $(BIN) bin/renderPi.o

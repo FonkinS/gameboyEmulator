@@ -6,10 +6,10 @@
 #include "joypad.h"
 #include "lcd.h"
 
+uint8_t screen[160*144];
+uint8_t faux_bg_screen[160*144];
 
-int PPUInit(char* title);
-void PPUKill();
-int renderFrame();
+
 void drawScanline(int scanline, int vsync);
 
 
