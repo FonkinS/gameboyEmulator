@@ -62,6 +62,10 @@ bool CH4LengthEnable;
 
 
 
+#define SAMPLESIZE 480
+#define BUFFERSIZE (SAMPLESIZE*6) 
+#define SAMPLETHRESHOLD (SAMPLESIZE*4)
+#define REQUESTSIZE (SAMPLESIZE*2)
 
 
 uint8_t wave_duty[4] = {
@@ -73,8 +77,8 @@ uint8_t wave_duty[4] = {
 uint8_t CH1DutyIndex = 0;
 uint8_t CH2DutyIndex = 0;
 
-uint8_t outBuffer[4800];
-uint8_t gbBuffer[4800];
+uint8_t outBuffer[BUFFERSIZE];
+uint8_t gbBuffer[BUFFERSIZE];
 
 int endOfOutBuffer = 0;
 int gbBufferPos = 0;
@@ -86,14 +90,15 @@ ma_device_config deviceConfig;
 ma_device device;
 
 void queue_audio(uint8_t* data) {
-    for (int i = 0; i < 960;i++) {
+    for (int i = 0; i < REQUESTSIZE;i++) {
         outBuffer[i+endOfOutBuffer] = data[i];
     }
-    endOfOutBuffer += 960;
+    endOfOutBuffer += REQUESTSIZE;
 }
 
 
 void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
+    printf("%i\n", frameCount);
     uint8_t* pFramesOutF32 = (uint8_t*)pOutput;
     for (ma_uint64 iFrame = 0; iFrame < frameCount; iFrame += 1) {
         //if (outBuffer[iFrame] == 255) continue; // Silent
@@ -244,14 +249,14 @@ void APUTick(int cycles) {
     }
     
     appending_timer += cycles;
-    if (appending_timer >= 75 && endOfOutBuffer < 1920) {
+    if (appending_timer >= 75 && endOfOutBuffer < SAMPLETHRESHOLD) {
         appending_timer = 0;
         gbBuffer[gbBufferPos] = 0;
         gbBuffer[gbBufferPos] += ((wave_duty[CH1WaveDuty] & (1 << CH1DutyIndex)) >> CH1DutyIndex) * CH1Volume;
         gbBuffer[gbBufferPos] += ((wave_duty[CH2WaveDuty] & (1 << CH2DutyIndex)) >> CH2DutyIndex) * CH2Volume;
         //if (CH1Volume == 0 && CH2Volume == 0) gbBuffer[gbBufferPos] = 255;
         gbBufferPos++;
-        if (gbBufferPos >= 960) {
+        if (gbBufferPos >= REQUESTSIZE) {
             queue_audio(gbBuffer);
             gbBufferPos = 0;
         }

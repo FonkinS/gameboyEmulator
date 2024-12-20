@@ -22,7 +22,7 @@ void drawScanline(int scanline, int vsync) {
             uint8_t first = BusRead(tile + ty*2);
             uint8_t second = BusRead(tile + ty*2+1);
             for (int tx = 0; tx < 8; tx++) {
-                uint8_t x = (tilex * 8 + tx + SCX) % 256;
+                uint8_t x = (tilex * 8 + tx - SCX) % 256;
                 if (x < 0 || x >= 160) continue;
                 screen[scanline*160+x] = BGP[((first >> (7-tx)) & 1) + (((second >> (7-tx)) & 1) << 1)];
             }
