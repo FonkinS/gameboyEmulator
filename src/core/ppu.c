@@ -1,7 +1,6 @@
 #include "ppu.h"
 //#include "../include/sgf.h"
 
-uint8_t screen[160*144];
 uint8_t faux_bg_screen[160*144];
 
 // TODO Notes FOr TOmorrow

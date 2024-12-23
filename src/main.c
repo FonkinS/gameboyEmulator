@@ -1,15 +1,16 @@
 #include <stdio.h>
-#include <time.h>
-#include "gameboy.h"
+
+#include "core/gameboy.h"
+#ifdef __MACH__
+#include "Desktop/renderDesktop.h"
+#else
+#include "Pi/renderPi.h"
+#endif
+
 
 
 // TODO Other MBCs
 // TODO Proper Mem timing (Read/Write happens within instruction, not at the end of it)
-//
-//
-// TODO (IN Raspberry pi)
-// - Make drawScanline() like 10x faster
-// - Multithread renderFrame?
 int main(int argc, char** argv) {
 	if (argc <= 1) {
 		printf("File Needed!\n");
@@ -18,10 +19,14 @@ int main(int argc, char** argv) {
 	if (GameboyInit("assets/dmg_boot.bin",argv[1])) {
 		return -1;
 	}
-    clock_t begin = clock();
-    while (GameboyProcessFrame()) {}
-    printf("Time: %f\n", (double)(clock() - begin) / CLOCKS_PER_SEC);
+    renderInit("GameboyEmulator");
+    while (1) {
+        GameboyProcessFrame();
+        if (!renderFrame()) {break;}
+    }
+    
     GameboyKill();
+    renderKill();
 
     return 0;
 }

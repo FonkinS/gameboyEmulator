@@ -9,6 +9,9 @@
 #include <OpenGL/gl3.h>
 
 
+uint8_t screen[160*144];
+
+
 GLFWwindow *window;
 unsigned int shader;
 unsigned int vao;

@@ -1,6 +1,7 @@
 #ifndef INPUT_DESKTOP_H
 #define INPUT_DESKTOP_H
-#include "joypad.h"
+
+#include "../core/joypad.h"
 
 
 

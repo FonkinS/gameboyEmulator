@@ -18,7 +18,7 @@
 int GameboyInit(char *boot, char *cart);
 
 int GameboyProcessInstruction();
-bool GameboyProcessFrame();
+void GameboyProcessFrame();
 
 void GameboyKill();
 

@@ -5,23 +5,15 @@
 #include "mbc.h"
 #include "ppu.h"
 #include "joypad.h"
-#ifdef __MACH__
-#include "renderDesktop.h"
-#else
-#include "renderPi.h"
-#endif
 #include <time.h>
 
 int GameboyInit(char *boot, char *cart) {
     if (open_bootrom_file(boot)) return -1;
     if (open_cartridge_file(cart)) return -1;
 
-    char *title = (char*) calloc(0x10, sizeof(char)); 
-    for (int c = 0x134;c<0x143;c++) title[c-0x134] = BusRead(c);
     timerInit();
     CPUInit();
     APUInit();
-    renderInit(title);
     
     return 0;
 }
@@ -53,7 +45,7 @@ int GameboyProcessInstruction() {
 
 // TODO Correct OAM TIming
 int frame_int = 0;
-bool GameboyProcessFrame() {
+void GameboyProcessFrame() {
     clock_t begin = clock();
     // Non-VBLANK
     while (PPUMode != M_VBLANK) {
@@ -62,25 +54,15 @@ bool GameboyProcessFrame() {
         while (PPUMode == M_HBLANK) GameboyProcessInstruction();
     }
 
-	int out = 1;
-	//if (frame_int++ % 2 == 0) {
-	out = renderFrame();
-	//}
-	//int out = 1;
-
     while (PPUMode == VBLANK) GameboyProcessInstruction();
 
     //printf("%i FPS\n", (int)(CLOCKS_PER_SEC / (double)(clock() - begin)));
     while ((double)(clock() - begin) / CLOCKS_PER_SEC < FRAME_DURATION) {}
     //if (PC >= 0x100) return 0;
-
-
-    return out;
 }
 
 
 void GameboyKill() {
-    renderKill();
     MBCKill();
     APUKill();
 }

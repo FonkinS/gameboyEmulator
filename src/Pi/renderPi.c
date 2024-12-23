@@ -1,5 +1,5 @@
 #include "renderPi.h"
-#include "inputDesktop.h"
+#include "inputPi.h"
 
 #include <linux/fb.h>
 #include <fcntl.h>
@@ -21,6 +21,8 @@ int fb_bytes;
 
 uint32_t *fbdata;
 uint32_t *row_cache;
+
+uint8_t screen[160*144];
 
 int renderInit(char* title) {
 	fbfd = open("/dev/fb0", O_RDWR);

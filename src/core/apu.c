@@ -1,7 +1,7 @@
 #include "apu.h"
 #include "ppu.h"
 #define MINIAUDIO_IMPLEMENTATION
-#include "../include/miniaudio.h"
+#include "../../include/miniaudio.h"
 
 bool APUEnabled;
 enum SOUND_PANNING CH1Pan;

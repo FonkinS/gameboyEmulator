@@ -6,7 +6,12 @@
 #include "joypad.h"
 #include "lcd.h"
 
-uint8_t screen[160*144];
+#ifdef __MACH__
+#include "../Desktop/renderDesktop.h"
+#else
+#include "../Pi/renderPi.h"
+#endif
+
 uint8_t faux_bg_screen[160*144];
 
 void drawScanline(int scanline, int vsync);
