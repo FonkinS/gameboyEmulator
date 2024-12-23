@@ -62,7 +62,11 @@ bool CH4LengthEnable;
 
 
 
+#ifdef __MACH__
 #define SAMPLESIZE 480
+#else
+#define SAMPLESIZE 3600
+#endif
 #define BUFFERSIZE (SAMPLESIZE*6) 
 #define SAMPLETHRESHOLD (SAMPLESIZE*4)
 #define REQUESTSIZE (SAMPLESIZE*2)
@@ -98,7 +102,6 @@ void queue_audio(uint8_t* data) {
 
 
 void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
-    printf("%i\n", frameCount);
     uint8_t* pFramesOutF32 = (uint8_t*)pOutput;
     for (ma_uint64 iFrame = 0; iFrame < frameCount; iFrame += 1) {
         //if (outBuffer[iFrame] == 255) continue; // Silent

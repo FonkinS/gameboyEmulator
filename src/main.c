@@ -11,7 +11,6 @@
 // - Make drawScanline() like 10x faster
 // - Multithread renderFrame?
 int main(int argc, char** argv) {
-#ifdef __MACH__
 	if (argc <= 1) {
 		printf("File Needed!\n");
 		return -1;
@@ -19,11 +18,6 @@ int main(int argc, char** argv) {
 	if (GameboyInit("demoFiles/dmg_boot.bin",argv[1])) {
 		return -1;
 	}
-#else
-    if (GameboyInit("/home/pi/gameboyEmulator/demoFiles/dmg_boot.bin","/home/pi/gameboyEmulator/demoFiles/Tetris.gb")) {
-        return -1;
-    }
-#endif
     clock_t begin = clock();
     while (GameboyProcessFrame()) {}
     printf("Time: %f\n", (double)(clock() - begin) / CLOCKS_PER_SEC);

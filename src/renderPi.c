@@ -36,6 +36,8 @@ int renderInit(char* title) {
 
 	fbdata = mmap(0, fb_data_size, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, (off_t)0);
 
+	memset(fbdata,0, fb_data_size);
+
 	row_cache = (uint32_t*) malloc(160*sizeof(uint32_t));
 
     return 1;
