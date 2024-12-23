@@ -18,7 +18,6 @@ int GameboyInit(char *boot, char *cart) {
 
     char *title = (char*) calloc(0x10, sizeof(char)); 
     for (int c = 0x134;c<0x143;c++) title[c-0x134] = BusRead(c);
-	joypadInit();
     timerInit();
     CPUInit();
     APUInit();
@@ -56,7 +55,6 @@ int GameboyProcessInstruction() {
 int frame_int = 0;
 bool GameboyProcessFrame() {
     clock_t begin = clock();
-	joypadTick(); // It doesn't really matter if this is only once per frame, no one is that fast at input
     // Non-VBLANK
     while (PPUMode != M_VBLANK) {
         while (PPUMode != M_HBLANK) GameboyProcessInstruction();

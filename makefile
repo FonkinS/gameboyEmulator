@@ -3,11 +3,11 @@ BIN = bin/main.o bin/cpu.o bin/ppu.o bin/lcd.o bin/gameboy.o bin/interrupts.o bi
 OUT = bin/main
 FLAGS = -c -Wall -fcommon -O3
 
-all: $(BIN) bin/renderDesktop.o
-	$(CC) $(BIN) bin/renderDesktop.o -lSDL2 -L /usr/local/lib -lglfw -framework OpenGL -o $(OUT) -O3
+all: $(BIN) bin/renderDesktop.o bin/inputDesktop.o
+	$(CC) $(BIN) bin/renderDesktop.o bin/inputDesktop.o -lSDL2 -L /usr/local/lib -lglfw -framework OpenGL -o $(OUT) -O3
 
-raspi: $(BIN)  bin/renderPi.o
-	$(CC) $(BIN) bin/renderPi.o -lSDL2 -lwiringPi -lm -ldl -lpthread -latomic -o $(OUT)
+raspi: $(BIN)  bin/renderPi.o bin/inputPi.o
+	$(CC) $(BIN) bin/renderPi.o bin/inputPi.o -lSDL2 -lwiringPi -lm -ldl -lpthread -latomic -o $(OUT)
 
 bin/main.o: src/main.c
 	$(CC) $(FLAGS) src/main.c -o bin/main.o
@@ -57,5 +57,12 @@ bin/renderDesktop.o: src/renderDesktop.c
 bin/renderPi.o: src/renderPi.c
 	$(CC) $(FLAGS) src/renderPi.c -o bin/renderPi.o
 
+bin/inputDesktop.o: src/inputDesktop.c
+	$(CC) $(FLAGS) src/inputDesktop.c -o bin/inputDesktop.o
+
+bin/inputPi.o: src/inputPi.c
+	$(CC) $(FLAGS) src/inputPi.c -o bin/inputPi.o
+
+
 clean:
-	rm -rf $(BIN) bin/renderDesktop.o bin/renderPi.o
+	rm -rf $(BIN) bin/renderDesktop.o bin/renderPi.o bin/inputDesktop.o bin/inputPi.o

@@ -1,4 +1,5 @@
 #include "renderPi.h"
+#include "inputDesktop.h"
 
 #include <linux/fb.h>
 #include <fcntl.h>
@@ -40,6 +41,8 @@ int renderInit(char* title) {
 
 	row_cache = (uint32_t*) malloc(160*sizeof(uint32_t));
 
+    inputInit();
+
     return 1;
 }
 
@@ -70,6 +73,8 @@ int renderFrame() {
 			*(pixel++) = col;
 		}
 	}
+
+    inputTick(NULL);
 
     return true;
 }

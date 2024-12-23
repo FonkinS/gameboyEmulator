@@ -1,7 +1,5 @@
 #include "renderDesktop.h"
 
-#include "joypad.h"
-#include "lcd.h"
 #include <stdint.h>
 #include <stdio.h>
 
@@ -40,7 +38,6 @@ const char* fragmentShader = "#version 330 core\n" \
 
 
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 int renderInit(char* title) {
     glfwInit();
@@ -136,7 +133,6 @@ int renderInit(char* title) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, 160,144, 0, GL_RED, GL_UNSIGNED_BYTE, screen);
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    glfwSetKeyCallback(window, key_callback);
     
     float colors[4][3] = {{0.79, 0.86, 0.58}, {0.54, 0.63, 0.41}, {0.26, 0.37, 0.24}, {0.05, 0.09, 0.07}};
     glUseProgram(shader);
@@ -157,24 +153,10 @@ int renderFrame() {
     glfwSwapBuffers(window);
     glfwPollEvents();
 
+    inputTick(window);
+
     return !glfwWindowShouldClose(window);
 }
-
-
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    if      (key == GLFW_KEY_UP) dpad_up = action == GLFW_RELEASE ? false : true;
-    else if (key == GLFW_KEY_LEFT) dpad_left = action == GLFW_RELEASE ? false : true;
-    else if (key == GLFW_KEY_DOWN) dpad_down = action == GLFW_RELEASE ? false : true;
-    else if (key == GLFW_KEY_RIGHT) dpad_right = action == GLFW_RELEASE ? false : true;
-    else if (key == GLFW_KEY_BACKSPACE) button_select = action == GLFW_RELEASE ? false : true;
-    else if (key == GLFW_KEY_ENTER) button_start = action == GLFW_RELEASE ? false : true;
-    else if (key == GLFW_KEY_Z) button_b = action == GLFW_RELEASE ? false : true;
-    else if (key == GLFW_KEY_X) button_a = action == GLFW_RELEASE ? false : true;
-    else if (key == GLFW_KEY_Q) exit(0);
-}
-
-
-
 
 void renderKill() {
     glfwDestroyWindow(window);

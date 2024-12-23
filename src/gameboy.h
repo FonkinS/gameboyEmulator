@@ -9,6 +9,7 @@
 #include "bus.h"
 #include "timer.h"
 #include "interrupts.h"
+#include "joypad.h"
 
 
 #define FRAME_DURATION 0.0167427062988f

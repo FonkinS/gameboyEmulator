@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
 		printf("File Needed!\n");
 		return -1;
 	}
-	if (GameboyInit("demoFiles/dmg_boot.bin",argv[1])) {
+	if (GameboyInit("assets/dmg_boot.bin",argv[1])) {
 		return -1;
 	}
     clock_t begin = clock();
