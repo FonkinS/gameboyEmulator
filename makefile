@@ -1,5 +1,5 @@
 CC = gcc
-BIN = bin/main.o bin/cpu.o bin/ppu.o bin/lcd.o bin/gameboy.o bin/interrupts.o bin/joypad.o bin/bus.o bin/timer.o bin/mbc.o bin/mbc0.o bin/mbc1.o bin/apu.o bin/mbc3.o
+BIN = bin/main.o bin/cpu.o bin/ppu.o bin/lcd.o bin/gameboy.o bin/interrupts.o bin/joypad.o bin/bus.o bin/timer.o bin/mbc.o bin/mbc0.o bin/mbc1.o bin/apu.o bin/mbc3.o bin/font.o bin/menu.o
 OUT = bin/main
 FLAGS = -c -Wall -fcommon -O3
 
@@ -63,6 +63,11 @@ bin/inputDesktop.o: src/Desktop/inputDesktop.c
 bin/inputPi.o: src/Pi/inputPi.c
 	$(CC) $(FLAGS) src/Pi/inputPi.c -o bin/inputPi.o
 
+bin/font.o: src/app/font.c
+	$(CC) $(FLAGS) src/app/font.c -o bin/font.o
+
+bin/menu.o: src/app/menu.c
+	$(CC) $(FLAGS) src/app/menu.c -o bin/menu.o
 
 clean:
 	rm -rf $(BIN) bin/renderDesktop.o bin/renderPi.o bin/inputDesktop.o bin/inputPi.o

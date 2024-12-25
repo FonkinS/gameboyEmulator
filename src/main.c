@@ -1,6 +1,8 @@
 #include <stdio.h>
 
 #include "core/gameboy.h"
+#include "app/menu.h"
+
 #ifdef __MACH__
 #include "Desktop/renderDesktop.h"
 #else
@@ -16,16 +18,18 @@ int main(int argc, char** argv) {
 		printf("File Needed!\n");
 		return -1;
 	}
-	if (GameboyInit("assets/dmg_boot.bin",argv[1])) {
-		return -1;
-	}
     renderInit("GameboyEmulator");
+	/*if (GameboyInit("assets/dmg_boot.bin",argv[1])) {
+		return -1;
+	}*/
+    menuInit("assets/font.bin");
     while (1) {
-        GameboyProcessFrame();
+        //GameboyProcessFrame();
         if (!renderFrame()) {break;}
     }
     
-    GameboyKill();
+    //GameboyKill();
+    menuKill();
     renderKill();
 
     return 0;

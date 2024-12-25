@@ -1,4 +1,4 @@
-#include "renderDesktop.h"
+#include "font.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -10,7 +10,7 @@
 unsigned char *font;
 FILE* fontfile;
 
-void renderChar(int x, int y, char c, int color) {
+int renderChar(int x, int y, char c, int color) {
     int loc = 0;
     if (c > 0x40 && c < 0x5B) {
         loc = c - 0x40;
@@ -18,6 +18,10 @@ void renderChar(int x, int y, char c, int color) {
         loc = c - 0x60;
     } else if (c >= 0x30 && c < 0x3A) {
         loc = c - 0x30 + 26;
+    } else if (c == 0x20) {
+        loc = 0;
+    } else {
+        return 0;
     }
 
     for (int ty = 0; ty < 8; ty++) {
@@ -25,13 +29,14 @@ void renderChar(int x, int y, char c, int color) {
             screen[(y+ty) * WIDTH + x+tx] = ((font[loc*8+ty] >> (8-tx)) % 2) * color;
         }
     }
+    return 1;
 }
 
 void renderLine(int x, int y, const char* line, int color) {
     int i = 0;
     while (line[i] != '\0') {
-        if (x+i*8+7 >= WIDTH) {break;}
-        renderChar(x+i*8, y, line[i], color);
+        if (x+7 >= WIDTH) {break;}
+        if (renderChar(x, y, line[i], color)) x += 8;
         i++;
     }
 }
@@ -54,8 +59,8 @@ void renderMultiline(int x, int y, int width, int height, const char* line, int 
     }
 }
 
-void fontInit() {
-    fontfile = fopen("assets/font.bin", "rb");
+void fontInit(const char* fontFile) {
+    fontfile = fopen(fontFile, "rb");
 
     font = (unsigned char*) malloc(36*8 * sizeof(unsigned char));
 
