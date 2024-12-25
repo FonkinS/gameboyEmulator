@@ -3,11 +3,7 @@
 #include "core/gameboy.h"
 #include "app/menu.h"
 
-#ifdef __MACH__
-#include "Desktop/renderDesktop.h"
-#else
-#include "Pi/renderPi.h"
-#endif
+#include "render.h"
 
 
 
@@ -18,18 +14,16 @@ int main(int argc, char** argv) {
 		printf("File Needed!\n");
 		return -1;
 	}
-    renderInit("GameboyEmulator");
-	/*if (GameboyInit("assets/dmg_boot.bin",argv[1])) {
-		return -1;
-	}*/
-    menuInit("assets/font.bin");
+    renderInit("Gameboy Emulator");
+	GameboyInit("assets/dmg_boot.bin",argv[1]);
+    //menuInit("assets/font.bin");
     while (1) {
-        //GameboyProcessFrame();
+        GameboyProcessFrame();
         if (!renderFrame()) {break;}
     }
     
-    //GameboyKill();
-    menuKill();
+    GameboyKill();
+    //menuKill();
     renderKill();
 
     return 0;

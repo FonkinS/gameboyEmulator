@@ -6,11 +6,7 @@
 #include "joypad.h"
 #include "lcd.h"
 
-#ifdef __MACH__
-#include "../Desktop/renderDesktop.h"
-#else
-#include "../Pi/renderPi.h"
-#endif
+#include "../render.h"
 
 uint8_t faux_bg_screen[160*144];
 

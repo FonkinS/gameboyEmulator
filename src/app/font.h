@@ -1,11 +1,8 @@
 #ifndef FONT_H
 #define FONT_H
 
-#ifdef __MACH__
-#include "../Desktop/renderDesktop.h"
-#else
-#include "../Pi/renderPi.h"
-#endif
+#include "../render.h"
+#include <stdio.h>
 
 int renderChar(int x, int y, char c, int color);
 

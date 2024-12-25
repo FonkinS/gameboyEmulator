@@ -4,8 +4,13 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-uint8_t joypad_read();
-void joypad_write(uint8_t value);
+#include "../input.h"
+
+void joypadInit();
+uint8_t joypadRead();
+void joypadWrite(uint8_t value);
+
+void joypadInputCallback(enum BUTTON button, enum PRESS_TYPE type);
 
 enum JoypadIO {
     rJOY = 0xff00

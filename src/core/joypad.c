@@ -12,6 +12,10 @@ bool dpad_left;
 bool button_a;
 bool dpad_right;
 
+void joypadInit() {
+    inputSetCallback(joypadInputCallback);
+}
+
 uint8_t joypad_read() {
     if (!buttons_selected && !dpad_selected) return 0xff;
     else if (buttons_selected) {
@@ -32,3 +36,15 @@ void joypad_write(uint8_t value) {
     if (value & 32) buttons_selected = true;
     else if (value & 16) dpad_selected = true;
 } 
+
+
+void joypadInputCallback(enum BUTTON button, enum PRESS_TYPE type) {
+    if (button == BUTTON_A) button_a = type;
+    if (button == BUTTON_B) button_b = type;
+    if (button == BUTTON_START) button_start = type;
+    if (button == BUTTON_SELECT) button_select = type;
+    if (button == BUTTON_UP) dpad_up = type;
+    if (button == BUTTON_DOWN) dpad_down = type;
+    if (button == BUTTON_LEFT) dpad_left = type;
+    if (button == BUTTON_RIGHT) dpad_right = type;
+}

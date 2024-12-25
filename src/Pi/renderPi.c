@@ -1,5 +1,4 @@
-#include "renderPi.h"
-#include "inputPi.h"
+#include "../render.h"
 
 #include <linux/fb.h>
 #include <fcntl.h>

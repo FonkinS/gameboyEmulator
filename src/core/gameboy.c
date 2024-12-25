@@ -11,6 +11,7 @@ int GameboyInit(char *boot, char *cart) {
     if (open_bootrom_file(boot)) return -1;
     if (open_cartridge_file(cart)) return -1;
 
+    joypadInit();
     timerInit();
     CPUInit();
     APUInit();
