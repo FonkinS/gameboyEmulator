@@ -1,4 +1,5 @@
 #include "../render.h"
+#include "../input.h"
 
 #include <linux/fb.h>
 #include <fcntl.h>
@@ -7,6 +8,10 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <stdint.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 
 
 //uint8_t colors[4][3] = {{202, 221, 149}, {139, 162, 106}, {66, 96, 61}, {12, 24, 17}};

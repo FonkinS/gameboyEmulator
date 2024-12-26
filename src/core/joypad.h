@@ -6,7 +6,7 @@
 
 #include "../input.h"
 
-void joypadInit();
+void joypadInit(void (*endcallback)());
 uint8_t joypadRead();
 void joypadWrite(uint8_t value);
 

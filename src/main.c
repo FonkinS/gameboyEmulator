@@ -8,13 +8,18 @@
 
 bool gameboy_running = false;
 
+void gameboyEndCallback();
+
 void gameboyStartCallback(char* gamepath) {
     gameboy_running = true;
-    GameboyInit("assets/dmg_boot.bin", gamepath);
+    GameboyInit("assets/dmg_boot.bin", gamepath, gameboyEndCallback);
+	menuKill();
 }
 
 void gameboyEndCallback() {
-
+	gameboy_running = false;
+	GameboyKill();
+	menuInit("assets/font.bin", gameboyStartCallback);
 }
 
 // TODO Other MBCs
@@ -29,7 +34,7 @@ int main() {
     }
     
     if (gameboy_running) GameboyKill();
-    menuKill();
+	else menuKill();
     renderKill();
 
     return 0;

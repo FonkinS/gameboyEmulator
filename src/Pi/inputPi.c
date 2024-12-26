@@ -23,7 +23,7 @@ bool prev_down = false;
 bool prev_left = false;
 bool prev_right = false;
 
-void joypadInit() {
+void inputInit() {
 	wiringPiSetupGpio();
 	pinMode(PI_A, INPUT);
 	pinMode(PI_B, INPUT);
@@ -49,7 +49,7 @@ void inputSetCallback(void (*c)(enum BUTTON, enum PRESS_TYPE)) {
     callback = c;
 }
 
-void joypadTick(void* null) {
+void inputTick(void* null) {
     if (callback_set) {
         if ((digitalRead(PI_A) == LOW) != prev_a) {(callback)(BUTTON_A, !prev_a); prev_a = !prev_a;} 
         if ((digitalRead(PI_B) == LOW) != prev_b) {(callback)(BUTTON_B, !prev_b); prev_b = !prev_b;} 

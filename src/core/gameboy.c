@@ -7,11 +7,11 @@
 #include "joypad.h"
 #include <time.h>
 
-int GameboyInit(char *boot, char *cart) {
+int GameboyInit(char *boot, char *cart, void (*endcallback)()) {
     if (open_bootrom_file(boot)) return -1;
     if (open_cartridge_file(cart)) return -1;
 
-    joypadInit();
+    joypadInit(endcallback);
     timerInit();
     CPUInit();
     APUInit();

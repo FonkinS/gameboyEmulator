@@ -18,7 +18,14 @@ char** gamePaths;
 char thisPath[64];
 
 void menuInit(const char* fontFile, void (*c)()) {
+	list_length = 0;
     fontInit(fontFile);
+
+	for (int y = 0; y < 144; y++) {
+		for (int x = 0; x < 160; x++) {
+			screen[y*160+x] = 0;
+		}
+	}
 
     struct dirent *files;
     DIR *dir = opendir("games/");
