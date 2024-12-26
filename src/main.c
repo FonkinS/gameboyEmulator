@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdio.h>
 
 #include "core/gameboy.h"
@@ -5,25 +6,30 @@
 
 #include "render.h"
 
+bool gameboy_running = false;
 
+void gameboyStartCallback(char* gamepath) {
+    gameboy_running = true;
+    GameboyInit("assets/dmg_boot.bin", gamepath);
+}
+
+void gameboyEndCallback() {
+
+}
 
 // TODO Other MBCs
 // TODO Proper Mem timing (Read/Write happens within instruction, not at the end of it)
-int main(int argc, char** argv) {
-	if (argc <= 1) {
-		printf("File Needed!\n");
-		return -1;
-	}
+int main() {
     renderInit("Gameboy Emulator");
-	GameboyInit("assets/dmg_boot.bin",argv[1]);
-    //menuInit("assets/font.bin");
+    menuInit("assets/font.bin", gameboyStartCallback);
     while (1) {
-        GameboyProcessFrame();
+        if (gameboy_running) GameboyProcessFrame();
+        else menuTick();
         if (!renderFrame()) {break;}
     }
     
-    GameboyKill();
-    //menuKill();
+    if (gameboy_running) GameboyKill();
+    menuKill();
     renderKill();
 
     return 0;
