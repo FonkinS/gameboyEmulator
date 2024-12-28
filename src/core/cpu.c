@@ -24,6 +24,7 @@ int halt;
 
 int CPUInit() {
     IME = false;
+    PC = 0;
     return 0;
 }
 

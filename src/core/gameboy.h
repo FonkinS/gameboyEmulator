@@ -15,7 +15,7 @@
 #define FRAME_DURATION 0.0167427062988f
 
 
-int GameboyInit(char *boot, char *cart, void (*endcallback)());
+int GameboyInit(const char* boot, const char* cart, void (*endcallback)());
 
 int GameboyProcessInstruction();
 void GameboyProcessFrame();

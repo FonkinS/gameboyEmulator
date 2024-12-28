@@ -53,7 +53,7 @@ uint8_t io_read(int io) {
     uint8_t i = io_regs[io-0xff00];
     switch (io) {
         case rJOY:
-            return joypad_read();
+            return joypadRead();
             break;
         case rDIV:
             return timerRead(io);
@@ -174,7 +174,7 @@ uint8_t io_read(int io) {
 void io_write(int io, uint8_t value) {
     switch (io) {
         case rJOY:
-            joypad_write(value);
+            joypadWrite(value);
             break;
         case rDIV:
             timerWrite(io, value);
@@ -298,7 +298,7 @@ void io_write(int io, uint8_t value) {
 }
 
 
-int open_bootrom_file(char* p) {
+int open_bootrom_file(const char* p) {
     FILE *f = fopen(p, "rb");
     if (f == NULL) {
         printf("Boot Rom (%s) Not found!\n", p);
@@ -309,12 +309,15 @@ int open_bootrom_file(char* p) {
 }
 
 
-int open_cartridge_file(char* p) {
+int open_cartridge_file(const char* p) {
     FILE *f = fopen(p, "rb");
     if (f == NULL) {
         printf("Cartridge Rom (%s) Not found!\n", p);
         return -1;
     }
+
+    io_regs[0x50] = 0;
+    bootrom_enabled = true;
 
     // Read Info
     uint8_t *data = (uint8_t*) malloc(0x8000 * sizeof(uint8_t));

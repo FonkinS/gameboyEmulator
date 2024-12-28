@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "../render.h"
+
 
 
 #define WIDTH 160

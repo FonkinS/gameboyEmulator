@@ -4,37 +4,37 @@
 #include "core/gameboy.h"
 #include "app/menu.h"
 
+#include "input.h"
 #include "render.h"
 
 bool gameboy_running = false;
 
 void gameboyEndCallback();
 
-void gameboyStartCallback(char* gamepath) {
+void gameboyStartCallback(const char* gamepath) {
     gameboy_running = true;
+    menuKill();
     GameboyInit("assets/dmg_boot.bin", gamepath, gameboyEndCallback);
-	menuKill();
 }
 
 void gameboyEndCallback() {
 	gameboy_running = false;
 	GameboyKill();
-	menuInit("assets/font.bin", gameboyStartCallback);
+    menuInit(gameboyStartCallback);
 }
 
 // TODO Other MBCs
 // TODO Proper Mem timing (Read/Write happens within instruction, not at the end of it)
 int main() {
+    menuInit(gameboyStartCallback);
     renderInit("Gameboy Emulator");
-    menuInit("assets/font.bin", gameboyStartCallback);
     while (1) {
         if (gameboy_running) GameboyProcessFrame();
-        else menuTick();
         if (!renderFrame()) {break;}
     }
     
     if (gameboy_running) GameboyKill();
-	else menuKill();
+    else menuKill();
     renderKill();
 
     return 0;

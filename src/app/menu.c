@@ -17,9 +17,12 @@ char** gamePaths;
 
 char thisPath[64];
 
-void menuInit(const char* fontFile, void (*c)()) {
+void menuInit(void (*c)()) {
+    inputSetCallback(menuInputCallback);
+    gamestartcallback = c;
+
 	list_length = 0;
-    fontInit(fontFile);
+    fontInit("assets/font.bin");
 
 	for (int y = 0; y < 144; y++) {
 		for (int x = 0; x < 160; x++) {
@@ -54,12 +57,10 @@ void menuInit(const char* fontFile, void (*c)()) {
             }
             list_length++;
         }
+        free(filename);
     }
     closedir(dir);
-    inputSetCallback(menuInputCallback);
-    gamestartcallback = c;
     placeCursor(0);
-    
 }
 
 void menuTick() {

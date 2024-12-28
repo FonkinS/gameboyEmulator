@@ -15,24 +15,30 @@ bool dpad_right;
 void (*endcallback)();
 
 void joypadInit(void (*ec)()) {
+    button_a = false;
+    button_b = false;
+    button_start = false;
+    button_select = false;
+    dpad_up = false;
+    dpad_down = false;
+    dpad_right = false;
+    dpad_left = false;
 	endcallback = ec;
     inputSetCallback(joypadInputCallback);
 }
 
-uint8_t joypad_read() {
+uint8_t joypadRead() {
     if (!buttons_selected && !dpad_selected) return 0xff;
     else if (buttons_selected) {
-        //printf("b\n");
         return 0xe0 + (!button_start << 3) + (!button_select << 2) + (!button_b << 1) + !button_a;
     } else if (dpad_selected) {
-        //printf("d\n");
         return 0xd0 + (!dpad_down << 3) + (!dpad_up << 2) + (!dpad_left << 1) + !dpad_right;
     }
     return 0;
 }
 
 
-void joypad_write(uint8_t value) {
+void joypadWrite(uint8_t value) {
     value = ~value;
     buttons_selected = false;
     dpad_selected = false;

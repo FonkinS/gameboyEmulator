@@ -45,7 +45,7 @@ uint8_t io_read(int io);
 void io_write(int io, uint8_t value);
 
 // File IO
-int open_bootrom_file(char* p);
-int open_cartridge_file(char* p);
+int open_bootrom_file(const char* p);
+int open_cartridge_file(const char* p);
 
 #endif

@@ -24,7 +24,7 @@ void MBC3Init(uint8_t *data, long long length) {
 
     int bank = 0;
     int c = 0;
-    for (long long i = 0; i < length; i++) {
+    for (long long i = 0; i < length && i < (0x80*0x4000); i++) {
         rom[bank][c++] = data[i];
         if (c >= 0x4000) {
             bank++;
@@ -56,7 +56,13 @@ void MBC3Write(uint16_t index, uint8_t value) {
     } else if (index < 0x8000 && value == 1) {
         now = time(0);
         latched_time = *localtime(&now); 
-    }
+    } else if (index < 0xC000 && ramTimerEnabled) {
+        if (ramOrRTCSelected == RAM) ram[ramBankNum][index-0xa000] = index;
+        // TODO WRITING TO RTC
+    } 
+
+
+        //(ramOrRTCSelected == RAM ? ram[ramBankNum][index-0xa000] : MBC3GetRTC());
 }
 
 

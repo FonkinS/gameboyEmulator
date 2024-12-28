@@ -19,7 +19,7 @@ void MBC1Init(uint8_t *data, long long length) {
 
     int bank = 0;
     int c = 0;
-    for (int i = 0; i < length; i++) {
+    for (int i = 0; i < length && i < (0x80*0x4000); i++) {
         rom[bank][c++] = data[i];
         if (c >= 0x4000) {
             c = 0;
@@ -33,7 +33,7 @@ uint8_t MBC1Read(uint16_t index) {
     if (index < 0x4000) return rom[rom_bank_num & 0xe0][index & 0x3FFF];
     if (index < 0x8000) return rom[rom_bank_num][index & 0x3FFF];
     if (index < 0xC000 && ram_enable) return ram[ram_bank_num][index & 0x1FFF];
-    return 0;
+    return 0xff;
 }
 
 
@@ -45,7 +45,7 @@ void MBC1Write(uint16_t index, uint8_t value) {
         if (bank_mode == RAMBANKMODE) ram_bank_num = value & 3;
     }
     else if (index < 0x8000) bank_mode = value & 1;
-    else if (index < 0xC000) {}
+    else if (index < 0xC000 && ram_enable) ram[ram_bank_num][index & 0x1FFF] = value;
 }
 
 void MBC1Kill() {

@@ -3,7 +3,7 @@
 
 #include "../input.h"
 
-void menuInit(const char* fontFile, void (*callback)());
+void menuInit(void (*callback)());
 void menuKill();
 void menuTick();
 
