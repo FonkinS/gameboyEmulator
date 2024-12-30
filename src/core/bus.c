@@ -16,7 +16,7 @@
 
 
 uint8_t BusRead(uint16_t index) {
-    if (index < 0x0100 && !io_read(rBOOT)) return boot_rom[index];
+    if (index < 0x0100 && io_read(rBOOT) == 0) return boot_rom[index];
     else if (index < 0x8000) return MBCRead(index);
     else if (index < 0xA000) return vram        [index-0x8000];
     else if (index < 0xC000) return MBCRead(index);
@@ -33,7 +33,8 @@ uint8_t BusRead(uint16_t index) {
 
 
 void BusWrite(uint16_t index, uint8_t value) {
-    if (index < 0x0100 && io_read(rBOOT)) boot_rom[index] = value;
+    //printf("%.4x - %.2x\n", index, value);
+    if (index < 0x0100 && io_read(rBOOT) == 0) {}
     else if (index < 0x8000) MBCWrite(index, value);
     else if (index < 0xA000) vram        [index-0x8000] = value;
     else if (index < 0xC000) MBCWrite(index, value);

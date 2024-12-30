@@ -6,7 +6,7 @@ uint8_t romBankNum = 1;
 uint8_t ramBankNum = 0;
 uint8_t RTCRegSelect = 0;
 
-enum RAMRTCSELECTED {RAM, RTC};
+enum RAMRTCSELECTED {RAM, RTC, NEITHER};
 enum RAMRTCSELECTED ramOrRTCSelected;
 
 uint8_t **rom;
@@ -35,10 +35,14 @@ void MBC3Init(uint8_t *data, long long length) {
 
 
 uint8_t MBC3Read(uint16_t index) {
+    //printf("%i\n", ramBankNum);
     if (index < 0x4000) return rom[0][index];
     if (index < 0x8000) return rom[romBankNum][index - 0x4000];
-    if (index < 0xC000 && ramTimerEnabled) return (ramOrRTCSelected == RAM ? ram[ramBankNum][index-0xa000] : MBC3GetRTC());
-    return 0;
+    if (index < 0xC000 && ramTimerEnabled) {
+        if (ramOrRTCSelected == RAM) return ram[ramBankNum][index-0xa000];
+        else if (ramOrRTCSelected == RTC) return MBC3GetRTC();
+    }
+    return 0xff;
 }
 
 
@@ -46,18 +50,20 @@ void MBC3Write(uint16_t index, uint8_t value) {
     if (index < 0x2000) ramTimerEnabled = (value == 0xa);
     else if (index < 0x4000) romBankNum = ((value & 0x7f) == 0 ? 1 : value & 0x7f);
     else if (index < 0x6000) {
-        if (index < 0x4) {
+        if (value < 0x4) {
             ramOrRTCSelected = RAM;
             ramBankNum = value;
-        } else if (index < 0xd) {
+        } else if (value < 0xd) {
             ramOrRTCSelected = RTC;
             RTCRegSelect = value;
+        } else {
+            ramOrRTCSelected = NEITHER;
         }
     } else if (index < 0x8000 && value == 1) {
         now = time(0);
         latched_time = *localtime(&now); 
     } else if (index < 0xC000 && ramTimerEnabled) {
-        if (ramOrRTCSelected == RAM) ram[ramBankNum][index-0xa000] = index;
+        if (ramOrRTCSelected == RAM) ram[ramBankNum][index-0xa000] = value;
         // TODO WRITING TO RTC
     } 
 

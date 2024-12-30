@@ -19,7 +19,7 @@ int renderChar(int x, int y, char c, int color) {
     } else if (c > 0x60 && c < 0x7B) {
         loc = c - 0x60;
     } else if (c >= 0x30 && c < 0x3A) {
-        loc = c - 0x30 + 26;
+        loc = c - 0x30 + 27;
     } else if (c == 0x20) {
         loc = 0;
     } else {
