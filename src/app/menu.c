@@ -42,11 +42,12 @@ void menuInit(void (*c)()) {
         gamePaths[j] = (char*) calloc(64, sizeof(char));
     }
     while ((files = readdir(dir)) != NULL) {
+        int len = strlen(files->d_name);
         char* filename = (char*) calloc(32, sizeof(char));
         bool valid = false;
         for (int j = 0; j < 32; j++) {
             if (files->d_name[j] == '\0') {break;}
-            if (files->d_name[j] == '.' && files->d_name[j+1] == 'g') {valid = true; break;}
+            if (files->d_name[j] == '.' && files->d_name[j+1] == 'g' && j+3 == len) {valid = true; break;}
             filename[j] = files->d_name[j];
         }
         if (valid) {

@@ -24,12 +24,13 @@ void drawScanline(int scanline, int vsync) {
                 uint8_t x = (tilex * 8 + tx - SCX) % 256;
                 if (x < 0 || x >= 160) continue;
                 screen[scanline*160+x] = BGP[((first >> (7-tx)) & 1) + (((second >> (7-tx)) & 1) << 1)];
+                faux_bg_screen[scanline*160+x] = ((first >> (7-tx)) & 1) + (((second >> (7-tx)) & 1) << 1);
             }
         }
 
         if (WinEnable && WX >= 0 && WX <= 166 && WY >= 0 && WY <= 143) {
-            uint8_t tiley = y / 8;
             uint8_t ty = (scanline + WY) % 8; 
+            uint8_t tiley = (scanline + WY) / 8;
             for (int tilex = WX / 8; tilex < 21 + WX / 8; tilex++) {
                 uint8_t index = BusRead(WinTileMap + tilex + tiley*32);
                 int tile = BGWinTileData + (int)(BGWinTileData == 0x8000 ? (uint8_t)index : (int8_t)index) * 16;
@@ -39,6 +40,7 @@ void drawScanline(int scanline, int vsync) {
                     uint8_t wx = tilex * 8 + tx;
                     if (wx < 0 || wx >= 160) continue;
                     screen[scanline*160+wx] = BGP[((first >> (7-tx)) & 1) + (((second >> (7-tx)) & 1) << 1)];
+                    faux_bg_screen[scanline*160+wx] = ((first >> (7-tx)) & 1) + (((second >> (7-tx)) & 1) << 1);
                 }
             }
         }
