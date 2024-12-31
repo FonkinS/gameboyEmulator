@@ -299,7 +299,7 @@ void io_write(int io, uint8_t value) {
 }
 
 
-int open_bootrom_file(const char* p) {
+int open_bootrom_file(char* p) {
     FILE *f = fopen(p, "rb");
     if (f == NULL) {
         printf("Boot Rom (%s) Not found!\n", p);
@@ -310,7 +310,7 @@ int open_bootrom_file(const char* p) {
 }
 
 
-int open_cartridge_file(const char* p) {
+int open_cartridge_file(char* p, char* save_filename) {
     FILE *f = fopen(p, "rb");
     if (f == NULL) {
         printf("Cartridge Rom (%s) Not found!\n", p);
@@ -332,7 +332,7 @@ int open_cartridge_file(const char* p) {
         }
     }
 
-    if (MBCInit(data, c)) return -1;
+    if (MBCInit(data, c, save_filename)) return -1;
 
     free(data);
     return 0;

@@ -5,11 +5,18 @@
 #include "mbc.h"
 #include "ppu.h"
 #include "joypad.h"
+#include <string.h>
 #include <time.h>
 
-int GameboyInit(const char* boot, const char* cart, void (*endcallback)()) {
+char* save_filename;
+
+int GameboyInit(char* boot, char* cart, void (*endcallback)()) {
+    save_filename = (char*) calloc(strlen(cart)+25, sizeof(char));
+    strcpy(save_filename, cart);
+    strcat(save_filename, ".sav");
+
     if (open_bootrom_file(boot)) return -1;
-    if (open_cartridge_file(cart)) return -1;
+    if (open_cartridge_file(cart, save_filename)) return -1;
     
     joypadInit(endcallback);
     timerInit();
@@ -63,6 +70,8 @@ void GameboyProcessFrame() {
 
 
 void GameboyKill() {
+    MBCSaveData(save_filename);
+    free(save_filename);
     MBCKill();
     APUKill();
 }

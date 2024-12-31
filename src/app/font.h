@@ -6,13 +6,13 @@
 
 int renderChar(int x, int y, char c, int color);
 
-void renderLine(int x, int y, const char* line, int color);
+void renderLine(int x, int y, char* line, int color);
 
-void renderMultiline(int x, int y, int width, int height, const char* line, int color, int breaktext);
+void renderMultiline(int x, int y, int width, int height, char* line, int color, int breaktext);
 
 
 
-void fontInit(const char* fontFile);
+void fontInit(char* fontFile);
 
 void fontKill();
 

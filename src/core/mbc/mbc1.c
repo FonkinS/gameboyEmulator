@@ -1,4 +1,5 @@
 #include "mbc1.h"
+#include <stdio.h>
 
 bool ram_enable = 0;
 uint8_t rom_bank_num = 1;
@@ -11,11 +12,13 @@ uint8_t **ram;
 
 
 
-void MBC1Init(uint8_t *data, long long length) {
+void MBC1Init(uint8_t *data, long long length, bool load_data) {
     rom = (uint8_t**) malloc(0x80 * sizeof(uint8_t*));
     for (int i = 0; i < 0x80; i++) rom[i] = (uint8_t*) malloc(0x4000 * sizeof(uint8_t));
-    ram = (uint8_t**) malloc(4 * sizeof(uint8_t*));
-    for (int i = 0; i < 4; i++) ram[i] = (uint8_t*) malloc(0x2000 * sizeof(uint8_t));
+    if (!load_data) {
+        ram = (uint8_t**) malloc(4 * sizeof(uint8_t*));
+        for (int i = 0; i < 4; i++) ram[i] = (uint8_t*) malloc(0x2000 * sizeof(uint8_t));
+    }
 
     int bank = 0;
     int c = 0;
@@ -48,6 +51,22 @@ void MBC1Write(uint16_t index, uint8_t value) {
     else if (index < 0xC000 && ram_enable) ram[ram_bank_num][index & 0x1FFF] = value;
 }
 
+void MBC1SaveData(char* filename) {
+    FILE *f = fopen(filename, "wb");
+    int bank = 0;
+    int j = 0;
+    for (int i = 0; i < 4 * 0x2000; i++) {
+        fputc(ram[bank][j++], f);
+        if (j >= 0x2000) {
+            j = 0;
+            bank++;
+        }
+    }
+    fclose(f);
+}
+
+
+
 void MBC1Kill() {
     for (int i = 0; i < 0x80; i++) free(rom[i]);
     free(rom);
@@ -55,4 +74,20 @@ void MBC1Kill() {
     free(ram);
 }
 
+void MBC1LoadData(char* filename) {
+    FILE *f = fopen(filename, "rb");
+    ram = (uint8_t**) malloc(0x4 * sizeof(uint8_t*));
+    for (int i = 0; i < 0x4; i++) ram[i] = (uint8_t*) calloc(0x2000, sizeof(uint8_t));
+    if (f == NULL) return;
 
+    int j = 0;
+    int bank = 0;
+    while (!feof(f)) {
+        ram[bank][j++] = fgetc(f);
+        if (j >= 0x2000) {
+            j = 0;
+            bank++;
+            if (bank >= 4) break;
+        }
+    }
+}

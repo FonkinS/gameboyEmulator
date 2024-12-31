@@ -34,7 +34,7 @@ int renderChar(int x, int y, char c, int color) {
     return 1;
 }
 
-void renderLine(int x, int y, const char* line, int color) {
+void renderLine(int x, int y, char* line, int color) {
     int i = 0;
     while (line[i] != '\0') {
         if (x+7 >= WIDTH) {break;}
@@ -44,7 +44,7 @@ void renderLine(int x, int y, const char* line, int color) {
 }
 
 
-void renderMultiline(int x, int y, int width, int height, const char* line, int color, int breaktext) {
+void renderMultiline(int x, int y, int width, int height, char* line, int color, int breaktext) {
     int startx = x;
     int c = 0;
     while (line[c] != '\0') {
@@ -61,7 +61,7 @@ void renderMultiline(int x, int y, int width, int height, const char* line, int 
     }
 }
 
-void fontInit(const char* fontFile) {
+void fontInit(char* fontFile) {
     fontfile = fopen(fontFile, "rb");
 
     font = (unsigned char*) malloc(36*8 * sizeof(unsigned char));
