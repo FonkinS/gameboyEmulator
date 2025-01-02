@@ -8,6 +8,8 @@ enum SOUND_PANNING CH1Pan;
 enum SOUND_PANNING CH2Pan;
 enum SOUND_PANNING CH3Pan;
 enum SOUND_PANNING CH4Pan;
+uint8_t soundPanReg;
+
 
 uint8_t leftVolume;
 uint8_t rightVolume;
@@ -152,6 +154,8 @@ uint8_t APURead(uint16_t index) {
     if (index == NR42) return (CH4InitVolume << 4) + (CH4EnvDir << 3) + CH4SweepPace;
     if (index == NR43) return (CH4ClockShift << 4) + (CH4LSFRWidth << 3) + CH4ClockDivider;
     if (index == NR44) return (CH4LengthEnable << 6) + 0xBf;
+    if (index == NR50) return (leftVolume << 4) + rightVolume;
+    if (index == NR51) return soundPanReg;
     if (index == NR52) return 0x70 + (APUEnabled << 7) + (CH4Enabled << 3) + (CH3Enabled << 2) + (CH2Enabled << 1) + CH1Enabled;
     return 0xff;
 }
@@ -205,8 +209,23 @@ void APUWrite(uint16_t index, uint8_t value) {
     } else if (index == NR44) {
         if (value & 0x80) triggerChannel(4);
         CH4LengthEnable = value & 0x40;
+    } else if (index == NR50) {
+        leftVolume = (value >> 4) & 7; 
+        rightVolume = value & 7; 
     } else if (index == NR51) {
-
+        soundPanReg = value;
+        CH1Pan = CENTER;
+        CH2Pan = CENTER;
+        CH3Pan = CENTER;
+        CH4Pan = CENTER;
+        if (value & 0x80) CH4Pan = LEFT;
+        if (value & 0x40) CH3Pan = LEFT;
+        if (value & 0x20) CH2Pan = LEFT;
+        if (value & 0x10) CH1Pan = LEFT;
+        if (value & 0x08) CH4Pan = RIGHT;
+        if (value & 0x04) CH3Pan = RIGHT;
+        if (value & 0x02) CH2Pan = RIGHT;
+        if (value & 0x01) CH1Pan = RIGHT;
     }
     else if (index == NR52) APUEnabled = value & 0x80;
     //printf("%.4x:%.2x\n", index, value);
@@ -218,6 +237,10 @@ int appending_timer = 0;
 
 int t = 0;
 int tim = 0;
+// TODO Sound Panning
+// TODO LeftRight Volume
+// TODO CH3
+// TODO CH4
 void APUTick(int cycles) {
     if (CH1Enabled) channelTick(cycles, &CH1Timer, &CH1DutyIndex, CH1Period);
     if (CH2Enabled) channelTick(cycles, &CH2Timer, &CH2DutyIndex, CH2Period);

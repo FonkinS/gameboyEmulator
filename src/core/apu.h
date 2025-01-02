@@ -50,13 +50,6 @@ enum APUIO {
 
 extern bool APUEnabled;
 enum SOUND_PANNING {CENTER, LEFT, RIGHT};
-extern enum SOUND_PANNING CH1Pan;
-extern enum SOUND_PANNING CH2Pan;
-extern enum SOUND_PANNING CH3Pan;
-extern enum SOUND_PANNING CH4Pan;
-
-extern uint8_t leftVolume;
-extern uint8_t rightVolume;
 
 
 #endif // AUDIO_H
