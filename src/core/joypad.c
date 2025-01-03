@@ -50,16 +50,11 @@ void joypadWrite(uint8_t value) {
 void joypadInputCallback(enum BUTTON button, enum PRESS_TYPE type) {
     if (button == BUTTON_A) button_a = type;
     if (button == BUTTON_B) button_b = type;
-    if (button == BUTTON_START) {
-		button_start = type;
-		if (button_start && button_select) (endcallback)();
-	}
-    if (button == BUTTON_SELECT) {
-		button_select = type;
-		if (button_start && button_select) (endcallback)();
-	}
+    if (button == BUTTON_START) button_start = type;
+    if (button == BUTTON_SELECT) button_select = type;
     if (button == BUTTON_UP) dpad_up = type;
     if (button == BUTTON_DOWN) dpad_down = type;
     if (button == BUTTON_LEFT) dpad_left = type;
     if (button == BUTTON_RIGHT) dpad_right = type;
+    if (button == BUTTON_SPECIAL && type == PRESS) {(endcallback)();} 
 }

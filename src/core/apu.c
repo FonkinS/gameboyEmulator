@@ -256,7 +256,7 @@ void APUTick(int cycles) {
         if (APUTimer % 2) {
             if (CH1LengthEnable) {
                 CH1Length++;
-                if (CH1Length == 32) {
+                if (CH1Length == 32) {    // NOTE Should be 64
                     CH1LengthEnable = false;
                     CH1Enabled = false;
                     CH1Length = 0;
@@ -264,7 +264,7 @@ void APUTick(int cycles) {
             }
             if (CH2LengthEnable) {
                 CH2Length++;
-                if (CH2Length == 32) {
+                if (CH2Length == 32) { // NOTE should be 64
                     CH2LengthEnable = false;
                     CH2Enabled = false;
                     CH2Length = 0;
@@ -272,7 +272,7 @@ void APUTick(int cycles) {
             }
             if (CH4LengthEnable) {
                 CH4Length++;
-                if (CH4Length == 32) {
+                if (CH4Length == 32) { // NOTE SHOULD BE 64
                     CH4Length = 0;
                     CH4LengthEnable = false;
                     CH4Enabled = false;

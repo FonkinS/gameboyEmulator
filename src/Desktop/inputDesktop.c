@@ -15,6 +15,7 @@ bool prev_up = false;
 bool prev_down = false;
 bool prev_left = false;
 bool prev_right = false;
+bool prev_special = false;
 
 
 
@@ -38,6 +39,7 @@ void inputTick(void* window) {
         if ((glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) != prev_down) {(callback)(BUTTON_DOWN, !prev_down); prev_down = !prev_down;} 
         if ((glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) != prev_left) {(callback)(BUTTON_LEFT, !prev_left); prev_left = !prev_left;} 
         if ((glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) != prev_right) {(callback)(BUTTON_RIGHT, !prev_right); prev_right = !prev_right;} 
+        if ((glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) != prev_special) {(callback)(BUTTON_SPECIAL, !prev_special); prev_special = !prev_special;} 
 
     }
 }

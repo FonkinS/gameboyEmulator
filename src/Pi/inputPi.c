@@ -10,6 +10,7 @@
 #define PI_DOWN 13
 #define PI_LEFT 19
 #define PI_RIGHT 26
+#define PI_SPECIAL 3
 
 void (*callback)(enum BUTTON, enum PRESS_TYPE);
 bool callback_set = false;
@@ -22,6 +23,7 @@ bool prev_up = false;
 bool prev_down = false;
 bool prev_left = false;
 bool prev_right = false;
+bool prev_special = false;
 
 void inputInit() {
 	wiringPiSetupGpio();
@@ -33,6 +35,7 @@ void inputInit() {
 	pinMode(PI_DOWN, INPUT);
 	pinMode(PI_LEFT, INPUT);
 	pinMode(PI_RIGHT, INPUT);
+	pinMode(PI_SPECIAL, INPUT);
 	pullUpDnControl(PI_A, PUD_UP);
 	pullUpDnControl(PI_B, PUD_UP);
 	pullUpDnControl(PI_START, PUD_UP);
@@ -41,6 +44,7 @@ void inputInit() {
 	pullUpDnControl(PI_DOWN, PUD_UP);
 	pullUpDnControl(PI_LEFT, PUD_UP);
 	pullUpDnControl(PI_RIGHT, PUD_UP);
+	pullUpDnControl(PI_SPECIAL, PUD_UP);
 }
 
 
@@ -59,6 +63,7 @@ void inputTick(void* null) {
         if ((digitalRead(PI_DOWN) == LOW) != prev_down) {(callback)(BUTTON_DOWN, !prev_down); prev_down = !prev_down;} 
         if ((digitalRead(PI_LEFT) == LOW) != prev_left) {(callback)(BUTTON_LEFT, !prev_left); prev_left = !prev_left;} 
         if ((digitalRead(PI_RIGHT) == LOW) != prev_right) {(callback)(BUTTON_RIGHT, !prev_right); prev_right = !prev_right;} 
+        if ((digitalRead(PI_SPECIAL) == LOW) != prev_special) {(callback)(BUTTON_SPECIAL, !prev_special); prev_special = !prev_special;} 
     }
 }
 
