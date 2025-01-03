@@ -1,5 +1,4 @@
 #include "apu.h"
-#include "ppu.h"
 #define MINIAUDIO_IMPLEMENTATION
 #include "../../include/miniaudio.h"
 
@@ -60,6 +59,9 @@ int CH4ClockShift;
 bool CH4LSFRWidth;
 int CH4ClockDivider;
 bool CH4LengthEnable;
+
+uint16_t LSFR;
+int CH4Freq;
 
 
 
@@ -138,6 +140,7 @@ void triggerChannel(int n) {
         CH2Enabled = true;
     }
     if (n == 4) {
+        LSFR = 0;
         CH4Enabled = true;
     }
 }
@@ -206,6 +209,8 @@ void APUWrite(uint16_t index, uint8_t value) {
         CH4ClockShift = value >> 4;
         CH4LSFRWidth = value & 8;
         CH4ClockDivider = value & 7;
+        if (CH4ClockDivider == 0) CH4ClockDivider = 1; // TODO SHOULD BE 1/2
+        CH4Freq = 4 * CH4ClockDivider * (1 << CH4ClockShift);
     } else if (index == NR44) {
         if (value & 0x80) triggerChannel(4);
         CH4LengthEnable = value & 0x40;
@@ -233,9 +238,7 @@ void APUWrite(uint16_t index, uint8_t value) {
 
 
 int appending_timer = 0;
-
-
-int t = 0;
+int ch4_timer = 0;
 int tim = 0;
 // TODO Sound Panning
 // TODO LeftRight Volume
@@ -249,28 +252,52 @@ void APUTick(int cycles) {
     if (tim >= 16384) { // DIV APU timer
         tim = 0;
         //printf("%f\n", 4194304.0f / (double)(sys_counter - t));
-        t = sys_counter;
         APUTimer = (APUTimer+1) % 8;
         if (APUTimer % 2) {
             if (CH1LengthEnable) {
                 CH1Length++;
-                if (CH1Length == 64) {
+                if (CH1Length == 32) {
                     CH1LengthEnable = false;
                     CH1Enabled = false;
+                    CH1Length = 0;
                 }
             }
             if (CH2LengthEnable) {
                 CH2Length++;
-                if (CH2Length == 64) {
+                if (CH2Length == 32) {
                     CH2LengthEnable = false;
                     CH2Enabled = false;
+                    CH2Length = 0;
                 }
             }
-        } else if (APUTimer == 7) {
+            if (CH4LengthEnable) {
+                CH4Length++;
+                if (CH4Length == 32) {
+                    CH4Length = 0;
+                    CH4LengthEnable = false;
+                    CH4Enabled = false;
+                }
+            }
+        } 
+        if (APUTimer == 7) {
             int newCH1Vol = CH1Volume + (int8_t)CH1SweepPace * (int8_t)(CH1EnvDir ? 1 : -1);
             if (newCH1Vol >= 0 && newCH1Vol <= 15) CH1Volume = newCH1Vol;
             int newCH2Vol = CH2Volume + (int8_t)CH2SweepPace * (int8_t)(CH2EnvDir ? 1 : -1);
             if (newCH2Vol >= 0 && newCH2Vol <= 15) CH2Volume = newCH2Vol;
+            int newCH4Vol = CH4Volume + (int8_t)CH4SweepPace * (int8_t)(CH4EnvDir ? 1 : -1);
+            if (newCH4Vol >= 0 && newCH4Vol <= 15) CH4Volume = newCH4Vol;
+
+        }
+    }
+    ch4_timer += cycles;
+    if (ch4_timer >= CH4Freq) {
+        ch4_timer %= CH4Freq;
+        bool result = (LSFR & 1) == ((LSFR >> 1) & 1);
+        LSFR >>= 1;
+        LSFR |= result << 14;
+        if (CH4LSFRWidth == 1) { // 7 bit mode
+            LSFR &= ~128;
+            LSFR |= result << 6;
         }
     }
     
@@ -278,8 +305,9 @@ void APUTick(int cycles) {
     if (appending_timer >= 75 && endOfOutBuffer < SAMPLETHRESHOLD) {
         appending_timer = 0;
         gbBuffer[gbBufferPos] = 0;
-        gbBuffer[gbBufferPos] += ((wave_duty[CH1WaveDuty] & (1 << CH1DutyIndex)) >> CH1DutyIndex) * CH1Volume;
-        gbBuffer[gbBufferPos] += ((wave_duty[CH2WaveDuty] & (1 << CH2DutyIndex)) >> CH2DutyIndex) * CH2Volume;
+        if (CH1Enabled) gbBuffer[gbBufferPos] += ((wave_duty[CH1WaveDuty] & (1 << CH1DutyIndex)) >> CH1DutyIndex) * CH1Volume;
+        if (CH2Enabled) gbBuffer[gbBufferPos] += ((wave_duty[CH2WaveDuty] & (1 << CH2DutyIndex)) >> CH2DutyIndex) * CH2Volume;
+        if (CH4Enabled) gbBuffer[gbBufferPos] += (LSFR & 1) * CH4Volume;
         //if (CH1Volume == 0 && CH2Volume == 0) gbBuffer[gbBufferPos] = 255;
         gbBufferPos++;
         if (gbBufferPos >= REQUESTSIZE) {
