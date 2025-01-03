@@ -58,6 +58,7 @@ void drawScanline(int scanline, int vsync) {
                 uint8_t tile = BusRead(o+2);
                 uint8_t flags = BusRead(o+3);
                 uint8_t act_y = scanline-y;
+                if (flags & 0x40) act_y = 7 - act_y; // y flip
 
                 uint8_t first = BusRead(0x8000 + tile*16 + act_y * 2);
                 uint8_t second = BusRead(0x8000 + tile*16 + act_y * 2 + 1);
