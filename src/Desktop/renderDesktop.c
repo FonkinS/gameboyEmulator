@@ -1,6 +1,5 @@
 #include "../render.h"
 
-#include <stdint.h>
 #include <stdio.h>
 
 #define GL_SILENCE_DEPRECATION
@@ -16,6 +15,11 @@ unsigned int vao;
 unsigned int texture;
 
 
+/* The OpenGL API relies on user made shaders. Here only two are used, vertex and fragment*/
+
+// The vertexShader takes in 2 layout variables, the pixels position in the window (each axis
+// between -1.0 and 1.0), and the pixel's position in the texture (each axis between 0 and 1)
+// The texture position is passed on to the fragment shader, and outputs the screen position
 const char* vertexShader = "#version 330 core\n" \
                            "layout (location = 0) in vec3 aPos;\n" \
                            "layout (location = 1) in vec2 aTexCoord;\n" \
@@ -26,7 +30,8 @@ const char* vertexShader = "#version 330 core\n" \
                            "\ttexCoord = aTexCoord;\n" \
                            "}\n";
 
-
+// The fragment shader takes in the texture position, then samples the texture given to it at that
+// position, and uses that color index to find the actual color in the colors[4] array.
 const char* fragmentShader = "#version 330 core\n" \
                             "out vec4 FragColor;\n" \
                             "in vec2 texCoord;\n" \
@@ -40,7 +45,13 @@ const char* fragmentShader = "#version 330 core\n" \
 
 
 
+/* The following function looks really complicated, but all it does is
+ * initialise glfw, 
+ * construct the OpenGL Object which rendering will be performed to, 
+ * give it the two shaders defined above, and 
+ * give it an OpenGL Texture which will be changed later*/
 int renderInit(char* title) {
+    // Init GLFW and the window
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -48,22 +59,22 @@ int renderInit(char* title) {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     
     window = glfwCreateWindow(640, 576, title, NULL, NULL);
-
     glfwMakeContextCurrent(window);
 
 
+    // Create the vertices for the screen texture
     float vertices[] = {
         1.0, -1.0, 0.0f, 1.0f, 1.0f,
         1.0,1.0, 0.0f, 1.0f, 0.0f,
         -1.0,1.0, 0.0f, 0.0f, 0.0f,
         -1.0, -1.0, 0.0f, 0.0f, 1.0f
     };
-
     unsigned int indices[] = {
         0, 1, 2,
         0, 2, 3
     };
 
+    // Create the OpenGL Objects (Vertex, Element and Buffer) which define the screen texture
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
     unsigned int vbo;
@@ -75,15 +86,14 @@ int renderInit(char* title) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(float), indices, GL_STATIC_DRAW);
 
+    // Pass the vertices to the OpenGL Objects
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) 0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    
-    glBindVertexArray(0);
-    
 
+    // Instantiate the Vertex Shader
     unsigned int vs;
     vs = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vs, 1, &vertexShader, NULL);
@@ -97,6 +107,7 @@ int renderInit(char* title) {
     }
 
 
+    // Instantiate the Fragment Shader
     unsigned int fs;
     fs = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fs, 1, &fragmentShader, NULL);
@@ -107,6 +118,7 @@ int renderInit(char* title) {
         printf("ERROR IN FRAGMENT SHADER:\n%s\n", error_log);
     }
 
+    // Create the Shader Program for the OpenGL Object
     shader = glCreateProgram();
     glAttachShader(shader, vs);
     glAttachShader(shader, fs);
@@ -116,37 +128,36 @@ int renderInit(char* title) {
         glGetProgramInfoLog(shader, 512, NULL, error_log);
         printf("ERROR IN SHADER COMPILE:\n%s\n", error_log);
     }
-
     glDeleteShader(vs);
     glDeleteShader(fs);
 
 
+    // Creat the Texture Object for the screen
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, 160,144, 0, GL_RED, GL_UNSIGNED_BYTE, screen);
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    
+    // Sets the color palette uniform for the fragment shader
     float colors[4][3] = {{0.79, 0.86, 0.58}, {0.54, 0.63, 0.41}, {0.26, 0.37, 0.24}, {0.05, 0.09, 0.07}};
     glUseProgram(shader);
     glUniform3fv(glGetUniformLocation(shader, "colors"), 4, (float*)colors);
 
-    glfwSwapInterval(0);
-    glBindVertexArray(vao);
     return 1;
 }
 
 int renderFrame() {
+    // Updates the OpenGL Texture to match the screen[] virtualisation
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 160, 144, GL_RED, GL_UNSIGNED_BYTE, screen);
     
+    // Draw the OpenGL Texture object
     glBindTexture(GL_TEXTURE_2D, texture);
     glUseProgram(shader);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -156,6 +167,7 @@ int renderFrame() {
 
     inputTick(window);
 
+    // Tells the main loop whether or not to quit
     return !glfwWindowShouldClose(window);
 }
 

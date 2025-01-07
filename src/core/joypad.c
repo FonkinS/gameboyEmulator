@@ -47,6 +47,7 @@ void joypadWrite(uint8_t value) {
 } 
 
 
+// Will be called by inputPi.c or inputDesktop.c whenever one of the BUTTON enum buttons are pressed or released
 void joypadInputCallback(enum BUTTON button, enum PRESS_TYPE type) {
     if (button == BUTTON_A) button_a = type;
     if (button == BUTTON_B) button_b = type;

@@ -4,15 +4,13 @@
 
 bool timer_enabled;
 int clock_select;
-
 uint16_t sys_counter;
-
 uint8_t timer_modulo;
 uint8_t timer_counter;
-
 uint8_t clock_freq;
 
 
+// Sets all the variables to default
 void timerInit() {
     timer_enabled = false;
     clock_select = 0;
