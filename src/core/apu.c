@@ -291,7 +291,8 @@ void APUTick(int cycles) {
     }
     ch4_timer += cycles;
     if (ch4_timer >= CH4Freq) {
-        ch4_timer %= CH4Freq;
+		if (CH4Freq == 0) ch4_timer = 0; // raspberry pi needs this for some reason
+		else ch4_timer %= CH4Freq;
         bool result = (LSFR & 1) == ((LSFR >> 1) & 1);
         LSFR >>= 1;
         LSFR |= result << 14;
