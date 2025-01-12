@@ -150,6 +150,9 @@ int renderInit(char* title) {
     glUseProgram(shader);
     glUniform3fv(glGetUniformLocation(shader, "colors"), 4, (float*)colors);
 
+    // Disables VSync, which speeds up rendering (otherwise there are occasional framedrops for some reason)
+    glfwSwapInterval(0);
+
     return 1;
 }
 

@@ -36,7 +36,7 @@ int main() {
     menuInit(gameboyStartCallback);
     renderInit("Gameboy Emulator");
 
-    // Game-/render- loop
+    // Game/render loop
     while (1) {
         if (gameboy_running) GameboyProcessFrame();
         if (!renderFrame()) {break;}
