@@ -12,9 +12,7 @@ void (*gamestartcallback)(char*);
 
 int cursor_pos = 0;
 int list_length = 0;
-
 char** gamePaths;
-
 char thisPath[64];
 
 void menuInit(void (*c)()) {

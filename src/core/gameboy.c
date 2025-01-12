@@ -51,19 +51,21 @@ int GameboyProcessInstruction() {
 }
 
 // TODO Correct OAM TIming
+// TODO Proper Mem timing (Read/Write happens within instruction, not at the end of it)
 int frame_int = 0;
 void GameboyProcessFrame() {
     clock_t begin = clock();
     // Non-VBLANK
     while (PPUMode != M_VBLANK) {
         while (PPUMode != M_HBLANK) GameboyProcessInstruction();
-        if (LCDEnable) drawScanline(LY, 1);
+        if (LCDEnable) drawScanline(LY);
         while (PPUMode == M_HBLANK) GameboyProcessInstruction();
     }
 
     while (PPUMode == VBLANK) GameboyProcessInstruction();
 
     //printf("%i FPS\n", (int)(CLOCKS_PER_SEC / (double)(clock() - begin)));
+    //printf("hi\n");
     while ((double)(clock() - begin) / CLOCKS_PER_SEC < FRAME_DURATION) {}
     //if (PC >= 0x100) return 0;
 }

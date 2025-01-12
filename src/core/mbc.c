@@ -8,6 +8,7 @@ int mbc;
 bool battery_enabled = false;
 
 
+// TODO Other MBCs
 int MBCInit(uint8_t *data, long long length, char* save_filename) {
     int type = data[0x147];
     battery_enabled = false;

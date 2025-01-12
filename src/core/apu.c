@@ -210,7 +210,7 @@ void APUWrite(uint16_t index, uint8_t value) {
         CH4LSFRWidth = value & 8;
         CH4ClockDivider = value & 7;
         if (CH4ClockDivider == 0) CH4ClockDivider = 1; // TODO SHOULD BE 1/2
-        CH4Freq = 4 * CH4ClockDivider * (1 << CH4ClockShift);
+        CH4Freq = 16 * CH4ClockDivider * (1 << CH4ClockShift);
     } else if (index == NR44) {
         if (value & 0x80) triggerChannel(4);
         CH4LengthEnable = value & 0x40;
@@ -243,7 +243,6 @@ int tim = 0;
 // TODO Sound Panning
 // TODO LeftRight Volume
 // TODO CH3
-// TODO CH4
 void APUTick(int cycles) {
     if (CH1Enabled) channelTick(cycles, &CH1Timer, &CH1DutyIndex, CH1Period);
     if (CH2Enabled) channelTick(cycles, &CH2Timer, &CH2DutyIndex, CH2Period);

@@ -2,6 +2,8 @@
 #include <wiringPi.h>
 #include <stdbool.h>
 
+/* This script is exlusively for managing input on the Raspberry Pi through GPIO */
+
 #define PI_A 14
 #define PI_B 15
 #define PI_START 0
@@ -12,6 +14,7 @@
 #define PI_RIGHT 26
 #define PI_SPECIAL 3
 
+// Is set in the app/emulator to let the app/emulator handle inputs
 void (*callback)(enum BUTTON, enum PRESS_TYPE);
 bool callback_set = false;
 
@@ -53,6 +56,7 @@ void inputSetCallback(void (*c)(enum BUTTON, enum PRESS_TYPE)) {
     callback = c;
 }
 
+// If the Pi reads an input as set to LOW, it is currently being pressed
 void inputTick(void* null) {
     if (callback_set) {
         if ((digitalRead(PI_A) == LOW) != prev_a) {(callback)(BUTTON_A, !prev_a); prev_a = !prev_a;} 

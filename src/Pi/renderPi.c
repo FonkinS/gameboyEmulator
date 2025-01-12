@@ -14,7 +14,6 @@
 #include <stdbool.h>
 
 
-//uint8_t colors[4][3] = {{202, 221, 149}, {139, 162, 106}, {66, 96, 61}, {12, 24, 17}};
 uint8_t colors[4][3] = {{186, 218, 85}, {130, 153, 59}, {74,87,34}, {19,22,8}};
 
 int fbfd;
@@ -26,25 +25,32 @@ int fb_bytes;
 uint32_t *fbdata;
 uint32_t *row_cache;
 
+// The main variable which all drawing functions will reference
 uint8_t screen[160*144];
 
+
+/* The Raspberry Pi rendering utilised the Linux Framebuffer, which is a 
+ * device found in /dev/fb0. Each pixel is represented by 4 bytes, or one
+ * 32bit number, with them all being neatly packed in memory. (Allowing for 
+ * easy pointer arithmetic in the renderFrame function)*/
 int renderInit(char* title) {
+    // Opens the Linux Framebuffer for access
 	fbfd = open("/dev/fb0", O_RDWR);
 	if (fbfd < 0) printf("FB OPEN ERROR!");
 	struct fb_var_screeninfo vinfo;
-
 	ioctl(fbfd, FBIOGET_VSCREENINFO, &vinfo);
 
+    // Retrieves data about the Linux Framebuffer
 	fb_width = vinfo.xres;
 	fb_height = vinfo.yres;
 	fb_bytes = vinfo.bits_per_pixel / 8;
-
 	fb_data_size = fb_width * fb_height * fb_bytes;
 
+    // Maps the data into memory, and clears it
 	fbdata = mmap(0, fb_data_size, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, (off_t)0);
-
 	memset(fbdata,0, fb_data_size);
 
+    // Inits a cache which will be used in the core renderloop for faster access
 	row_cache = (uint32_t*) malloc(160*sizeof(uint32_t));
 
     inputInit();
@@ -52,7 +58,20 @@ int renderInit(char* title) {
     return 1;
 }
 
+
+/* Significant code-duplication is used in the Pi version of RenderFrame. This is entirely
+ * done to squeeze as much speed as possible. Since the output display is 640x480, and the 
+ * gameboy uses a 160x144 display, we can upscale that to 640x432 (which is a 4x3 upscaling)
+ * 
+ * Therefore the gameboy rendering will happen 24 pixels lower than the top of the screen
+ * in order to center the window vertically.
+ * 
+ * Since the rendering is upscaled by a size of 4x3, each row of pixels is rendered 3 times,
+ * with each pixel in the row being rendered 4 times.
+ *
+ * To make this assigning faster, pointer arithmetic is used*/
 int renderFrame() {
+    // Sets pixel pointer to be start of the screen (24 pixels down from the top of the window)
 	uint32_t *pixel = fbdata + fb_width*24;
 	for (int y = 0; y < 144; y++) {
 		int line = y*160;
@@ -80,6 +99,8 @@ int renderFrame() {
 		}
 	}
 
+    // The NULL is due to the inputTick being a virtual function in input.h, and the desktop
+    // version requiring a pointer to the GLFWwindow. (and the pi version doesn't)
     inputTick(NULL);
 
     return true;
