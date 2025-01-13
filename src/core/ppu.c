@@ -56,7 +56,7 @@ void drawScanline(int scanline) {
                 // For each of the 8 pixels in the scanline in the tile, draw it if not off-screen
                 for (int tx = 0; tx < 8; tx++) {
                     uint8_t wx = (tilex - WX / 8) * 8 + tx;
-                    if (wx < WX || wx >= 160) continue;
+                    if (wx < WX-7 || wx >= 160) continue;
                     screen[scanline*160+wx] = BGP[((first >> (7-tx)) & 1) + (((second >> (7-tx)) & 1) << 1)];
                     faux_bg_screen[scanline*160+wx] = ((first >> (7-tx)) & 1) + (((second >> (7-tx)) & 1) << 1);
                 }
@@ -69,18 +69,18 @@ void drawScanline(int scanline) {
         // Loop through every object in memory. Stored in a 4 byte format: [Y, X, Tile, Flags]
         for (int o = 0xfe00; o < 0xfea0; o+=4) {
             // Get X and Y
-            uint8_t y = BusRead(o)-16;
-            uint8_t x = BusRead(o+1);
+            int16_t y = BusRead(o)-16;
+            int16_t x = BusRead(o+1);
 
             // If the Object is on screen
-            if (scanline-y < OBJSize && scanline >= y && x != 0 && x < 176) {
+            if (scanline-y < OBJSize && scanline >= y && x > 0 && x < 176) {
                 // Get tile and flags
-                uint8_t tile = BusRead(o+2);
+                uint8_t tile = BusRead(o+2) & (OBJSize == 16 ? 0xfe : 0xff);
                 uint8_t flags = BusRead(o+3);
 
-                // Calculate the real y positon on screen
+                // Calculate the real y position on screen
                 uint8_t act_y = scanline-y;
-                if (flags & 0x40) act_y = 7 - act_y; // y flip
+                if (flags & 0x40) act_y = (OBJSize - 1) - act_y; // y flip
 
                 // Get the tile data
                 uint8_t first = BusRead(0x8000 + tile*16 + act_y * 2);
@@ -92,7 +92,7 @@ void drawScanline(int scanline) {
                 // Go through each pixel in tile
                 for (int ox = 0; ox < 8; ox++) {
                     // Don't draw if offscreen
-                    if (ox+x < 0) continue;
+                    if (ox+x < 8) continue;
                     if (ox+x >= 168) break;
                     if (flags & 0x80 && faux_bg_screen[scanline*160+ox+x-8] > 0) continue; // BG Priority
 
