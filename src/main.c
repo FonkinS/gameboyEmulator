@@ -31,9 +31,11 @@ void gameboyEndCallback() {
 
 /* The Main function, which inits the Render Pipeline, and menu, then
  * starts the main render/game-loop */
-int main() {
+int main(int argc, char** argv) {
     // Init
-    menuInit(gameboyStartCallback);
+    gameboy_running = argc > 1;
+    if (gameboy_running) GameboyInit("assets/dmg_boot.bin", argv[1], gameboyEndCallback);
+    else menuInit(gameboyStartCallback);
     renderInit("Gameboy Emulator");
 
     // Game/render loop

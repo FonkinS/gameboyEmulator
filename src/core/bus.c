@@ -5,6 +5,7 @@
 
  bool bootrom_enabled;
 
+ /* These are the built in ram and rom banks */
  uint8_t boot_rom[0x100];    // 0x0000-0x0100
  uint8_t vram[0x2000];       // 0x8000-0x9FFF
  uint8_t wram_bank_0[0x1000];// 0xC000-0xCFFF
@@ -33,7 +34,6 @@ uint8_t BusRead(uint16_t index) {
 
 
 void BusWrite(uint16_t index, uint8_t value) {
-    //printf("%.4x - %.2x\n", index, value);
     if (index < 0x0100 && io_read(rBOOT) == 0) {}
     else if (index < 0x8000) MBCWrite(index, value);
     else if (index < 0xA000) vram        [index-0x8000] = value;
@@ -50,6 +50,7 @@ void BusWrite(uint16_t index, uint8_t value) {
 }
 
 
+/* The IO Read and Write functions forward computation to each sub-module*/
 uint8_t io_read(int io) {
     uint8_t i = io_regs[io-0xff00];
     switch (io) {
@@ -306,6 +307,9 @@ int open_bootrom_file(char* p) {
         return -1;
     }
     for (int i = 0; i < 0x100; i++) boot_rom[i] = fgetc(f);
+    // Reenable bootrom
+    io_regs[0x50] = 0;
+    bootrom_enabled = true;
     return 0;
 }
 
@@ -316,10 +320,6 @@ int open_cartridge_file(char* p, char* save_filename) {
         printf("Cartridge Rom (%s) Not found!\n", p);
         return -1;
     }
-
-    io_regs[0x50] = 0;
-    bootrom_enabled = true;
-
     // Read Info
     uint8_t *data = (uint8_t*) malloc(0x8000 * sizeof(uint8_t));
     long long c = 0;

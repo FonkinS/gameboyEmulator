@@ -7,6 +7,10 @@ int mbc;
 
 bool battery_enabled = false;
 
+/* MBC Refers to Memory Bank Controller, and they control the memory
+ * built into each cartridge. There are over 30 different MBCs made
+ * for the GB, however we only need to emulate a couple. */
+
 
 // TODO Other MBCs
 int MBCInit(uint8_t *data, long long length, char* save_filename) {
@@ -44,20 +48,18 @@ int MBCInit(uint8_t *data, long long length, char* save_filename) {
 }
 
 
+/* The following functions rely on callbacks, which are set in the MBCInit func, to 
+ * callback to the correct MBC, depending on the game */
 uint8_t MBCRead(uint16_t index) {
     return (*MBCNRead)(index);
 }
-
 
 void MBCWrite(uint16_t index, uint8_t value) {
     (*MBCNWrite)(index, value);
 }
 
-
 void MBCSaveData(char* filename) {
-    if (battery_enabled) {
-        (*MBCNSaveData)(filename);
-    }
+    if (battery_enabled) (*MBCNSaveData)(filename);
 }
 
 void MBCKill() {
